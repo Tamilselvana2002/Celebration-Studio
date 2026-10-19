@@ -112,6 +112,7 @@
 
               <div class="polaroid-photo-frame">
                 {% if mem.image %}
+                  <div class="polaroid-blur-backdrop" style="background-image: url('{{ mem.image }}');"></div>
                   <img src="{{ mem.image }}" alt="{{ mem.title }}" class="polaroid-img" loading="eager">
                   <div class="photo-sheen-overlay"></div>
                 {% else %}
@@ -236,6 +237,7 @@
           <div class="surprise-letter-unfold">
             {% if scene.content.gift_photo %}
             <div class="gift-attachment-photo-wrap">
+              <div class="gift-photo-blur-backdrop" style="background-image: url('{{ scene.content.gift_photo }}');"></div>
               <img src="{{ scene.content.gift_photo }}" alt="Gift Attachment" class="gift-attachment-img">
               <div class="gift-photo-sheen"></div>
             </div>
@@ -287,6 +289,7 @@
 
             {% if scene.content.recipient_photo or celebration.participants.first.recipient.primary_photo %}
             <div class="finale-recipient-portrait-frame">
+              <div class="portrait-blur-backdrop" style="background-image: url('{{ scene.content.recipient_photo|default:celebration.participants.first.recipient.primary_photo }}');"></div>
               <img src="{{ scene.content.recipient_photo|default:celebration.participants.first.recipient.primary_photo }}" alt="Celebrant Portrait" class="finale-recipient-portrait-img">
               <div class="portrait-filigree-rim"></div>
               <div class="portrait-ambient-glow"></div>

@@ -1005,9 +1005,9 @@ dialog.studio-dialog[open]::backdrop {
   width: 70px;
   height: 70px;
   border-radius: var(--radius-sm);
-  object-fit: cover;
-  background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  object-fit: contain;
+  background: #090d18;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .save-status-indicator {
