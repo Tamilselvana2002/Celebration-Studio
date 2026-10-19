@@ -45,6 +45,7 @@ export class SceneOrchestrator {
     this.bindEvents();
     this.renderHUD();
     this.activateScene(0, false);
+    this.autoStartAudio();
 
     // Sync listener for Experience Studio iframe communication
     window.addEventListener('message', (e) => {
@@ -195,6 +196,42 @@ export class SceneOrchestrator {
         }
       }
     }, { passive: true });
+  }
+
+  autoStartAudio() {
+    if (!window.CelebrationAudio) return;
+
+    let hasStarted = false;
+    const startAudio = () => {
+      if (hasStarted) return;
+      hasStarted = true;
+      if (window.CelebrationAudio) {
+        window.CelebrationAudio.unmute();
+        if (this.audioToggle) {
+          this.audioToggle.classList.remove('audio-muted');
+        }
+      }
+      ['pointerdown', 'touchstart', 'click', 'keydown', 'wheel'].forEach(evt => {
+        window.removeEventListener(evt, startAudio, { capture: true });
+        document.removeEventListener(evt, startAudio, { capture: true });
+      });
+    };
+
+    // 1. Attempt immediate autoplay (works on platforms/browsers with permissive autoplay)
+    try {
+      window.CelebrationAudio.unmute();
+      if (this.audioToggle) {
+        this.audioToggle.classList.remove('audio-muted');
+      }
+    } catch (e) {
+      // Browser autoplay policy might restrict until user interaction
+    }
+
+    // 2. Seamlessly unlock & play on the very first touch/click/key anywhere on the page
+    ['pointerdown', 'touchstart', 'click', 'keydown', 'wheel'].forEach(evt => {
+      window.addEventListener(evt, startAudio, { capture: true, once: true });
+      document.addEventListener(evt, startAudio, { capture: true, once: true });
+    });
   }
 
   renderHUD() {

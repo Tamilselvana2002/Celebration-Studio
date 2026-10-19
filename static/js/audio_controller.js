@@ -11,7 +11,7 @@ class AudioController {
     this.audioElement = null;
     this.mediaSource = null;
     this.gainNode = null;
-    this.isMuted = true;
+    this.isMuted = false;
     this.isPlaying = false;
     this.targetVolume = 0.75;
     this.currentPreset = 'celestial_drift';
@@ -104,6 +104,27 @@ class AudioController {
     }
 
     return !this.isMuted;
+  }
+
+  unmute() {
+    this.init();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+    this.isMuted = false;
+    this.playTrack();
+    return true;
+  }
+
+  mute() {
+    this.isMuted = true;
+    this.fadeGain(0, 0.4);
+    if (this.audioElement) {
+      this.audioElement.pause();
+    }
+    this.stopSynth();
+    this.isPlaying = false;
+    return false;
   }
 
   playTrack() {
