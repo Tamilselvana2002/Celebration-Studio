@@ -14,6 +14,32 @@
   <form method="POST" action="{% url 'wizard_create' %}" style="background: var(--bg-surface); border: 1px solid var(--bg-surface-glass-border); border-radius: var(--radius-xl); padding: var(--space-8); box-shadow: var(--shadow-lg);">
     {% csrf_token %}
 
+    <!-- 3D Template Blueprint Indicator -->
+    {% if selected_template %}
+    <div style="background: rgba(56, 225, 255, 0.1); border: 1px solid rgba(56, 225, 255, 0.35); border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-6); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 2.2rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));">{{ selected_template.icon }}</span>
+        <div>
+          <span style="font-size: 0.72rem; color: #38e1ff; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">✦ Pre-Choreographed Blueprint Loaded</span>
+          <h4 style="color: #fff; margin: 0; font-size: 1.1rem; font-family: var(--font-display);">{{ selected_template.name }}</h4>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">{{ selected_template.tagline }}</span>
+        </div>
+      </div>
+      <input type="hidden" name="template_id" value="{{ selected_template.id }}">
+      <a href="{% url 'template_gallery' %}" class="btn btn-ghost btn-sm" style="color: #94a3b8;">Change Blueprint ➔</a>
+    </div>
+    {% else %}
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-6); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+      <div>
+        <strong style="color: #fff; font-size: 0.88rem;">Want a pre-choreographed celebration?</strong>
+        <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Choose from our 24 master 3D celebration templates with ready-made scenes.</span>
+      </div>
+      <a href="{% url 'template_gallery' %}" class="btn btn-secondary btn-sm">
+        Browse 24 Templates ➔
+      </a>
+    </div>
+    {% endif %}
+
     <!-- Step 1: Celebration Title & Occasion -->
     <div style="margin-bottom: var(--space-8);">
       <h3 class="font-display" style="font-size: var(--text-lg); margin-bottom: var(--space-4); color: var(--theme-primary);">
@@ -22,7 +48,7 @@
       
       <div class="form-group">
         <label class="form-label">Celebration Title</label>
-        <input type="text" name="title" required class="form-control" placeholder="e.g. A Starlit Odyssey for Sarah">
+        <input type="text" name="title" required class="form-control" value="{% if selected_template %}{{ selected_template.name }}{% endif %}" placeholder="e.g. A Starlit Odyssey for Sarah">
       </div>
 
       <div class="form-group">
@@ -88,7 +114,7 @@
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-3);">
         {% for theme in THEME_PRESETS %}
         <label style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: rgba(14, 18, 30, 0.6); border: 1.5px solid rgba(255,255,255,0.1); border-radius: var(--radius-lg); cursor: pointer; transition: all 0.2s ease;">
-          <input type="radio" name="theme_id" value="{{ theme.id }}" {% if forloop.first %}checked{% endif %} style="accent-color: var(--theme-primary);">
+          <input type="radio" name="theme_id" value="{{ theme.id }}" {% if selected_template and theme.id == selected_template.theme_id %}checked{% elif not selected_template and forloop.first %}checked{% endif %} style="accent-color: var(--theme-primary);">
           <span style="font-size: 1.25rem;">{{ theme.icon }}</span>
           <div style="flex: 1; overflow: hidden;">
             <div style="display: flex; align-items: center; gap: 6px;">
@@ -111,7 +137,7 @@
         {% for pid, preset in animation_presets.items %}
         <label style="display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); cursor: pointer;">
           <div style="display: flex; align-items: center; gap: var(--space-2);">
-            <input type="radio" name="animation_preset" value="{{ pid }}" {% if forloop.first %}checked{% endif %}>
+            <input type="radio" name="animation_preset" value="{{ pid }}" {% if selected_template and pid == selected_template.animation_preset %}checked{% elif not selected_template and forloop.first %}checked{% endif %}>
             <span style="font-size: 1.1rem;">{{ preset.icon }}</span>
             <strong style="font-size: var(--text-xs); color: #fff;">{{ preset.name }}</strong>
           </div>

@@ -584,6 +584,47 @@ class CelebrationStudioTestCase(TestCase):
         self.assertTrue(new_admin.is_superuser)
         self.assertTrue(new_admin.is_staff)
 
+    def test_template_gallery_renders(self):
+        self.client.force_login(self.user)
+        res = self.client.get(reverse('template_gallery'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Choose a Template')
+        self.assertContains(res, '24 CURATED LUXURY 3D CELEBRATION BLUEPRINTS')
+        self.assertContains(res, 'Golden Cinema Premiere')
+        self.assertContains(res, 'Aurora of Two Hearts')
+        self.assertContains(res, 'Polaroid Memory Atelier')
+        self.assertContains(res, 'Sculptural Gift Reveal')
+        self.assertContains(res, 'The Living Constellation')
+
+    def test_template_gallery_category_filtering(self):
+        self.client.force_login(self.user)
+        res = self.client.get(reverse('template_gallery') + '?cat=romantic')
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Aurora of Two Hearts')
+        self.assertContains(res, 'Floating Rose Garden')
+
+    def test_wizard_creation_with_template_blueprint(self):
+        self.client.force_login(self.user)
+        res = self.client.post(reverse('wizard_create'), {
+            'title': 'Golden Premiere for Sarah',
+            'event_type': 'birthday',
+            'template_id': 'golden_cinema',
+            'new_recipient_name': 'Sarah',
+            'recipient_relationship': 'sister',
+        })
+        self.assertEqual(res.status_code, 302)
+        created = Celebration.objects.filter(owner=self.user, title='Golden Premiere for Sarah').first()
+        self.assertIsNotNone(created)
+        self.assertEqual(created.theme_id, 'sculptural_gold')
+        self.assertEqual(created.soundtrack_preset, 'upbeat_cheer')
+        # Check all 5 scenes were created from the blueprint
+        self.assertEqual(created.scenes.count(), 5)
+        # Check gift box scene has champagne_gold style
+        gift_scene = created.scenes.filter(scene_type='secret_surprise').first()
+        self.assertIsNotNone(gift_scene)
+        self.assertEqual(gift_scene.content.get('style'), 'champagne_gold')
+
+
 
 
 

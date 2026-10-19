@@ -12,9 +12,14 @@
       <h1 class="font-display" style="font-size: var(--text-3xl); margin-bottom: var(--space-1);">Creator Atelier</h1>
       <p style="color: var(--text-muted); font-size: var(--text-sm);">Manage your personalized celebration stories, recipient rosters, and publishing links.</p>
     </div>
-    <a href="{% url 'wizard_create' %}" class="btn btn-primary">
-      <span>+ New Celebration</span>
-    </a>
+    <div style="display: flex; gap: var(--space-3); align-items: center;">
+      <a href="{% url 'template_gallery' %}" class="btn btn-secondary">
+        <span>🏛️ Browse Templates</span>
+      </a>
+      <a href="{% url 'wizard_create' %}" class="btn btn-primary">
+        <span>+ New Celebration</span>
+      </a>
+    </div>
   </div>
 
   <!-- Real Statistics Grid -->

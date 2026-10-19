@@ -25,6 +25,7 @@
       <nav>
         <ul class="nav-links">
           <li><a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+          <li><a href="{% url 'template_gallery' %}" class="nav-link {% if request.resolver_match.url_name == 'template_gallery' %}active{% endif %}">🏛️ Templates</a></li>
           <li><a href="{% url 'recipient_directory' %}" class="nav-link {% if request.resolver_match.url_name == 'recipient_directory' %}active{% endif %}">VIP Recipients</a></li>
           <li><a href="{% url 'media_vault' %}" class="nav-link {% if request.resolver_match.url_name == 'media_vault' %}active{% endif %}">Media Vault</a></li>
           {% if request.user.is_superuser %}

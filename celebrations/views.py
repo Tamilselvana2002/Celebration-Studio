@@ -21,6 +21,12 @@ from .animation_registry import (
     get_default_animation_config, resolve_celebration_animations,
     validate_animation_payload, get_master_themes
 )
+from .templates_catalog import (
+    get_master_templates,
+    get_template_by_id,
+    get_templates_by_category,
+    TEMPLATE_CATEGORIES
+)
 
 
 class CreatorRequiredMixin:
@@ -204,13 +210,35 @@ class DashboardView(CreatorRequiredMixin, View):
         })
 
 
+class TemplateGalleryView(CreatorRequiredMixin, View):
+    """
+    Renders the 24 Master Celebration Templates Catalogue matching 04_template_gallery.jpg.
+    Allows filtering by category (Cinematic, Romantic, Memory, Sculptural, Cosmic) and search.
+    """
+    def get(self, request):
+        category = request.GET.get('cat', 'all')
+        templates = get_templates_by_category(category)
+        return render(request, 'gallery.html', {
+            'categories': TEMPLATE_CATEGORIES,
+            'selected_category': category,
+            'templates': templates,
+            'templates_json': json.dumps(get_master_templates()),
+            'total_templates_count': len(get_master_templates())
+        })
+
+
 class WizardCreateView(CreatorRequiredMixin, View):
     def get(self, request):
         recipients = RecipientProfile.objects.filter(user=request.user)
+        template_id = request.GET.get('template')
+        selected_template = get_template_by_id(template_id) if template_id else None
         return render(request, 'wizard.html', {
             'recipients': recipients,
             'animation_presets': ANIMATION_PRESETS,
-            'THEME_PRESETS': get_master_themes()
+            'THEME_PRESETS': get_master_themes(),
+            'selected_template': selected_template,
+            'ALL_TEMPLATES': get_master_templates(),
+            'TEMPLATE_CATEGORIES': TEMPLATE_CATEGORIES
         })
 
     def post(self, request):
@@ -218,6 +246,15 @@ class WizardCreateView(CreatorRequiredMixin, View):
         event_type = request.POST.get('event_type', 'birthday')
         theme_id = request.POST.get('theme_id', 'midnight_gold')
         animation_preset = request.POST.get('animation_preset', 'cinematic_luxury')
+        template_id = request.POST.get('template_id') or request.GET.get('template')
+        chosen_template = get_template_by_id(template_id) if template_id else None
+
+        if chosen_template:
+            if not request.POST.get('theme_id') or request.POST.get('theme_id') == 'midnight_gold':
+                theme_id = chosen_template.get('theme_id', theme_id)
+            if not request.POST.get('animation_preset') or request.POST.get('animation_preset') == 'cinematic_luxury':
+                animation_preset = chosen_template.get('animation_preset', animation_preset)
+
         recipient_id = request.POST.get('recipient_id')
         new_recipient_name = request.POST.get('new_recipient_name', '').strip()
         recipient_relationship = request.POST.get('recipient_relationship', 'friend')
@@ -254,6 +291,10 @@ class WizardCreateView(CreatorRequiredMixin, View):
             status='draft'
         )
 
+        if chosen_template and 'soundtrack_preset' in chosen_template:
+            celebration.soundtrack_preset = chosen_template['soundtrack_preset']
+            celebration.save(update_fields=['soundtrack_preset'])
+
         if recipient:
             CelebrationParticipant.objects.create(
                 celebration=celebration,
@@ -276,87 +317,119 @@ class WizardCreateView(CreatorRequiredMixin, View):
         from .relationship_content import get_relationship_content
         rel_pack = get_relationship_content(rel_key, custom_label=custom_label, recipient_name=rec_name)
 
-        # Seed initial scenes based on selected starter pack & relationship
-        order = 0
-        CelebrationScene.objects.create(
-            celebration=celebration,
-            scene_type='cinematic',
-            order=order,
-            title='The Starlit Prelude',
-            content={
-                'title_prefix': rel_pack['title_prefix'],
-                'recipient_name': rec_name,
-                'subtitle': rel_pack['subtitle'],
-                'tagline': rel_pack['tagline'],
-                'countdown_enabled': True,
-                'countdown_seconds': 3,
-                'climax_text': rel_pack['climax_text']
-            }
-        )
-        order += 1
+        if chosen_template and chosen_template.get('scenes_blueprint'):
+            order = 0
+            for sc in chosen_template['scenes_blueprint']:
+                content = dict(sc.get('custom_content', {}))
+                for k, v in list(content.items()):
+                    if isinstance(v, str):
+                        content[k] = v.replace('{recipient_name}', rec_name)
+                    elif isinstance(v, list):
+                        for item in v:
+                            if isinstance(item, dict):
+                                for ik, iv in item.items():
+                                    if isinstance(iv, str):
+                                        item[ik] = iv.replace('{recipient_name}', rec_name)
+                content['recipient_name'] = rec_name
+                if sc['scene_type'] == 'cinematic':
+                    content['title_prefix'] = rel_pack['title_prefix']
+                    content['tagline'] = content.get('subtitle', rel_pack['tagline'])
+                    content['countdown_enabled'] = True
+                elif sc['scene_type'] == 'secret_surprise':
+                    if 'style' in content and 'gift_style' not in content:
+                        content['gift_style'] = content['style']
+                        content['box_style'] = content['style']
 
-        if starter_pack in ['full_story', 'romantic']:
+                CelebrationScene.objects.create(
+                    celebration=celebration,
+                    scene_type=sc['scene_type'],
+                    order=order,
+                    title=sc['title'],
+                    content=content
+                )
+                order += 1
+        else:
+            # Seed initial scenes based on selected starter pack & relationship
+            order = 0
             CelebrationScene.objects.create(
                 celebration=celebration,
-                scene_type='romantic_dream',
+                scene_type='cinematic',
                 order=order,
-                title='Reflections of Grace',
+                title='The Starlit Prelude',
                 content={
-                    'headline': rel_pack['quote_headline'],
-                    'quote': rel_pack['quote'],
-                    'message_body': f"Wishing {rec_name} every ounce of joy and radiance in this new chapter.",
-                    'petals_type': 'roses_and_sakura',
-                    'heart_sparkle': True
+                    'title_prefix': rel_pack['title_prefix'],
+                    'recipient_name': rec_name,
+                    'subtitle': rel_pack['subtitle'],
+                    'tagline': rel_pack['tagline'],
+                    'countdown_enabled': True,
+                    'countdown_seconds': 3,
+                    'climax_text': rel_pack['climax_text']
                 }
             )
             order += 1
 
-        CelebrationScene.objects.create(
-            celebration=celebration,
-            scene_type='memory_lane',
-            order=order,
-            title='Echoes of Memory',
-            content={
-                'headline': rel_pack['memory_headline'],
-                'intro': 'Moments cherished in starlight...',
-                'memories': rel_pack['memories']
-            }
-        )
-        order += 1
+            if starter_pack in ['full_story', 'romantic']:
+                CelebrationScene.objects.create(
+                    celebration=celebration,
+                    scene_type='romantic_dream',
+                    order=order,
+                    title='Reflections of Grace',
+                    content={
+                        'headline': rel_pack['quote_headline'],
+                        'quote': rel_pack['quote'],
+                        'message_body': f"Wishing {rec_name} every ounce of joy and radiance in this new chapter.",
+                        'petals_type': 'roses_and_sakura',
+                        'heart_sparkle': True
+                    }
+                )
+                order += 1
 
-        CelebrationScene.objects.create(
-            celebration=celebration,
-            scene_type='secret_surprise',
-            order=order,
-            title='The Mystery Box',
-            content={
-                'prompt': 'Tap to unlock a surprise prepared just for you...',
-                'gift_style': 'cosmic_relic',
-                'box_style': 'cosmic_relic',
-                'box_color': '#b91c1c',
-                'ribbon_color': '#f59e0b',
-                'surprise_title': rel_pack['surprise_title'],
-                'surprise_letter': rel_pack['surprise_letter'],
-                'signature': rel_pack['signature'],
-                'confetti_colors': ['#FFD700', '#FFFFFF', '#38E1FF', '#E6C065']
-            }
-        )
-        order += 1
+            CelebrationScene.objects.create(
+                celebration=celebration,
+                scene_type='memory_lane',
+                order=order,
+                title='Echoes of Memory',
+                content={
+                    'headline': rel_pack['memory_headline'],
+                    'intro': 'Moments cherished in starlight...',
+                    'memories': rel_pack['memories']
+                }
+            )
+            order += 1
 
-        CelebrationScene.objects.create(
-            celebration=celebration,
-            scene_type='cosmic_universe',
-            order=order,
-            title='Infinite Constellations',
-            content={
-                'headline': rel_pack['final_headline'],
-                'constellation_name': f'Constellation of {rec_name}',
-                'closing_message': rel_pack['final_message'],
-                'signature': rel_pack['signature'],
-                'wishes': rel_pack['final_wishes'],
-                'final_cheer': 'Here is to a brilliant and triumphant future!'
-            }
-        )
+            CelebrationScene.objects.create(
+                celebration=celebration,
+                scene_type='secret_surprise',
+                order=order,
+                title='The Mystery Box',
+                content={
+                    'prompt': 'Tap to unlock a surprise prepared just for you...',
+                    'gift_style': 'cosmic_relic',
+                    'box_style': 'cosmic_relic',
+                    'box_color': '#b91c1c',
+                    'ribbon_color': '#f59e0b',
+                    'surprise_title': rel_pack['surprise_title'],
+                    'surprise_letter': rel_pack['surprise_letter'],
+                    'signature': rel_pack['signature'],
+                    'confetti_colors': ['#FFD700', '#FFFFFF', '#38E1FF', '#E6C065']
+                }
+            )
+            order += 1
+
+            CelebrationScene.objects.create(
+                celebration=celebration,
+                scene_type='cosmic_universe',
+                order=order,
+                title='Infinite Constellations',
+                content={
+                    'headline': rel_pack['final_headline'],
+                    'constellation_name': f'Constellation of {rec_name}',
+                    'closing_message': rel_pack['final_message'],
+                    'signature': rel_pack['signature'],
+                    'wishes': rel_pack['final_wishes'],
+                    'final_cheer': 'Here is to a brilliant and triumphant future!'
+                }
+            )
 
         return redirect('experience_studio', celebration_id=celebration.id)
 
