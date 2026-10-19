@@ -33,6 +33,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Master application content wrapper — guarantees foreground stacking above ambient backdrop */
+.main-content {
+  position: relative;
+  z-index: 10;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: calc(100vh - 69px);
+}
+
 ::selection {
   background: var(--theme-primary);
   color: var(--text-inverse);
@@ -671,6 +682,9 @@ h1, h2, h3, h4, .font-display {
   display: grid;
   grid-template-columns: 460px 1fr;
   height: calc(100vh - 69px);
+  width: 100%;
+  position: relative;
+  z-index: 10;
   overflow: hidden;
 }
 

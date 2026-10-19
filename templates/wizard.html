@@ -26,7 +26,12 @@
         </div>
       </div>
       <input type="hidden" name="template_id" value="{{ selected_template.id }}">
-      <a href="{% url 'template_gallery' %}" class="btn btn-ghost btn-sm" style="color: #94a3b8;">Change Blueprint ➔</a>
+      <div style="display: flex; gap: var(--space-2); align-items: center;">
+        <button type="submit" class="btn btn-primary btn-sm">
+          ⚡ Launch Editor →
+        </button>
+        <a href="{% url 'template_gallery' %}" class="btn btn-ghost btn-sm" style="color: #94a3b8;">Change Blueprint ➔</a>
+      </div>
     </div>
     {% else %}
     <div style="background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-6); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
