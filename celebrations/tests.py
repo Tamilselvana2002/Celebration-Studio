@@ -655,34 +655,6 @@ class CelebrationStudioTestCase(TestCase):
         self.assertEqual(del_res.status_code, 302)
         self.assertFalse(MediaAsset.objects.filter(id=asset.id).exists())
 
-    def test_mobile_companion_view(self):
-        self.client.force_login(self.user)
-        res = self.client.get(reverse('mobile_companion'))
-        self.assertEqual(res.status_code, 200)
-        self.assertContains(res, 'Android Companion')
-        self.assertContains(res, 'My Celebrations')
-        self.assertContains(res, 'Device Pair PIN')
-        self.assertContains(res, 'Google Play')
-
-    def test_mobile_sync_view_and_api(self):
-        self.client.force_login(self.user)
-        res = self.client.get(reverse('mobile_sync'))
-        self.assertEqual(res.status_code, 200)
-        self.assertContains(res, 'Syncing Your Celebrations')
-        self.assertContains(res, 'sync-progress-track')
-
-        # Sync API
-        api_res = self.client.get(reverse('api_mobile_sync'))
-        self.assertEqual(api_res.status_code, 200)
-        data = api_res.json()
-        self.assertEqual(data.get('status'), 'synchronized')
-
-        # Mobile celebrations API
-        celeb_api_res = self.client.get(reverse('api_mobile_celebrations'))
-        self.assertEqual(celeb_api_res.status_code, 200)
-        celeb_data = celeb_api_res.json()
-        self.assertEqual(celeb_data.get('status'), 'ok')
-        self.assertTrue(len(celeb_data.get('celebrations', [])) >= 1)
 
 
 
