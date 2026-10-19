@@ -889,7 +889,8 @@ class MediaVaultView(CreatorRequiredMixin, View):
 
         total_bytes = sum(a.file_size for a in base_assets if a.file_size)
         total_mb = round(total_bytes / (1024 * 1024), 2)
-        storage_quota_mb = 500.0
+        storage_quota_gb = 5.0
+        storage_quota_mb = 5120.0
         storage_percent = min(100.0, round((total_mb / storage_quota_mb) * 100, 1))
 
         context = {
@@ -903,6 +904,7 @@ class MediaVaultView(CreatorRequiredMixin, View):
             'video_count': video_count,
             'total_mb': total_mb,
             'storage_quota_mb': storage_quota_mb,
+            'storage_quota_gb': storage_quota_gb,
             'storage_percent': storage_percent,
         }
         return render(request, 'media_vault.html', context)
