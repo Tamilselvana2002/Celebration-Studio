@@ -118,6 +118,9 @@ class CelebrationStudioTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Story Flow')
         self.assertContains(response, 'previewFrame')
+        self.assertContains(response, 'sceneSettingsModal')
+        self.assertContains(response, 'studioTimelineDock')
+        self.assertContains(response, 'tlTracksStage')
 
     def test_celebration_preview_endpoint(self):
         response = self.client.get(reverse('celebration_preview', kwargs={'celebration_id': self.celebration.id}))

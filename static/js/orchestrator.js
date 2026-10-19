@@ -63,6 +63,39 @@ export class SceneOrchestrator {
           const nextIdx = (this.currentIndex + 1) % this.scenes.length;
           this.activateScene(nextIdx, true);
         }
+      } else if (e.data.type === 'PLAY_SCENE') {
+        if (this.activeEngine && typeof this.activeEngine.resume === 'function') {
+          this.activeEngine.resume();
+        }
+        if (window.CelebrationAudio && typeof window.CelebrationAudio.play === 'function') {
+          window.CelebrationAudio.play();
+        }
+      } else if (e.data.type === 'PAUSE_SCENE') {
+        if (this.activeEngine && typeof this.activeEngine.pause === 'function') {
+          this.activeEngine.pause();
+        }
+        if (window.CelebrationAudio && typeof window.CelebrationAudio.pause === 'function') {
+          window.CelebrationAudio.pause();
+        }
+      } else if (e.data.type === 'RESTART_SCENE') {
+        this.activateScene(this.currentIndex, true);
+      } else if (e.data.type === 'SEEK_TIME') {
+        const ratio = parseFloat(e.data.ratio) || 0;
+        if (this.activeEngine && typeof this.activeEngine.seek === 'function') {
+          this.activeEngine.seek(ratio);
+        }
+      } else if (e.data.type === 'AUDIO_MUTE_TOGGLE') {
+        if (window.CelebrationAudio) {
+          if (e.data.muted) {
+            window.CelebrationAudio.mute();
+          } else {
+            window.CelebrationAudio.unmute();
+          }
+        }
+      } else if (e.data.type === 'AUDIO_VOLUME_CHANGE') {
+        if (window.CelebrationAudio && typeof window.CelebrationAudio.setVolume === 'function') {
+          window.CelebrationAudio.setVolume(e.data.volume);
+        }
       }
     });
   }

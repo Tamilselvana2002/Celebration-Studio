@@ -14,6 +14,14 @@ window.StudioEditor = {
   activeSceneId: null,
   activeSceneIndex: 0,
   targetUploadIndex: null,
+  timelinePlaying: false,
+  timelineCurrentTime: 0,
+  timelineDuration: 8.0,
+  timelineLoop: true,
+  timelineAnimFrame: null,
+  timelineLastTimestamp: null,
+  isScrubbing: false,
+  debouncedSaveAudioTimer: null,
 
   init() {
     const root = document.querySelector('.studio-workbench');
@@ -36,6 +44,8 @@ window.StudioEditor = {
     this.bindTheme();
     this.bindScenesList();
     this.bindPublishModal();
+    this.initTimeline();
+    this.initSceneSettings();
 
     if (this.scenes.length > 0) {
       this.selectScene(this.scenes[0].id);
@@ -166,6 +176,9 @@ window.StudioEditor = {
 
     // Populate Tab 2 Scene Content Form
     this.populateSceneForm(scene);
+
+    // Synchronize Timeline with current scene
+    this.updateTimelineScene(sceneIdx);
   },
 
   populateSceneForm(scene) {
@@ -646,6 +659,326 @@ window.StudioEditor = {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  },
+
+  /* ==============================================================
+     PHASE 5: REAL-TIME MULTI-TRACK ANIMATION TIMELINE ENGINE
+     ============================================================== */
+  initTimeline() {
+    const stage = document.getElementById('tlTracksStage');
+    const ruler = document.getElementById('tlRuler');
+
+    if (ruler && stage) {
+      const handleScrub = (e) => {
+        const rect = stage.getBoundingClientRect();
+        let clientX = e.clientX;
+        if (e.touches && e.touches.length > 0) clientX = e.touches[0].clientX;
+        const offsetX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+        const ratio = offsetX / rect.width;
+        this.seekTimeline(ratio * this.timelineDuration, true);
+      };
+
+      ruler.addEventListener('mousedown', (e) => {
+        this.isScrubbing = true;
+        handleScrub(e);
+        const onMouseMove = (moveEvt) => {
+          if (this.isScrubbing) handleScrub(moveEvt);
+        };
+        const onMouseUp = () => {
+          this.isScrubbing = false;
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        };
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+
+      ruler.addEventListener('touchstart', (e) => {
+        this.isScrubbing = true;
+        handleScrub(e);
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (this.isScrubbing) handleScrub(e);
+      }, { passive: true });
+
+      window.addEventListener('touchend', () => {
+        this.isScrubbing = false;
+      });
+    }
+
+    // Spacebar to toggle timeline playback
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        this.togglePlayTimeline();
+      }
+    });
+
+    this.updateTimelineScene(this.activeSceneIndex);
+  },
+
+  updateTimelineScene(sceneIdx) {
+    const scene = this.scenes[sceneIdx];
+    const titleEl = document.getElementById('tlCurrentSceneTitle');
+    if (titleEl && scene) {
+      titleEl.textContent = `Scene ${sceneIdx + 1}: ${scene.title || scene.scene_type}`;
+    }
+    this.seekTimeline(0, false);
+  },
+
+  togglePlayTimeline() {
+    if (this.timelinePlaying) {
+      this.pauseTimeline();
+    } else {
+      this.playTimeline();
+    }
+  },
+
+  playTimeline() {
+    this.timelinePlaying = true;
+    const playBtn = document.getElementById('tlBtnPlay');
+    if (playBtn) {
+      playBtn.textContent = '⏸';
+      playBtn.classList.add('playing');
+    }
+    this.timelineLastTimestamp = performance.now();
+
+    const iframe = document.getElementById('previewFrame');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'PLAY_SCENE', index: this.activeSceneIndex }, '*');
+    }
+
+    const step = (timestamp) => {
+      if (!this.timelinePlaying) return;
+      const dt = (timestamp - this.timelineLastTimestamp) / 1000;
+      this.timelineLastTimestamp = timestamp;
+
+      let nextTime = this.timelineCurrentTime + dt;
+      if (nextTime >= this.timelineDuration) {
+        if (this.timelineLoop) {
+          nextTime = 0;
+          this.seekTimeline(0, true);
+        } else {
+          this.pauseTimeline();
+          this.nextSceneTimeline();
+          return;
+        }
+      } else {
+        this.seekTimeline(nextTime, false);
+      }
+
+      this.timelineAnimFrame = requestAnimationFrame(step);
+    };
+
+    this.timelineAnimFrame = requestAnimationFrame(step);
+  },
+
+  pauseTimeline() {
+    this.timelinePlaying = false;
+    if (this.timelineAnimFrame) {
+      cancelAnimationFrame(this.timelineAnimFrame);
+      this.timelineAnimFrame = null;
+    }
+    const playBtn = document.getElementById('tlBtnPlay');
+    if (playBtn) {
+      playBtn.textContent = '▶';
+      playBtn.classList.remove('playing');
+    }
+    const iframe = document.getElementById('previewFrame');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'PAUSE_SCENE', index: this.activeSceneIndex }, '*');
+    }
+  },
+
+  restartTimeline() {
+    this.seekTimeline(0, true);
+    const iframe = document.getElementById('previewFrame');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'RESTART_SCENE', index: this.activeSceneIndex }, '*');
+    }
+  },
+
+  seekTimeline(timeSec, notifyIframe = true) {
+    this.timelineCurrentTime = Math.max(0, Math.min(this.timelineDuration, timeSec));
+    const ratio = this.timelineCurrentTime / this.timelineDuration;
+    const playhead = document.getElementById('tlPlayhead');
+    if (playhead) {
+      playhead.style.left = `${(ratio * 100).toFixed(2)}%`;
+    }
+
+    const currentCode = document.getElementById('tlTimecodeCurrent');
+    if (currentCode) {
+      const minutes = Math.floor(this.timelineCurrentTime / 60);
+      const seconds = Math.floor(this.timelineCurrentTime % 60);
+      const centis = Math.floor((this.timelineCurrentTime % 1) * 100);
+      currentCode.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centis).padStart(2, '0')}`;
+    }
+
+    if (notifyIframe) {
+      const iframe = document.getElementById('previewFrame');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({
+          type: 'SEEK_TIME',
+          time: this.timelineCurrentTime,
+          ratio: ratio,
+          index: this.activeSceneIndex
+        }, '*');
+      }
+    }
+  },
+
+  nextSceneTimeline() {
+    if (this.activeSceneIndex < this.scenes.length - 1) {
+      this.selectScene(this.scenes[this.activeSceneIndex + 1].id);
+    } else {
+      this.selectScene(this.scenes[0].id);
+    }
+  },
+
+  toggleLoopTimeline() {
+    this.timelineLoop = !this.timelineLoop;
+    const loopBtn = document.getElementById('tlBtnLoop');
+    if (loopBtn) {
+      loopBtn.classList.toggle('active', this.timelineLoop);
+    }
+  },
+
+  toggleTimelineDock() {
+    const dock = document.getElementById('studioTimelineDock');
+    const icon = document.getElementById('tlCollapseIcon');
+    if (dock) {
+      dock.classList.toggle('collapsed');
+      if (icon) {
+        icon.textContent = dock.classList.contains('collapsed') ? '▴' : '▾';
+      }
+    }
+  },
+
+  /* ==============================================================
+     PHASE 5: FLOATING SCENE SETTINGS INSPECTOR
+     Matches 10_editor_scene_settings.jpg
+     ============================================================== */
+  initSceneSettings() {
+    const volSlider = document.getElementById('audioVolumeSlider');
+    const quickVol = document.getElementById('quickVolumeSlider');
+    const quickPercent = document.getElementById('quickVolumePercent');
+    if (volSlider && quickVol) {
+      const val = Math.round(parseFloat(volSlider.value || 0.75) * 100);
+      quickVol.value = val;
+      if (quickPercent) quickPercent.textContent = `${val}%`;
+    }
+
+    const scrTrans = document.getElementById('animScreenTransition');
+    const quickTrans = document.getElementById('quickSceneTransition');
+    if (scrTrans && quickTrans) {
+      quickTrans.value = scrTrans.value;
+    }
+  },
+
+  toggleSceneSettings() {
+    const modal = document.getElementById('sceneSettingsModal');
+    if (!modal) return;
+    const isHidden = modal.style.display === 'none' || !modal.style.display;
+    modal.style.display = isHidden ? 'block' : 'none';
+  },
+
+  quickToggleMusic(enabled) {
+    const loopToggle = document.getElementById('audioLoopToggle');
+    if (loopToggle) loopToggle.checked = enabled;
+
+    const iframe = document.getElementById('previewFrame');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({
+        type: 'AUDIO_MUTE_TOGGLE',
+        muted: !enabled
+      }, '*');
+    }
+    this.saveQuickAudio();
+  },
+
+  quickUpdateVolume(val) {
+    const percentEl = document.getElementById('quickVolumePercent');
+    if (percentEl) percentEl.textContent = `${val}%`;
+    const floatVal = (parseFloat(val) / 100).toFixed(2);
+    const audioVolSlider = document.getElementById('audioVolumeSlider');
+    const audioVolVal = document.getElementById('audioVolumeVal');
+    if (audioVolSlider) audioVolSlider.value = floatVal;
+    if (audioVolVal) audioVolVal.textContent = floatVal;
+
+    const iframe = document.getElementById('previewFrame');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({
+        type: 'AUDIO_VOLUME_CHANGE',
+        volume: parseFloat(floatVal)
+      }, '*');
+    }
+    this.debouncedSaveAudio();
+  },
+
+  quickUpdateTransition(transId) {
+    const scrTrans = document.getElementById('animScreenTransition');
+    if (scrTrans) {
+      scrTrans.value = transId;
+    }
+    const iframe = document.getElementById('previewFrame');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({
+        type: 'UPDATE_ANIMATION_CONFIG',
+        config: { screen_transition: transId }
+      }, '*');
+    }
+    this.saveQuickAnimation({ screen_transition: transId });
+  },
+
+  quickUpdateStyle(styleId) {
+    const presetMap = {
+      cinematic: 'preset_cinematic_gold',
+      romantic: 'preset_romantic_dream',
+      memory: 'preset_memory_atelier',
+      surprise: 'preset_secret_treasure',
+      cosmic: 'preset_cosmic_starlight'
+    };
+    const presetId = presetMap[styleId] || 'preset_cinematic_gold';
+    const presetSelect = document.getElementById('animPresetSelect');
+    if (presetSelect) {
+      presetSelect.value = presetId;
+      if (typeof window.handleAnimPresetChange === 'function') {
+        window.handleAnimPresetChange(presetId);
+      }
+    }
+    this.saveQuickAnimation({ preset_id: presetId });
+  },
+
+  async saveQuickAudio() {
+    const statusEl = document.getElementById('quickSettingsStatus');
+    if (statusEl) statusEl.textContent = 'Saving audio...';
+    if (typeof window.saveAudioSettings === 'function') {
+      await window.saveAudioSettings();
+    }
+    if (statusEl) statusEl.textContent = '✓ Real-time synced';
+  },
+
+  debouncedSaveAudio() {
+    clearTimeout(this.debouncedSaveAudioTimer);
+    this.debouncedSaveAudioTimer = setTimeout(() => {
+      this.saveQuickAudio();
+    }, 600);
+  },
+
+  async saveQuickAnimation(overrideConfig = {}) {
+    const statusEl = document.getElementById('quickSettingsStatus');
+    if (statusEl) statusEl.textContent = 'Saving animation...';
+    if (typeof window.saveAnimationSettings === 'function') {
+      await window.saveAnimationSettings();
+    }
+    if (statusEl) statusEl.textContent = '✓ Real-time synced';
+  },
+
+  applySceneSettings() {
+    this.toggleSceneSettings();
+    this.setSaveStatus(true, 'Scene Settings Applied ✓');
   }
 };
 
