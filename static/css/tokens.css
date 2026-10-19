@@ -97,6 +97,146 @@
    THEME PALETTE PRESETS (Dynamic runtime attribute or class)
    ========================================================================== */
 
+/* ==========================================================================
+   10 MASTER LUXURY 3D THEMES
+   ========================================================================== */
+
+/* 1. Celestial Noir */
+[data-theme="celestial_noir"] {
+  --theme-primary: #38e1ff;
+  --theme-primary-hover: #7ae9ff;
+  --theme-primary-alpha: rgba(56, 225, 255, 0.18);
+  --theme-accent: #e6c065;
+  --theme-glow: rgba(56, 225, 255, 0.42);
+  --bg-primary: #07080c;
+  --bg-secondary: #0c101a;
+  --bg-surface: #101726;
+  --bg-surface-elevated: #18233a;
+}
+
+/* 2. Sculptural Gold */
+[data-theme="sculptural_gold"] {
+  --theme-primary: #ffd700;
+  --theme-primary-hover: #ffe44d;
+  --theme-primary-alpha: rgba(255, 215, 0, 0.2);
+  --theme-accent: #fff2b2;
+  --theme-glow: rgba(255, 215, 0, 0.45);
+  --bg-primary: #0c0a06;
+  --bg-secondary: #17130b;
+  --bg-surface: #1f1a12;
+  --bg-surface-elevated: #2e261a;
+}
+
+/* 3. Dreamglass */
+[data-theme="dreamglass"] {
+  --theme-primary: #e0f2fe;
+  --theme-primary-hover: #f0f9ff;
+  --theme-primary-alpha: rgba(224, 242, 254, 0.22);
+  --theme-accent: #f472b6;
+  --theme-glow: rgba(244, 114, 182, 0.38);
+  --bg-primary: #0b1120;
+  --bg-secondary: #111a30;
+  --bg-surface: #162035;
+  --bg-surface-elevated: #202e4d;
+}
+
+/* 4. Romantic Aurora */
+[data-theme="romantic_aurora"] {
+  --theme-primary: #ec4899;
+  --theme-primary-hover: #f472b6;
+  --theme-primary-alpha: rgba(236, 72, 153, 0.2);
+  --theme-accent: #8b5cf6;
+  --theme-glow: rgba(236, 72, 153, 0.42);
+  --bg-primary: #14091a;
+  --bg-secondary: #1e0d26;
+  --bg-surface: #251230;
+  --bg-surface-elevated: #371a47;
+}
+
+/* 5. Cosmic Nebula */
+[data-theme="cosmic_nebula"] {
+  --theme-primary: #a855f7;
+  --theme-primary-hover: #c084fc;
+  --theme-primary-alpha: rgba(168, 85, 247, 0.22);
+  --theme-accent: #06b6d4;
+  --theme-glow: rgba(168, 85, 247, 0.45);
+  --bg-primary: #03020a;
+  --bg-secondary: #0c0620;
+  --bg-surface: #150a2e;
+  --bg-surface-elevated: #210f47;
+}
+
+/* 6. Ivory Memory Atelier */
+[data-theme="ivory_atelier"],
+[data-theme="ivory_memory_atelier"] {
+  --theme-primary: #d97706;
+  --theme-primary-hover: #f59e0b;
+  --theme-primary-alpha: rgba(217, 119, 6, 0.2);
+  --theme-accent: #fde68a;
+  --theme-glow: rgba(217, 119, 6, 0.38);
+  --bg-primary: #1a1612;
+  --bg-secondary: #241f19;
+  --bg-surface: #2b241e;
+  --bg-surface-elevated: #3b322a;
+}
+
+/* 7. Crystal Garden */
+[data-theme="crystal_garden"] {
+  --theme-primary: #10b981;
+  --theme-primary-hover: #34d399;
+  --theme-primary-alpha: rgba(16, 185, 129, 0.18);
+  --theme-accent: #6ee7b7;
+  --theme-glow: rgba(16, 185, 129, 0.4);
+  --bg-primary: #04140d;
+  --bg-secondary: #081f14;
+  --bg-surface: #0c261b;
+  --bg-surface-elevated: #133a29;
+}
+
+/* 8. Midnight Cinema */
+[data-theme="midnight_cinema"] {
+  --theme-primary: #f59e0b;
+  --theme-primary-hover: #fbbf24;
+  --theme-primary-alpha: rgba(245, 158, 11, 0.2);
+  --theme-accent: #38bdf8;
+  --theme-glow: rgba(245, 158, 11, 0.4);
+  --bg-primary: #080808;
+  --bg-secondary: #121212;
+  --bg-surface: #181818;
+  --bg-surface-elevated: #242424;
+}
+
+/* 9. Pearl & Velvet */
+[data-theme="pearl_velvet"],
+[data-theme="pearl_and_velvet"] {
+  --theme-primary: #f1f5f9;
+  --theme-primary-hover: #ffffff;
+  --theme-primary-alpha: rgba(241, 245, 249, 0.2);
+  --theme-accent: #be123c;
+  --theme-glow: rgba(190, 18, 60, 0.4);
+  --bg-primary: #19040a;
+  --bg-secondary: #24060f;
+  --bg-surface: #2d0a14;
+  --bg-surface-elevated: #420f1e;
+}
+
+/* 10. Aurora Prism */
+[data-theme="aurora_prism"] {
+  --theme-primary: #6366f1;
+  --theme-primary-hover: #818cf8;
+  --theme-primary-alpha: rgba(99, 102, 241, 0.22);
+  --theme-accent: #f43f5e;
+  --theme-glow: rgba(99, 102, 241, 0.45);
+  --bg-primary: #090914;
+  --bg-secondary: #111122;
+  --bg-surface: #17172e;
+  --bg-surface-elevated: #242445;
+}
+
+/* ==========================================================================
+   CLASSIC STUDIO PALETTES (Backwards Compatibility)
+   ========================================================================== */
+
 /* 1. Midnight Luxury */
 [data-theme="midnight_luxury"],
 [data-theme="midnight_gold"] {

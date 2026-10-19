@@ -397,21 +397,69 @@
       </div>
 
       <!-- ============================================================== -->
-      <!-- TAB 4: ATMOSPHERE & PALETTE                                    -->
+      <!-- TAB 4: ATMOSPHERE & PALETTE (Matches 12_theme_selection.jpg)     -->
       <!-- ============================================================== -->
       <div id="tab-theme" class="studio-tab-pane">
         <div style="margin-bottom: var(--space-6);">
-          <label class="form-label">Visual Atmosphere Theme</label>
-          <select id="themeSelect" class="form-select">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+            <label class="form-label" style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff;">Choose a Theme</label>
+            <span id="themeSaveStatus" style="font-size: var(--text-xs); color: var(--theme-primary); font-weight: 600;"></span>
+          </div>
+          <p style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-4);">Select a signature 3D visual atmosphere to bathe scenes in custom materials, volumetric lighting, and particle effects.</p>
+
+          <input type="hidden" id="themeSelect" value="{{ celebration.theme_id }}">
+
+          <!-- 10 Master Luxury Themes Grid (Matches 12_theme_selection.jpg) -->
+          <div class="theme-selection-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;">
             {% for theme in THEME_PRESETS %}
-              <option value="{{ theme.id }}" {% if celebration.theme_id == theme.id %}selected{% endif %}>
+            <div 
+              class="theme-card {% if celebration.theme_id == theme.id %}active-theme{% endif %}" 
+              data-theme-id="{{ theme.id }}"
+              onclick="selectStudioTheme('{{ theme.id }}')"
+              style="
+                position: relative;
+                border-radius: 14px;
+                padding: 10px;
+                background: rgba(14, 18, 30, 0.7);
+                border: 1.5px solid {% if celebration.theme_id == theme.id %}rgba(56, 225, 255, 0.85){% else %}rgba(255, 255, 255, 0.1){% endif %};
+                cursor: pointer;
+                transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                box-shadow: {% if celebration.theme_id == theme.id %}0 0 20px rgba(56, 225, 255, 0.3){% else %}0 4px 14px rgba(0,0,0,0.3){% endif %};
+              "
+            >
+              <!-- Thumbnail Preview Box -->
+              <div style="
+                height: 70px;
+                border-radius: 10px;
+                background: radial-gradient(circle at 50% 30%, {{ theme.primary }}44 0%, {{ theme.bg }} 100%);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
+                margin-bottom: 8px;
+              ">
+                <span style="font-size: 1.5rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));">{{ theme.icon }}</span>
+                <!-- Color dots preview -->
+                <div style="display: flex; gap: 4px; position: absolute; bottom: 6px;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ theme.primary }}; box-shadow: 0 0 6px {{ theme.primary }};"></span>
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ theme.accent }};"></span>
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ theme.bg }}; border: 1px solid rgba(255,255,255,0.3);"></span>
+                </div>
+              </div>
+
+              <!-- Theme Title -->
+              <div style="font-weight: 600; font-size: 0.82rem; color: #fff; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 {{ theme.name }}
-              </option>
+              </div>
+            </div>
             {% endfor %}
-          </select>
+          </div>
         </div>
 
-        <div style="margin-bottom: var(--space-6);">
+        <div style="margin-bottom: var(--space-6); border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: var(--space-5);">
           <label class="form-label">Ambient Soundtrack Preset</label>
           <select id="soundtrackSelect" class="form-select" onchange="updateSoundtrackPreset(this.value)">
             <option value="celestial_drift" {% if celebration.soundtrack_preset == 'celestial_drift' %}selected{% endif %}>✨ Celestial Drift (Acoustic Chime & Strings)</option>

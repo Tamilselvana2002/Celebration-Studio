@@ -105,6 +105,25 @@ window.StudioEditor = {
         }
       });
     }
+
+    window.selectStudioTheme = (themeId) => {
+      const ts = document.getElementById('themeSelect');
+      if (ts) {
+        ts.value = themeId;
+        ts.dispatchEvent(new Event('change'));
+      }
+      document.querySelectorAll('.theme-card').forEach(c => {
+        const isActive = c.dataset.themeId === themeId;
+        c.classList.toggle('active-theme', isActive);
+        c.style.borderColor = isActive ? 'rgba(56, 225, 255, 0.85)' : 'rgba(255, 255, 255, 0.1)';
+        c.style.boxShadow = isActive ? '0 0 20px rgba(56, 225, 255, 0.3)' : '0 4px 14px rgba(0,0,0,0.3)';
+      });
+      const statusEl = document.getElementById('themeSaveStatus');
+      if (statusEl) {
+        statusEl.textContent = '✓ Saved';
+        setTimeout(() => { statusEl.textContent = ''; }, 2000);
+      }
+    };
   },
 
   bindScenesList() {

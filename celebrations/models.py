@@ -148,34 +148,35 @@ class Celebration(models.Model):
 
     def get_default_theme_config(self):
         presets = {
-            # 1. Midnight Luxury (Classic Obsidian & Gold)
+            # --- 10 Master Luxury 3D Themes ---
+            'celestial_noir': {'primary': '#38E1FF', 'bg': '#07080C', 'accent': '#E6C065', 'surface': '#101726'},
+            'sculptural_gold': {'primary': '#FFD700', 'bg': '#0C0A06', 'accent': '#FFF2B2', 'surface': '#1F1A12'},
+            'dreamglass': {'primary': '#E0F2FE', 'bg': '#0B1120', 'accent': '#F472B6', 'surface': '#162035'},
+            'romantic_aurora': {'primary': '#EC4899', 'bg': '#14091A', 'accent': '#8B5CF6', 'surface': '#251230'},
+            'cosmic_nebula': {'primary': '#A855F7', 'bg': '#03020A', 'accent': '#06B6D4', 'surface': '#150A2E'},
+            'ivory_atelier': {'primary': '#D97706', 'bg': '#1A1612', 'accent': '#F59E0B', 'surface': '#2B241E'},
+            'crystal_garden': {'primary': '#10B981', 'bg': '#04140D', 'accent': '#6EE7B7', 'surface': '#0C261B'},
+            'midnight_cinema': {'primary': '#F59E0B', 'bg': '#080808', 'accent': '#38BDF8', 'surface': '#181818'},
+            'pearl_velvet': {'primary': '#F1F5F9', 'bg': '#19040A', 'accent': '#BE123C', 'surface': '#2D0A14'},
+            'aurora_prism': {'primary': '#6366F1', 'bg': '#090914', 'accent': '#F43F5E', 'surface': '#17172E'},
+
+            # --- Classic Studio Palette Presets ---
             'midnight_luxury': {'primary': '#E6C065', 'bg': '#07080C', 'accent': '#FFD700', 'surface': '#121622'},
             'midnight_gold': {'primary': '#E6C065', 'bg': '#07080C', 'accent': '#FFD700', 'surface': '#121622'},
-            # 2. Champagne Gold
             'champagne_gold': {'primary': '#E6C887', 'bg': '#0F0E0C', 'accent': '#FFF8E7', 'surface': '#201D17'},
             'champagne_ivory': {'primary': '#E6C887', 'bg': '#0F0E0C', 'accent': '#FFF8E7', 'surface': '#201D17'},
-            # 3. Romantic Rose
             'romantic_rose': {'primary': '#FF6584', 'bg': '#14080E', 'accent': '#FF8DA1', 'surface': '#201018'},
-            # 4. Cosmic Dream
             'cosmic_dream': {'primary': '#8A4FFF', 'bg': '#04020D', 'accent': '#38E1FF', 'surface': '#120829'},
             'cosmic_violet': {'primary': '#8A4FFF', 'bg': '#04020D', 'accent': '#38E1FF', 'surface': '#120829'},
-            # 5. Ethereal Pearl
             'ethereal_pearl': {'primary': '#CBD5E1', 'bg': '#0A0C10', 'accent': '#FFFFFF', 'surface': '#181C24'},
-            # 6. Velvet Burgundy
             'velvet_burgundy': {'primary': '#C59B27', 'bg': '#18040A', 'accent': '#F3D17E', 'surface': '#290A13'},
-            # 7. Aurora Fantasy
             'aurora_fantasy': {'primary': '#2EC4B6', 'bg': '#021312', 'accent': '#70E000', 'surface': '#062624'},
             'emerald_aurora': {'primary': '#2EC4B6', 'bg': '#021312', 'accent': '#70E000', 'surface': '#062624'},
-            # 8. Modern Minimal
             'modern_minimal': {'primary': '#E2E8F0', 'bg': '#080808', 'accent': '#94A3B8', 'surface': '#181818'},
-            # 9. Floral Garden
             'floral_garden': {'primary': '#F472B6', 'bg': '#0A140D', 'accent': '#A7F3D0', 'surface': '#122619'},
-            # 10. Celebration Fireworks
             'celebration_fireworks': {'primary': '#FACC15', 'bg': '#050819', 'accent': '#F97316', 'surface': '#0F1738'},
-            # 11. Storybook Fantasy
             'storybook_fantasy': {'primary': '#D97706', 'bg': '#120D09', 'accent': '#FDE68A', 'surface': '#261C13'},
             'nostalgic_film': {'primary': '#E09F67', 'bg': '#17110B', 'accent': '#F8C291', 'surface': '#241B13'},
-            # 12. Custom Creator Theme
             'custom_creator': {'primary': '#E6C065', 'bg': '#0B0D13', 'accent': '#38E1FF', 'surface': '#161C2A'},
         }
         base = presets.get(self.theme_id, presets['midnight_luxury'])

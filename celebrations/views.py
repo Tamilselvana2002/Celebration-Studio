@@ -19,7 +19,7 @@ from .models import (
 from .animation_registry import (
     ANIMATION_REGISTRY, ANIMATION_PRESETS,
     get_default_animation_config, resolve_celebration_animations,
-    validate_animation_payload
+    validate_animation_payload, get_master_themes
 )
 
 
@@ -71,14 +71,20 @@ class CreatorLoginView(View):
         password = request.POST.get('password', '')
         next_url = request.POST.get('next') or reverse('dashboard')
 
-        user = authenticate(request, username=username, password=password)
+        auth_username = username
+        if '@' in username:
+            user_by_email = User.objects.filter(email__iexact=username).first()
+            if user_by_email:
+                auth_username = user_by_email.username
+
+        user = authenticate(request, username=auth_username, password=password)
         if user is not None:
             login(request, user)
             return redirect(next_url)
         else:
             return render(request, 'auth/login.html', {
                 'next': next_url,
-                'error': 'Invalid username or password. Please try again.',
+                'error': 'Invalid email/username or password. Please try again.',
                 'username': username
             })
 
@@ -203,7 +209,8 @@ class WizardCreateView(CreatorRequiredMixin, View):
         recipients = RecipientProfile.objects.filter(user=request.user)
         return render(request, 'wizard.html', {
             'recipients': recipients,
-            'animation_presets': ANIMATION_PRESETS
+            'animation_presets': ANIMATION_PRESETS,
+            'THEME_PRESETS': get_master_themes()
         })
 
     def post(self, request):
@@ -388,6 +395,7 @@ class ExperienceStudioView(CreatorRequiredMixin, View):
             'animation_registry': ANIMATION_REGISTRY,
             'audio_config': audio_config,
             'audio_config_json': json.dumps(audio_config),
+            'THEME_PRESETS': get_master_themes(),
         })
 
 

@@ -820,3 +820,347 @@ def validate_animation_payload(payload):
 
     return errors
 
+
+# =============================================================================
+# 10 MASTER LUXURY 3D THEMES (Visual System Specification)
+# =============================================================================
+MASTER_THEMES = {
+    'celestial_noir': {
+        'id': 'celestial_noir',
+        'name': 'Celestial Noir',
+        'tagline': 'Deep obsidian starry cosmos with radiant cyan and gilded starlight',
+        'icon': '🌌',
+        'colors': {
+            'primary': '#38E1FF',
+            'secondary': '#E6C065',
+            'accent': '#7AE9FF',
+            'bg': '#07080C',
+            'surface': '#101726'
+        },
+        'three_profile': {
+            'material': 'physical',
+            'roughness': 0.1,
+            'metalness': 0.85,
+            'clearcoat': 0.9,
+            'transmission': 0.0
+        },
+        'lighting': {
+            'ambient': '#081226',
+            'key': '#38E1FF',
+            'rim': '#E6C065',
+            'intensity': 1.2
+        },
+        'particles': {
+            'type': 'starlight_dust',
+            'color': '#38E1FF',
+            'count': 60,
+            'glow': True
+        }
+    },
+    'sculptural_gold': {
+        'id': 'sculptural_gold',
+        'name': 'Sculptural Gold',
+        'tagline': 'Brushed satin gold, warm marble pedestal, and royal golden radiance',
+        'icon': '👑',
+        'colors': {
+            'primary': '#FFD700',
+            'secondary': '#FFF2B2',
+            'accent': '#E6C065',
+            'bg': '#0C0A06',
+            'surface': '#1F1A12'
+        },
+        'three_profile': {
+            'material': 'physical',
+            'roughness': 0.22,
+            'metalness': 0.92,
+            'clearcoat': 0.8,
+            'transmission': 0.0
+        },
+        'lighting': {
+            'ambient': '#241E11',
+            'key': '#FFD700',
+            'rim': '#FFF8E7',
+            'intensity': 1.3
+        },
+        'particles': {
+            'type': 'golden_embers',
+            'color': '#FFD700',
+            'count': 50,
+            'glow': True
+        }
+    },
+    'dreamglass': {
+        'id': 'dreamglass',
+        'name': 'Dreamglass',
+        'tagline': 'Refractive frosted crystal, prismatic rose dispersion, and soft luminescence',
+        'icon': '💎',
+        'colors': {
+            'primary': '#E0F2FE',
+            'secondary': '#F472B6',
+            'accent': '#BAE6FD',
+            'bg': '#0B1120',
+            'surface': '#162035'
+        },
+        'three_profile': {
+            'material': 'physical',
+            'roughness': 0.12,
+            'metalness': 0.1,
+            'clearcoat': 1.0,
+            'transmission': 0.92,
+            'ior': 1.52
+        },
+        'lighting': {
+            'ambient': '#162035',
+            'key': '#E0F2FE',
+            'rim': '#F472B6',
+            'intensity': 1.15
+        },
+        'particles': {
+            'type': 'prismatic_shards',
+            'color': '#E0F2FE',
+            'count': 45,
+            'glow': True
+        }
+    },
+    'romantic_aurora': {
+        'id': 'romantic_aurora',
+        'name': 'Romantic Aurora',
+        'tagline': 'Sunset borealis pinks, enchanted violet clouds, and floating blossom petals',
+        'icon': '🌸',
+        'colors': {
+            'primary': '#EC4899',
+            'secondary': '#8B5CF6',
+            'accent': '#F472B6',
+            'bg': '#14091A',
+            'surface': '#251230'
+        },
+        'three_profile': {
+            'material': 'physical',
+            'roughness': 0.3,
+            'metalness': 0.35,
+            'clearcoat': 0.7,
+            'transmission': 0.15
+        },
+        'lighting': {
+            'ambient': '#251230',
+            'key': '#EC4899',
+            'rim': '#8B5CF6',
+            'intensity': 1.25
+        },
+        'particles': {
+            'type': 'rose_petals',
+            'color': '#EC4899',
+            'count': 40,
+            'glow': False
+        }
+    },
+    'cosmic_nebula': {
+        'id': 'cosmic_nebula',
+        'name': 'Cosmic Nebula',
+        'tagline': 'Deep space purple nebula, stellar cyan currents, and infinite constellations',
+        'icon': '✨',
+        'colors': {
+            'primary': '#A855F7',
+            'secondary': '#06B6D4',
+            'accent': '#C084FC',
+            'bg': '#03020A',
+            'surface': '#150A2E'
+        },
+        'three_profile': {
+            'material': 'physical',
+            'roughness': 0.25,
+            'metalness': 0.7,
+            'clearcoat': 0.85,
+            'transmission': 0.0
+        },
+        'lighting': {
+            'ambient': '#100724',
+            'key': '#A855F7',
+            'rim': '#06B6D4',
+            'intensity': 1.3
+        },
+        'particles': {
+            'type': 'nebula_dust',
+            'color': '#06B6D4',
+            'count': 75,
+            'glow': True
+        }
+    },
+    'ivory_atelier': {
+        'id': 'ivory_atelier',
+        'name': 'Ivory Memory Atelier',
+        'tagline': 'Warm archival cream, fine embossed paper, and gentle golden candlelight',
+        'icon': '📜',
+        'colors': {
+            'primary': '#D97706',
+            'secondary': '#F59E0B',
+            'accent': '#FDE68A',
+            'bg': '#1A1612',
+            'surface': '#2B241E'
+        },
+        'three_profile': {
+            'material': 'standard',
+            'roughness': 0.65,
+            'metalness': 0.12,
+            'clearcoat': 0.3,
+            'transmission': 0.0
+        },
+        'lighting': {
+            'ambient': '#2B241E',
+            'key': '#F59E0B',
+            'rim': '#FDE68A',
+            'intensity': 1.1
+        },
+        'particles': {
+            'type': 'candle_dust',
+            'color': '#F59E0B',
+            'count': 35,
+            'glow': True
+        }
+    },
+    'crystal_garden': {
+        'id': 'crystal_garden',
+        'name': 'Crystal Garden',
+        'tagline': 'Emerald dewdrops, translucent botanical glass, and enchanted foliage',
+        'icon': '🌿',
+        'colors': {
+            'primary': '#10B981',
+            'secondary': '#6EE7B7',
+            'accent': '#34D399',
+            'bg': '#04140D',
+            'surface': '#0C261B'
+        },
+        'three_profile': {
+            'material': 'physical',
+            'roughness': 0.15,
+            'metalness': 0.2,
+            'clearcoat': 0.95,
+            'transmission': 0.7,
+            'ior': 1.48
+        },
+        'lighting': {
+            'ambient': '#0C261B',
+            'key': '#10B981',
+            'rim': '#6EE7B7',
+            'intensity': 1.2
+        },
+        'particles': {
+            'type': 'dewdrop_orbs',
+            'color': '#6EE7B7',
+            'count': 45,
+            'glow': True
+        }
+    },
+    'midnight_cinema': {
+        'id': 'midnight_cinema',
+        'name': 'Midnight Cinema',
+        'tagline': '35mm vintage film grain, warm anamorphic bokeh, and dramatic spotlighting',
+        'icon': '🎬',
+        'colors': {
+            'primary': '#F59E0B',
+            'secondary': '#38BDF8',
+            'accent': '#FBBF24',
+            'bg': '#080808',
+            'surface': '#181818'
+        },
+        'three_profile': {
+            'material': 'standard',
+            'roughness': 0.5,
+            'metalness': 0.4,
+            'clearcoat': 0.5,
+            'transmission': 0.0
+        },
+        'lighting': {
+            'ambient': '#121212',
+            'key': '#F59E0B',
+            'rim': '#38BDF8',
+            'intensity': 1.4
+        },
+        'particles': {
+            'type': 'film_bokeh',
+            'color': '#F59E0B',
+            'count': 30,
+            'glow': True
+        }
+    },
+    'pearl_velvet': {
+        'id': 'pearl_velvet',
+        'name': 'Pearl & Velvet',
+        'tagline': 'Lustrous mother-of-pearl, deep royal ruby burgundy, and satin sheen',
+        'icon': '🍷',
+        'colors': {
+            'primary': '#F1F5F9',
+            'secondary': '#BE123C',
+            'accent': '#E11D48',
+            'bg': '#19040A',
+            'surface': '#2D0A14'
+        },
+        'three_profile': {
+            'material': 'physical',
+            'roughness': 0.2,
+            'metalness': 0.4,
+            'clearcoat': 1.0,
+            'transmission': 0.2
+        },
+        'lighting': {
+            'ambient': '#24060F',
+            'key': '#F1F5F9',
+            'rim': '#BE123C',
+            'intensity': 1.25
+        },
+        'particles': {
+            'type': 'pearl_shimmer',
+            'color': '#F1F5F9',
+            'count': 40,
+            'glow': True
+        }
+    },
+    'aurora_prism': {
+        'id': 'aurora_prism',
+        'name': 'Aurora Prism',
+        'tagline': 'Spectral light dispersion, vibrant indigo and crimson refraction beams',
+        'icon': '🌈',
+        'colors': {
+            'primary': '#6366F1',
+            'secondary': '#F43F5E',
+            'accent': '#818CF8',
+            'bg': '#090914',
+            'surface': '#17172E'
+        },
+        'three_profile': {
+            'material': 'physical',
+            'roughness': 0.08,
+            'metalness': 0.15,
+            'clearcoat': 1.0,
+            'transmission': 0.95,
+            'ior': 1.62
+        },
+        'lighting': {
+            'ambient': '#111122',
+            'key': '#6366F1',
+            'rim': '#F43F5E',
+            'intensity': 1.35
+        },
+        'particles': {
+            'type': 'spectral_rays',
+            'color': '#6366F1',
+            'count': 55,
+            'glow': True
+        }
+    }
+}
+
+
+def get_master_themes():
+    """Returns the list of 10 master luxury 3D themes with template-friendly color aliases."""
+    result = []
+    for t in MASTER_THEMES.values():
+        item = t.copy()
+        item['primary'] = t['colors']['primary']
+        item['bg'] = t['colors']['bg']
+        item['accent'] = t['colors']['accent']
+        item['surface'] = t['colors']['surface']
+        result.append(item)
+    return result
+
+
