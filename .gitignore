@@ -24,3 +24,7 @@ dist/
 # OS files
 .DS_Store
 Thumbs.db
+
+# User media uploads generated in development
+media/
+

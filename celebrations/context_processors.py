@@ -1,10 +1,40 @@
-"""
-Context processors for Celebration Studio.
-"""
+from .animation_themes import get_theme_by_id, get_all_animation_themes
 
 def celebration_context(request):
+    user_animation_theme = get_theme_by_id('cosmic_galaxy')
+    user_animation_settings = {
+        'theme_id': 'cosmic_galaxy',
+        'intensity': 'balanced',
+        'reduced_motion': False,
+        'particles_enabled': True,
+        'ambient_glow_enabled': True,
+        'parallax_enabled': True,
+        'background_motion_enabled': True,
+    }
+
+    if request.user.is_authenticated:
+        try:
+            profile = getattr(request.user, 'creator_profile', None)
+            if profile:
+                user_animation_theme = get_theme_by_id(profile.animation_theme)
+                user_animation_settings = {
+                    'theme_id': profile.animation_theme,
+                    'intensity': profile.animation_intensity,
+                    'reduced_motion': profile.reduced_motion,
+                    'particles_enabled': profile.particles_enabled,
+                    'ambient_glow_enabled': profile.ambient_glow_enabled,
+                    'parallax_enabled': profile.parallax_enabled,
+                    'background_motion_enabled': profile.background_motion_enabled,
+                }
+        except Exception:
+            pass
+
     return {
         'SITE_TITLE': 'Celebration Studio',
+        'USER_ANIMATION_THEME': user_animation_theme,
+        'USER_ANIMATION_SETTINGS': user_animation_settings,
+        'ALL_ANIMATION_THEMES': get_all_animation_themes(),
+
         'EVENT_TYPES': [
             ('birthday', 'Birthday', '🎂', 'Cinematic, warm, memorable birthday journey'),
             ('anniversary', 'Anniversary', '🥂', 'Romantic memories & heartfelt milestones'),

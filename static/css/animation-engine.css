@@ -1,0 +1,327 @@
+/* ==========================================================================
+   CELEBRATION STUDIO ADVANCED ANIMATION ENGINE
+   Volumetric Atmospheric Backdrops, 24-Theme Palettes, Card Hover Shimmer & Parallax
+   ========================================================================== */
+
+:root {
+  --theme-primary: #b388ff;
+  --theme-secondary: #38e1ff;
+  --theme-accent: #ffd700;
+  --theme-glow: rgba(179, 136, 255, 0.45);
+  --theme-bg-image: url('../images/animation-themes/01_cosmic_galaxy.jpg');
+  --theme-card-overlay: linear-gradient(135deg, rgba(20, 10, 40, 0.8) 0%, rgba(10, 5, 25, 0.92) 100%);
+  --motion-duration-factor: 1;
+}
+
+/* --------------------------------------------------------------------------
+   1. Master Atmospheric Background Stage
+   -------------------------------------------------------------------------- */
+.celebration-ambient-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: #0c0612;
+}
+
+/* Base High-Res Artwork Layer with Subtle Cinematic Drift */
+.ambient-layer-artwork {
+  position: absolute;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  background-image: var(--theme-bg-image);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0.38;
+  filter: blur(12px) saturate(140%) brightness(0.85);
+  transform: scale(1.05);
+  transition: background-image 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+  will-change: transform, opacity;
+}
+
+[data-background-motion="true"] .ambient-layer-artwork {
+  animation: atmosphericDrift 28s ease-in-out infinite alternate;
+}
+
+@keyframes atmosphericDrift {
+  0% { transform: scale(1.04) translate(0, 0); }
+  50% { transform: scale(1.08) translate(-1.5%, 1.2%); }
+  100% { transform: scale(1.04) translate(1.2%, -1.5%); }
+}
+
+/* Radial Volumetric Atmospheric Lighting */
+.ambient-layer-glow {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 20% 25%, var(--theme-glow) 0%, transparent 45%),
+    radial-gradient(circle at 80% 75%, rgba(139, 92, 246, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(12, 6, 18, 0.4) 0%, rgba(8, 4, 12, 0.9) 85%);
+  transition: background 0.8s ease;
+}
+
+/* Living Canvas Particle Overlay */
+#ambientParticleCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Cinematic Vignette */
+.ambient-layer-vignette {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 140px rgba(0, 0, 0, 0.85);
+  z-index: 2;
+}
+
+/* --------------------------------------------------------------------------
+   2. Intensity Profiles
+   -------------------------------------------------------------------------- */
+/* Subtle Mode */
+[data-intensity="subtle"] .ambient-layer-artwork {
+  opacity: 0.25;
+  filter: blur(16px) saturate(110%) brightness(0.7);
+  animation-duration: 40s !important;
+}
+[data-intensity="subtle"] #ambientParticleCanvas {
+  opacity: 0.45;
+}
+
+/* Balanced Mode */
+[data-intensity="balanced"] .ambient-layer-artwork {
+  opacity: 0.38;
+  filter: blur(10px) saturate(140%) brightness(0.85);
+}
+[data-intensity="balanced"] #ambientParticleCanvas {
+  opacity: 0.85;
+}
+
+/* Cinematic Mode */
+[data-intensity="cinematic"] .ambient-layer-artwork {
+  opacity: 0.52;
+  filter: blur(6px) saturate(160%) brightness(0.95);
+  animation-duration: 22s !important;
+}
+[data-intensity="cinematic"] #ambientParticleCanvas {
+  opacity: 1;
+}
+[data-intensity="cinematic"] .studio-project-card:hover {
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.85),
+    0 0 45px var(--theme-glow),
+    0 0 15px var(--theme-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   3. Reduced Motion Safety Override
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .ambient-layer-artwork {
+    animation: none !important;
+    transform: none !important;
+  }
+  #ambientParticleCanvas {
+    display: none !important;
+  }
+  .studio-project-card, .metric-glass-tile, .filter-chip {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+[data-reduced-motion="true"] .ambient-layer-artwork {
+  animation: none !important;
+  transform: none !important;
+}
+[data-reduced-motion="true"] #ambientParticleCanvas {
+  display: none !important;
+}
+[data-reduced-motion="true"] * {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. Upgraded Dashboard Project Cards
+   -------------------------------------------------------------------------- */
+.studio-project-card {
+  position: relative;
+  background: var(--theme-card-overlay);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+  will-change: transform, box-shadow;
+}
+
+.studio-project-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  border-color: var(--theme-primary);
+  box-shadow: 
+    0 20px 50px rgba(0, 0, 0, 0.75),
+    0 0 35px var(--theme-glow);
+}
+
+/* Card Artwork Banner with Dynamic Zoom */
+.card-artwork-banner {
+  position: relative;
+  height: 160px;
+  width: 100%;
+  overflow: hidden;
+  background-color: #120918;
+}
+
+.card-artwork-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+
+.studio-project-card:hover .card-artwork-img {
+  transform: scale(1.08);
+  filter: brightness(1.1);
+}
+
+.card-artwork-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(12, 6, 18, 0.95) 100%);
+}
+
+.card-theme-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  z-index: 2;
+}
+
+.card-status-pill {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.status-published {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  color: #a7f3d0;
+}
+.status-draft {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  color: #fde68a;
+}
+
+.card-content-wrap {
+  padding: 22px 20px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* --------------------------------------------------------------------------
+   5. Upgraded Statistics Tiles
+   -------------------------------------------------------------------------- */
+.metric-glass-tile {
+  background: radial-gradient(130% 100% at 75% 15%, rgba(255, 255, 255, 0.14) 0%, rgba(22, 11, 32, 0.75) 100%);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  padding: 22px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.metric-glass-tile:hover {
+  transform: translateY(-4px);
+  border-color: var(--theme-primary);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 28px var(--theme-glow);
+}
+
+.metric-num-animated {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   6. Category Filter Chips
+   -------------------------------------------------------------------------- */
+.filter-chip-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 24px;
+}
+
+.filter-chip-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.75);
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.filter-chip-item:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.filter-chip-item.active {
+  background: linear-gradient(135deg, var(--theme-primary) 0%, rgba(139, 92, 246, 0.7) 100%);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 18px var(--theme-glow);
+}

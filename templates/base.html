@@ -9,9 +9,18 @@
   <!-- Design Tokens & Master Stylesheet -->
   <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/studio.css' %}">
+  <link rel="stylesheet" href="{% static 'css/animation-engine.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body data-intensity="{{ USER_ANIMATION_SETTINGS.intensity|default:'balanced' }}">
+
+  <!-- Master Atmospheric Animated Backdrop Engine -->
+  <div class="celebration-ambient-backdrop" id="masterAmbientBackdrop">
+    <div class="ambient-layer-artwork"></div>
+    <div class="ambient-layer-glow"></div>
+    <canvas id="ambientParticleCanvas"></canvas>
+    <div class="ambient-layer-vignette"></div>
+  </div>
 
   <!-- Navigation Bar -->
   <header class="studio-header">
@@ -66,5 +75,23 @@
   </main>
 
   {% block extra_js %}{% endblock %}
+
+  <!-- Vendored GSAP & Master Animation Engine -->
+  <script src="{% static 'vendor/gsap.min.js' %}"></script>
+  <script src="{% static 'js/animation-engine.js' %}"></script>
+  {{ USER_ANIMATION_THEME|json_script:"globalUserAnimationTheme" }}
+  {{ USER_ANIMATION_SETTINGS|json_script:"globalUserAnimationSettings" }}
+  <script>
+    window.STATIC_URL_PREFIX = "{% static '' %}";
+    document.addEventListener('DOMContentLoaded', function () {
+      const themeScript = document.getElementById('globalUserAnimationTheme');
+      const settingsScript = document.getElementById('globalUserAnimationSettings');
+      if (themeScript && settingsScript && window.CelebrationAnimationEngine) {
+        const theme = JSON.parse(themeScript.textContent || '{}');
+        const settings = JSON.parse(settingsScript.textContent || '{}');
+        CelebrationAnimationEngine.init(theme, settings);
+      }
+    });
+  </script>
 </body>
 </html>

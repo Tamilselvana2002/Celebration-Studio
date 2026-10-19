@@ -563,6 +563,366 @@
     gap: 8px;
     margin-top: 12px;
   }
+
+  /* ==========================================================================
+     ANIMATION & APPEARANCE ENGINE — 24 THEMES & AMBIENT CONTROLS
+     ========================================================================== */
+  .anim-hero-preview {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    padding: 28px;
+    margin-bottom: 28px;
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    background-size: cover;
+    background-position: center;
+    transition: background-image 0.5s ease;
+  }
+  .anim-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(10, 5, 20, 0.82) 0%, rgba(20, 10, 35, 0.88) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1;
+  }
+  .anim-hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .anim-hero-meta {
+    max-width: 540px;
+  }
+  .anim-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(236, 72, 153, 0.2);
+    border: 1px solid rgba(244, 114, 182, 0.45);
+    color: #f472b6;
+    margin-bottom: 10px;
+  }
+  .anim-hero-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .anim-hero-desc {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .anim-hero-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .anim-hero-pill {
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .anim-hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  /* Intensity Selector */
+  .intensity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 640px) {
+    .intensity-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .intensity-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: 18px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: center;
+    position: relative;
+  }
+  .intensity-card:hover {
+    border-color: rgba(244, 114, 182, 0.4);
+    background: rgba(255, 255, 255, 0.09);
+  }
+  .intensity-card.selected {
+    border-color: #f472b6;
+    background: rgba(236, 72, 153, 0.18);
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.25);
+  }
+  .intensity-icon {
+    font-size: 1.6rem;
+    margin-bottom: 6px;
+  }
+  .intensity-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 4px;
+  }
+  .intensity-desc {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.4;
+  }
+
+  /* Ambient Toggles Grid */
+  .ambient-toggles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .ambient-toggle-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: all 0.2s ease;
+  }
+  .ambient-toggle-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+  .toggle-text-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .toggle-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  .toggle-hint {
+    font-size: 0.74rem;
+    color: rgba(255, 255, 255, 0.55);
+  }
+  
+  /* Modern CSS Switch */
+  .switch-slider {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  .switch-slider input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .switch-track {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 999px;
+  }
+  .switch-track:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .switch-slider input:checked + .switch-track {
+    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+    border-color: #f472b6;
+  }
+  .switch-slider input:checked + .switch-track:before {
+    transform: translateX(20px);
+  }
+
+  /* 24 Themes Gallery Filter Bar */
+  .theme-filter-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    scrollbar-width: thin;
+  }
+  .theme-filter-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .theme-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+  }
+  .theme-filter-btn.active {
+    background: rgba(244, 114, 182, 0.2);
+    border-color: #f472b6;
+    color: #ffffff;
+  }
+
+  /* 24 Themes Grid */
+  .anim-themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+    max-height: 580px;
+    overflow-y: auto;
+    padding: 4px;
+    padding-right: 8px;
+  }
+  .anim-themes-grid::-webkit-scrollbar {
+    width: 6px;
+  }
+  .anim-themes-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+  }
+  .anim-theme-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .anim-theme-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(244, 114, 182, 0.5);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(236, 72, 153, 0.25);
+  }
+  .anim-theme-card.active-selected {
+    border-color: #f472b6;
+    background: rgba(236, 72, 153, 0.12);
+    box-shadow: 0 0 25px rgba(236, 72, 153, 0.35);
+  }
+  .anim-card-img-wrap {
+    width: 100%;
+    height: 120px;
+    position: relative;
+    overflow: hidden;
+    background: #0f0716;
+  }
+  .anim-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .anim-theme-card:hover .anim-card-img {
+    transform: scale(1.08);
+  }
+  .anim-card-category {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+  }
+  .anim-card-active-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #10b981;
+    color: #ffffff;
+    box-shadow: 0 0 10px #10b981;
+    display: none;
+  }
+  .anim-theme-card.active-selected .anim-card-active-badge {
+    display: inline-block;
+  }
+  .anim-card-body {
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    justify-content: space-between;
+  }
+  .anim-card-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+  }
+  .anim-card-particle {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.65);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .anim-card-swatches {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-top: 4px;
+  }
+  .swatch-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
 </style>
 {% endblock %}
 
@@ -692,6 +1052,10 @@
             <span>👤</span>
             <span>Creative Identity</span>
           </button>
+          <button type="button" class="tab-btn" onclick="switchProfileTab('animationThemesTab', this)" id="tabBtnAnimation">
+            <span>✨</span>
+            <span>Animation & Themes</span>
+          </button>
           <button type="button" class="tab-btn" onclick="switchProfileTab('preferencesTab', this)">
             <span>🎨</span>
             <span>Studio Preferences</span>
@@ -763,7 +1127,186 @@
           </form>
         </div>
 
-        <!-- TAB 2: STUDIO PREFERENCES -->
+        <!-- TAB 2: ANIMATION & APPEARANCE (24 THEMES) -->
+        <div class="tab-pane" id="animationThemesTab">
+          <form method="POST" action="{% url 'profile' %}" id="animationPreferencesForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_animation_preferences">
+            <input type="hidden" name="animation_theme" id="selectedAnimationThemeInput" value="{{ profile.animation_theme }}">
+            <input type="hidden" name="animation_intensity" id="selectedIntensityInput" value="{{ profile.animation_intensity }}">
+
+            <!-- Live Theme Hero Preview Banner -->
+            <div class="anim-hero-preview" id="animHeroPreview" style="background-image: url('{% static selected_anim_theme.static_url %}');">
+              <div class="anim-hero-overlay"></div>
+              <div class="anim-hero-content">
+                <div class="anim-hero-meta">
+                  <div class="anim-hero-badge" id="heroThemeBadge">
+                    <span>✨</span>
+                    <span id="heroThemeCategory">{{ selected_anim_theme.category|upper }} ATMOSPHERE</span>
+                  </div>
+                  <h3 class="anim-hero-title" id="heroThemeTitle">{{ selected_anim_theme.name }}</h3>
+                  <p class="anim-hero-desc" id="heroThemeDesc">{{ selected_anim_theme.description }}</p>
+                  <div class="anim-hero-pills">
+                    <span class="anim-hero-pill" id="heroParticlePill">Particle Engine: <strong>{{ selected_anim_theme.particle_type|title }}</strong></span>
+                    <span class="anim-hero-pill" id="heroAtmospherePill">Atmosphere: <strong>{{ selected_anim_theme.atmosphere_type|title }}</strong></span>
+                    <span class="anim-hero-pill" id="heroSpeedPill">Pacing: <strong>{{ selected_anim_theme.particle_speed }}x Flow</strong></span>
+                  </div>
+                </div>
+                <div class="anim-hero-actions">
+                  <button type="submit" class="btn-atelier-save" id="btnSaveHeroTheme">
+                    <span>Apply & Save Theme</span>
+                    <span>✓</span>
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" style="border-radius: 999px;" onclick="resetThemePreview()">
+                    <span>↺ Reset to Saved</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Intensity Selector -->
+            <div class="field-group" style="margin-bottom: 24px;">
+              <label class="field-label">Motion Intensity Profile</label>
+              <div class="intensity-grid">
+                <div class="intensity-card {% if profile.animation_intensity == 'subtle' %}selected{% endif %}" onclick="selectIntensity('subtle', this)">
+                  <div class="intensity-icon">🍃</div>
+                  <div class="intensity-title">Subtle</div>
+                  <div class="intensity-desc">Gentle drifting particles, reduced blur, ideal for battery saving.</div>
+                </div>
+                <div class="intensity-card {% if profile.animation_intensity == 'balanced' %}selected{% endif %}" onclick="selectIntensity('balanced', this)">
+                  <div class="intensity-icon">✨</div>
+                  <div class="intensity-title">Balanced</div>
+                  <div class="intensity-desc">Optimal 60 FPS studio motion with smooth parallax, glows, and floating nebulae.</div>
+                </div>
+                <div class="intensity-card {% if profile.animation_intensity == 'cinematic' %}selected{% endif %}" onclick="selectIntensity('cinematic', this)">
+                  <div class="intensity-icon">🎆</div>
+                  <div class="intensity-title">Cinematic</div>
+                  <div class="intensity-desc">Ultra-rich particle densities, vibrant bloom, volumetric ambient lighting, and depth.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ambient Toggles Grid -->
+            <div class="field-group" style="margin-bottom: 28px;">
+              <label class="field-label">Ambient Motion & Atmosphere Controls</label>
+              <div class="ambient-toggles-grid">
+                <div class="ambient-toggle-card">
+                  <div class="toggle-text-wrap">
+                    <span class="toggle-name">Floating Particles</span>
+                    <span class="toggle-hint">Render dynamic Canvas particle engine</span>
+                  </div>
+                  <label class="switch-slider">
+                    <input type="checkbox" name="particles_enabled" {% if profile.particles_enabled %}checked{% endif %} onchange="toggleParticles(this.checked)">
+                    <span class="switch-track"></span>
+                  </label>
+                </div>
+
+                <div class="ambient-toggle-card">
+                  <div class="toggle-text-wrap">
+                    <span class="toggle-name">Atmospheric Glow</span>
+                    <span class="toggle-hint">Volumetric radial lighting & gradients</span>
+                  </div>
+                  <label class="switch-slider">
+                    <input type="checkbox" name="ambient_glow_enabled" {% if profile.ambient_glow_enabled %}checked{% endif %} onchange="toggleGlow(this.checked)">
+                    <span class="switch-track"></span>
+                  </label>
+                </div>
+
+                <div class="ambient-toggle-card">
+                  <div class="toggle-text-wrap">
+                    <span class="toggle-name">Parallax Depth</span>
+                    <span class="toggle-hint">Cursor & gyroscope-driven 3D depth</span>
+                  </div>
+                  <label class="switch-slider">
+                    <input type="checkbox" name="parallax_enabled" {% if profile.parallax_enabled %}checked{% endif %} onchange="toggleParallax(this.checked)">
+                    <span class="switch-track"></span>
+                  </label>
+                </div>
+
+                <div class="ambient-toggle-card">
+                  <div class="toggle-text-wrap">
+                    <span class="toggle-name">Background Motion</span>
+                    <span class="toggle-hint">Cinematic Ken Burns slow drift</span>
+                  </div>
+                  <label class="switch-slider">
+                    <input type="checkbox" name="background_motion_enabled" {% if profile.background_motion_enabled %}checked{% endif %} onchange="toggleBgMotion(this.checked)">
+                    <span class="switch-track"></span>
+                  </label>
+                </div>
+
+                <div class="ambient-toggle-card">
+                  <div class="toggle-text-wrap">
+                    <span class="toggle-name">Respect Reduced Motion</span>
+                    <span class="toggle-hint">Minimize non-essential motion</span>
+                  </div>
+                  <label class="switch-slider">
+                    <input type="checkbox" name="reduced_motion" {% if profile.reduced_motion %}checked{% endif %} onchange="toggleReducedMotion(this.checked)">
+                    <span class="switch-track"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- 24-Theme Gallery -->
+            <div class="field-group">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                <label class="field-label" style="font-size: 1rem;">Select From 24 Celebration Concepts</label>
+                <span style="font-size: 0.78rem; color: rgba(255,255,255,0.6);">Click any card to preview atmosphere in real-time</span>
+              </div>
+
+              <!-- Filter Bar -->
+              <div class="theme-filter-bar">
+                <button type="button" class="theme-filter-btn active" onclick="filterThemes('all', this)">All (24)</button>
+                <button type="button" class="theme-filter-btn" onclick="filterThemes('cosmic', this)">🌌 Cosmic (4)</button>
+                <button type="button" class="theme-filter-btn" onclick="filterThemes('luxury', this)">👑 Luxury & Gold (4)</button>
+                <button type="button" class="theme-filter-btn" onclick="filterThemes('ethereal', this)">💎 Ethereal & Aurora (3)</button>
+                <button type="button" class="theme-filter-btn" onclick="filterThemes('nature', this)">🌿 Nature & Serene (5)</button>
+                <button type="button" class="theme-filter-btn" onclick="filterThemes('cyber', this)">⚡ Cyber & Neon (3)</button>
+                <button type="button" class="theme-filter-btn" onclick="filterThemes('festival', this)">🎉 Festival & Joy (3)</button>
+                <button type="button" class="theme-filter-btn" onclick="filterThemes('romantic', this)">🌹 Romantic & Rose (2)</button>
+              </div>
+
+              <!-- 24 Themes Grid -->
+              <div class="anim-themes-grid">
+                {% for theme_key, theme in animation_themes.items %}
+                <div class="anim-theme-card {% if profile.animation_theme == theme_key %}active-selected{% endif %}"
+                     data-theme-id="{{ theme_key }}"
+                     data-category="{{ theme.category }}"
+                     onclick="previewThemeCard('{{ theme_key }}')">
+                  <div class="anim-card-img-wrap">
+                    <img src="{% static theme.static_url %}" alt="{{ theme.name }}" class="anim-card-img" loading="lazy">
+                    <span class="anim-card-category">{{ theme.category }}</span>
+                    <span class="anim-card-active-badge">✓ ACTIVE</span>
+                  </div>
+                  <div class="anim-card-body">
+                    <div>
+                      <div class="anim-card-title">{{ theme.name }}</div>
+                      <div class="anim-card-particle">
+                        <span>✨</span>
+                        <span>{{ theme.particle_type|title }}</span>
+                      </div>
+                    </div>
+                    <div class="anim-card-swatches">
+                      <span class="swatch-dot" style="background: {{ theme.primary_color }};" title="{{ theme.primary_color }}"></span>
+                      <span class="swatch-dot" style="background: {{ theme.secondary_color }};" title="{{ theme.secondary_color }}"></span>
+                      <span class="swatch-dot" style="background: {{ theme.accent_color }};" title="{{ theme.accent_color }}"></span>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div style="margin-top: 28px; display: flex; gap: 14px; align-items: center;">
+              <button type="submit" class="btn-atelier-save" id="saveAnimPrefsBtn">
+                <span>Save Animation Preferences</span>
+                <span>➔</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 3: STUDIO PREFERENCES -->
         <div class="tab-pane" id="preferencesTab">
           <form method="POST" action="{% url 'profile' %}">
             {% csrf_token %}
@@ -1127,6 +1670,131 @@
     }
     const formThemeInput = document.getElementById('formThemeInput');
     if (formThemeInput) formThemeInput.value = val;
+  }
+</script>
+
+{{ animation_themes|json_script:"animationThemesData" }}
+
+<script>
+  // =========================================================================
+  // 4. Animation & Appearance Studio Controls (24 Themes & Particle Engine)
+  // =========================================================================
+  const animThemesElement = document.getElementById('animationThemesData');
+  const ANIMATION_THEMES_DATA = animThemesElement ? JSON.parse(animThemesElement.textContent || '{}') : {};
+  const SAVED_THEME_ID = "{{ profile.animation_theme|default:'cosmic_galaxy' }}";
+  let activePreviewThemeId = SAVED_THEME_ID;
+
+  function previewThemeCard(themeId) {
+    const theme = ANIMATION_THEMES_DATA[themeId];
+    if (!theme) return;
+
+    activePreviewThemeId = themeId;
+    const input = document.getElementById('selectedAnimationThemeInput');
+    if (input) input.value = themeId;
+
+    // Update active-selected card highlight
+    document.querySelectorAll('.anim-theme-card').forEach(card => {
+      if (card.dataset.themeId === themeId) {
+        card.classList.add('active-selected');
+      } else {
+        card.classList.remove('active-selected');
+      }
+    });
+
+    // Update Hero Preview
+    const hero = document.getElementById('animHeroPreview');
+    const staticUrl = window.STATIC_URL_PREFIX ? (window.STATIC_URL_PREFIX + theme.static_url) : ('/static/' + theme.static_url);
+    if (hero) hero.style.backgroundImage = `url('${staticUrl}')`;
+
+    const title = document.getElementById('heroThemeTitle');
+    if (title) title.textContent = theme.name;
+
+    const desc = document.getElementById('heroThemeDesc');
+    if (desc) desc.textContent = theme.description;
+
+    const cat = document.getElementById('heroThemeCategory');
+    if (cat) cat.textContent = `${(theme.category || '').toUpperCase()} ATMOSPHERE`;
+
+    const particlePill = document.getElementById('heroParticlePill');
+    if (particlePill) particlePill.innerHTML = `Particle Engine: <strong>${theme.particle_type}</strong>`;
+
+    const speedPill = document.getElementById('heroSpeedPill');
+    if (speedPill) speedPill.innerHTML = `Pacing: <strong>${theme.particle_speed}x Flow</strong>`;
+
+    // Live preview atmosphere across the entire page via CelebrationAnimationEngine
+    if (window.CelebrationAnimationEngine && typeof window.CelebrationAnimationEngine.previewTheme === 'function') {
+      window.CelebrationAnimationEngine.previewTheme(theme);
+    }
+  }
+
+  function resetThemePreview() {
+    previewThemeCard(SAVED_THEME_ID);
+    if (window.CelebrationAnimationEngine && typeof window.CelebrationAnimationEngine.restoreSavedTheme === 'function') {
+      window.CelebrationAnimationEngine.restoreSavedTheme();
+    }
+  }
+
+  function selectIntensity(intensity, element) {
+    document.querySelectorAll('.intensity-card').forEach(card => card.classList.remove('selected'));
+    if (element) element.classList.add('selected');
+
+    const input = document.getElementById('selectedIntensityInput');
+    if (input) input.value = intensity;
+
+    if (window.CelebrationAnimationEngine && typeof window.CelebrationAnimationEngine.setIntensity === 'function') {
+      window.CelebrationAnimationEngine.setIntensity(intensity);
+    }
+  }
+
+  function filterThemes(category, btn) {
+    document.querySelectorAll('.theme-filter-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    document.querySelectorAll('.anim-theme-card').forEach(card => {
+      if (category === 'all' || card.dataset.category === category) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function toggleParticles(enabled) {
+    if (window.CelebrationAnimationEngine && typeof window.CelebrationAnimationEngine.setParticlesEnabled === 'function') {
+      window.CelebrationAnimationEngine.setParticlesEnabled(enabled);
+    }
+  }
+
+  function toggleGlow(enabled) {
+    if (window.CelebrationAnimationEngine && typeof window.CelebrationAnimationEngine.setGlowEnabled === 'function') {
+      window.CelebrationAnimationEngine.setGlowEnabled(enabled);
+    }
+  }
+
+  function toggleParallax(enabled) {
+    if (window.CelebrationAnimationEngine && typeof window.CelebrationAnimationEngine.setParallaxEnabled === 'function') {
+      window.CelebrationAnimationEngine.setParallaxEnabled(enabled);
+    }
+  }
+
+  function toggleBgMotion(enabled) {
+    if (window.CelebrationAnimationEngine && typeof window.CelebrationAnimationEngine.setBackgroundMotionEnabled === 'function') {
+      window.CelebrationAnimationEngine.setBackgroundMotionEnabled(enabled);
+    }
+  }
+
+  function toggleReducedMotion(enabled) {
+    if (enabled) {
+      document.body.classList.add('reduced-motion');
+    } else {
+      document.body.classList.remove('reduced-motion');
+    }
+  }
+
+  // Activate tab from URL hash if provided
+  if (window.location.hash === '#animationThemesTab' || window.location.hash === '#animation') {
+    const animTabBtn = document.getElementById('tabBtnAnimation');
+    if (animTabBtn) switchProfileTab('animationThemesTab', animTabBtn);
   }
 </script>
 {% endblock %}

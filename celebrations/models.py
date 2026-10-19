@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.contrib.auth.hashers import make_password, check_password
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from .animation_themes import THEME_CHOICES, INTENSITY_CHOICES
 
 
 def generate_unique_slug():
@@ -339,6 +340,16 @@ class CreatorProfile(models.Model):
     )
     preferred_theme = models.CharField(max_length=50, default='romantic_aurora')
     avatar_orb_style = models.CharField(max_length=50, choices=AVATAR_ORB_CHOICES, default='aurora_prism')
+    
+    # Advanced Animation Engine Preferences
+    animation_theme = models.CharField(max_length=64, choices=THEME_CHOICES, default='cosmic_galaxy')
+    animation_intensity = models.CharField(max_length=20, choices=INTENSITY_CHOICES, default='balanced')
+    reduced_motion = models.BooleanField(default=False)
+    particles_enabled = models.BooleanField(default=True)
+    ambient_glow_enabled = models.BooleanField(default=True)
+    parallax_enabled = models.BooleanField(default=True)
+    background_motion_enabled = models.BooleanField(default=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

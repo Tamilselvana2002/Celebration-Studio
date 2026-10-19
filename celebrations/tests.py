@@ -861,6 +861,75 @@ class CreatorProfileTestCase(TestCase):
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password('InitialPassword123!'))
 
+    def test_profile_renders_with_animation_themes(self):
+        self.client.force_login(self.user)
+        res = self.client.get(reverse('profile'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'animationThemesTab')
+        self.assertContains(res, 'anim-hero-preview')
+        self.assertContains(res, 'anim-themes-grid')
+        self.assertContains(res, 'Cosmic Galaxy')
+        self.assertContains(res, 'Emerald Aurora')
+
+    def test_update_animation_preferences_success(self):
+        self.client.force_login(self.user)
+        res = self.client.post(reverse('profile'), {
+            'action': 'update_animation_preferences',
+            'animation_theme': 'emerald_aurora',
+            'animation_intensity': 'cinematic',
+            'particles_enabled': 'on',
+            'ambient_glow_enabled': 'on',
+            'parallax_enabled': 'on',
+            'background_motion_enabled': 'on',
+        })
+        self.assertEqual(res.status_code, 302)
+        self.assertRedirects(res, reverse('profile'))
+
+        profile = self.user.creator_profile
+        profile.refresh_from_db()
+        self.assertEqual(profile.animation_theme, 'emerald_aurora')
+        self.assertEqual(profile.animation_intensity, 'cinematic')
+        self.assertTrue(profile.particles_enabled)
+        self.assertTrue(profile.ambient_glow_enabled)
+        self.assertFalse(profile.reduced_motion)
+
+    def test_update_animation_preferences_invalid_theme_rejected(self):
+        self.client.force_login(self.user)
+        original_theme = self.user.creator_profile.animation_theme
+        res = self.client.post(reverse('profile'), {
+            'action': 'update_animation_preferences',
+            'animation_theme': 'non_existent_exploit_theme',
+            'animation_intensity': 'cinematic',
+        })
+        self.assertEqual(res.status_code, 302)
+        profile = self.user.creator_profile
+        profile.refresh_from_db()
+        self.assertEqual(profile.animation_theme, original_theme)
+
+    def test_update_animation_preferences_ajax_success(self):
+        self.client.force_login(self.user)
+        res = self.client.post(
+            reverse('profile'),
+            {
+                'action': 'update_animation_preferences',
+                'animation_theme': 'fiery_embers',
+                'animation_intensity': 'subtle',
+                'reduced_motion': 'on',
+            },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data.get('status'), 'success')
+        self.assertIn('Fiery Embers', data.get('message', ''))
+
+        profile = self.user.creator_profile
+        profile.refresh_from_db()
+        self.assertEqual(profile.animation_theme, 'fiery_embers')
+        self.assertEqual(profile.animation_intensity, 'subtle')
+        self.assertTrue(profile.reduced_motion)
+
+
 
 
 

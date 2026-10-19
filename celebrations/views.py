@@ -25,6 +25,9 @@ from .models import (
     Celebration, RecipientProfile, CelebrationParticipant,
     CelebrationScene, MediaAsset, Publication, CreatorProfile
 )
+from .animation_themes import (
+    get_theme_by_id, get_all_animation_themes, INTENSITY_CHOICES
+)
 from .animation_registry import (
     ANIMATION_REGISTRY, ANIMATION_PRESETS,
     get_default_animation_config, resolve_celebration_animations,
@@ -295,6 +298,8 @@ class CreatorProfileView(LoginRequiredMixin, View):
 
         recent_celebrations = user_celebrations.order_by('-updated_at')[:4]
         master_themes = get_master_themes()
+        all_animation_themes = get_all_animation_themes()
+        selected_anim_theme = get_theme_by_id(profile.animation_theme)
 
         context = {
             'profile': profile,
@@ -308,6 +313,9 @@ class CreatorProfileView(LoginRequiredMixin, View):
             },
             'recent_celebrations': recent_celebrations,
             'master_themes': master_themes,
+            'animation_themes': all_animation_themes,
+            'selected_anim_theme': selected_anim_theme,
+            'intensity_choices': INTENSITY_CHOICES,
             'orb_styles': CreatorProfile.AVATAR_ORB_CHOICES,
             'success_message': request.session.pop('profile_success', None),
             'error_message': request.session.pop('profile_error', None),
@@ -343,6 +351,38 @@ class CreatorProfileView(LoginRequiredMixin, View):
             profile.save()
 
             request.session['profile_success'] = "Creator Atelier profile updated successfully!"
+            return redirect('profile')
+
+        elif action == 'update_animation_preferences':
+            theme_id = request.POST.get('animation_theme', '').strip()
+            intensity = request.POST.get('animation_intensity', 'balanced').strip()
+
+            all_themes = get_all_animation_themes()
+            if theme_id not in all_themes:
+                request.session['profile_error'] = f"Invalid animation theme '{theme_id}' selected."
+                return redirect('profile')
+
+            if intensity not in ['subtle', 'balanced', 'cinematic']:
+                intensity = 'balanced'
+
+            profile.animation_theme = theme_id
+            profile.animation_intensity = intensity
+            profile.reduced_motion = request.POST.get('reduced_motion') in ['on', 'true', 'True', True]
+            profile.particles_enabled = request.POST.get('particles_enabled') in ['on', 'true', 'True', True]
+            profile.ambient_glow_enabled = request.POST.get('ambient_glow_enabled') in ['on', 'true', 'True', True]
+            profile.parallax_enabled = request.POST.get('parallax_enabled') in ['on', 'true', 'True', True]
+            profile.background_motion_enabled = request.POST.get('background_motion_enabled') in ['on', 'true', 'True', True]
+            profile.save()
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f"Theme '{all_themes[theme_id]['name']}' applied!",
+                    'theme': get_theme_by_id(theme_id),
+                    'intensity': intensity,
+                })
+
+            request.session['profile_success'] = f"Animation theme '{all_themes[theme_id]['name']}' applied across your studio!"
             return redirect('profile')
 
         elif action == 'change_password':
