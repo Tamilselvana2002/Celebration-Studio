@@ -90,3 +90,21 @@ LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'landing'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Production Cloud CSRF Trusted Origins (Render, Railway, etc.)
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+# Production Static Files (WhiteNoise auto-activation in cloud)
+try:
+    import whitenoise
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+except ImportError:
+    pass
+
