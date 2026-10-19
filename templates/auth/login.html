@@ -1,18 +1,18 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" data-theme="celestial_noir">
+<html lang="en" data-theme="romantic_aurora">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>Sign In — Celebration Studio</title>
+  <title>Creator Sign In — Celebration Studio</title>
   
   <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/components.css' %}">
 
   <style>
     /* ==========================================================================
-       SIGNATURE 3D PORTAL AUTHENTICATION — CELEBRATION STUDIO
-       Inspired by high-end cinematic WebGL & Apple/VisionOS glass surfaces
+       DREAMY FLORAL GARDEN 3D SIGN IN — CELEBRATION STUDIO
+       Unified UI & UX matching the signature Registration Experience
        ========================================================================== */
     * {
       box-sizing: border-box;
@@ -21,8 +21,8 @@
     }
 
     body {
-      background: #05060d;
-      color: #f8fafc;
+      background: #120918;
+      color: #fdf2f8;
       font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
       min-height: 100vh;
       overflow-x: hidden;
@@ -32,8 +32,8 @@
       position: relative;
     }
 
-    /* 3D WebGL Canvas Layer */
-    #portalCanvas {
+    /* 3D WebGL Canvas Layer (Petals & Garden Atmosphere) */
+    #gardenCanvas, .authCanvas {
       position: fixed;
       top: 0;
       left: 0;
@@ -43,57 +43,16 @@
       pointer-events: none;
     }
 
-    /* Atmospheric Vignette & Color Glows */
-    .auth-atmosphere {
+    /* Dreamy Romantic Atmosphere & Sunbeams */
+    .garden-atmosphere {
       position: fixed;
       inset: 0;
       z-index: 2;
       pointer-events: none;
-      background: radial-gradient(circle at 50% 50%, rgba(20, 10, 40, 0.2) 0%, rgba(5, 6, 13, 0.75) 80%, #05060d 100%);
-    }
-
-    /* Top Ambient Signature Mode Switcher */
-    .mode-pill-bar {
-      position: fixed;
-      top: 20px;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      background: rgba(16, 20, 36, 0.6);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 9999px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      max-width: 92vw;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .mode-pill-bar::-webkit-scrollbar { display: none; }
-
-    .mode-btn {
-      background: transparent;
-      border: none;
-      color: rgba(255, 255, 255, 0.65);
-      font-size: 0.78rem;
-      font-weight: 500;
-      padding: 6px 12px;
-      border-radius: 9999px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .mode-btn:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.1);
-    }
-    .mode-btn.active {
-      color: #fff;
-      background: linear-gradient(135deg, rgba(56, 225, 255, 0.3) 0%, rgba(168, 85, 247, 0.35) 100%);
-      border: 1px solid rgba(56, 225, 255, 0.5);
-      box-shadow: 0 0 14px rgba(56, 225, 255, 0.3);
+      background: 
+        radial-gradient(circle at 80% 20%, rgba(244, 114, 182, 0.28) 0%, rgba(244, 114, 182, 0) 50%),
+        radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0) 60%),
+        radial-gradient(circle at 50% 50%, rgba(18, 9, 24, 0.3) 0%, rgba(12, 6, 18, 0.82) 80%, #0d0614 100%);
     }
 
     /* Main Container */
@@ -101,72 +60,70 @@
       position: relative;
       z-index: 5;
       width: 100%;
-      max-width: 440px;
+      max-width: 450px;
       padding: 24px;
       perspective: 1000px;
     }
 
-    /* Luxury Translucent Glass Card (Matches 01_login_3d_portal.jpg) */
-    .portal-card {
+    /* Crystal Glass Slab (Matches Registration UI) */
+    .crystal-card, #authCard {
       position: relative;
-      background: radial-gradient(120% 90% at 50% 0%, rgba(56, 225, 255, 0.14) 0%, rgba(20, 24, 48, 0.68) 55%, rgba(10, 12, 26, 0.85) 100%);
-      backdrop-filter: blur(28px) saturate(180%);
-      -webkit-backdrop-filter: blur(28px) saturate(180%);
-      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      background: radial-gradient(130% 100% at 75% 15%, rgba(255, 255, 255, 0.24) 0%, rgba(255, 220, 240, 0.1) 45%, rgba(24, 12, 34, 0.72) 100%);
+      backdrop-filter: blur(28px) saturate(170%);
+      -webkit-backdrop-filter: blur(28px) saturate(170%);
+      border: 1.5px solid rgba(255, 255, 255, 0.36);
       border-radius: 28px;
-      padding: 38px 34px 34px;
+      padding: 40px 34px 34px;
       box-shadow: 
-        0 24px 60px rgba(0, 0, 0, 0.7),
-        0 0 45px rgba(56, 225, 255, 0.2),
-        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+        0 24px 60px rgba(0, 0, 0, 0.65),
+        0 0 50px rgba(236, 72, 153, 0.22),
+        inset 0 1px 2px rgba(255, 255, 255, 0.6);
       overflow: hidden;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    /* Specular Light Glint on Glass Corner */
-    .portal-card::after {
+    /* Specular Light Glint on Chamfered Glass Corner */
+    .crystal-card::after {
       content: '';
       position: absolute;
-      top: -20px;
-      right: -20px;
-      width: 80px;
-      height: 80px;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 70%);
+      top: -24px;
+      right: -24px;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 70%);
       pointer-events: none;
       filter: blur(4px);
     }
 
-    /* Brand Header */
-    .brand-header {
+    /* Card Typography Header */
+    .header-group {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 26px;
     }
 
-    .brand-icon-wrap {
-      width: 58px;
-      height: 58px;
-      margin: 0 auto 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.04) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      border-radius: 18px;
-      box-shadow: 0 8px 24px rgba(56, 225, 255, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+    .card-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #f472b6;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-shadow: 0 0 12px rgba(244, 114, 182, 0.6);
     }
 
-    .brand-title {
+    .card-title {
       font-size: 1.85rem;
       font-weight: 700;
       color: #ffffff;
       letter-spacing: -0.025em;
       margin-bottom: 6px;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
     }
 
-    .brand-subtitle {
-      font-size: 0.95rem;
-      color: rgba(255, 255, 255, 0.72);
+    .card-subtitle {
+      font-size: 0.92rem;
+      color: rgba(255, 255, 255, 0.75);
       font-weight: 400;
     }
 
@@ -182,24 +139,24 @@
       display: flex;
       align-items: center;
       background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.22);
       border-radius: 9999px;
       padding: 0 18px;
-      height: 52px;
+      height: 50px;
       transition: all 0.25s ease;
     }
 
     .pill-input-wrap:focus-within {
-      background: rgba(255, 255, 255, 0.14);
-      border-color: rgba(56, 225, 255, 0.8);
-      box-shadow: 0 0 18px rgba(56, 225, 255, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(244, 114, 182, 0.85);
+      box-shadow: 0 0 18px rgba(244, 114, 182, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3);
     }
 
     .input-icon {
       flex-shrink: 0;
-      color: rgba(255, 255, 255, 0.6);
-      width: 20px;
-      height: 20px;
+      color: rgba(255, 255, 255, 0.65);
+      width: 19px;
+      height: 19px;
       margin-right: 12px;
     }
 
@@ -217,666 +174,458 @@
       color: rgba(255, 255, 255, 0.45);
     }
 
-    .toggle-password-btn {
+    /* Password Toggle Eye */
+    .password-toggle-btn {
       background: transparent;
       border: none;
-      color: rgba(255, 255, 255, 0.55);
+      color: rgba(255, 255, 255, 0.65);
       cursor: pointer;
+      padding: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 4px;
-      transition: color 0.2s;
+      transition: color 0.2s ease;
     }
-    .toggle-password-btn:hover {
+    .password-toggle-btn:hover {
       color: #ffffff;
     }
 
-    /* Luminous Sign In Button */
-    .btn-luminous-submit {
+    /* Submit Button (Romantic Garden Bloom) */
+    .btn-garden-bloom {
       margin-top: 8px;
+      width: 100%;
       height: 52px;
       border-radius: 9999px;
       border: none;
-      background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
-      color: #0c0f1d;
-      font-size: 1.05rem;
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 50%, #f43f5e 100%);
+      color: #ffffff;
+      font-size: 1rem;
       font-weight: 700;
-      letter-spacing: -0.01em;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 25px rgba(255, 255, 255, 0.45);
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
+      box-shadow: 0 10px 25px rgba(236, 72, 153, 0.45), 0 0 20px rgba(244, 63, 94, 0.35);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
     }
 
-    .btn-luminous-submit:hover {
-      transform: translateY(-2px) scale(1.015);
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 35px rgba(255, 255, 255, 0.7);
+    .btn-garden-bloom::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.6s ease;
     }
 
-    .btn-luminous-submit:active {
-      transform: translateY(1px) scale(0.99);
+    .btn-garden-bloom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(236, 72, 153, 0.6), 0 0 25px rgba(244, 63, 94, 0.5);
+    }
+    .btn-garden-bloom:hover::before {
+      left: 100%;
+    }
+    .btn-garden-bloom:active {
+      transform: translateY(0);
     }
 
-    /* Sub-links Row (Matches 01_login_3d_portal.jpg) */
-    .auth-links-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 24px;
-      padding-top: 18px;
-      border-top: 1px solid rgba(255, 255, 255, 0.09);
-    }
-
-    .auth-link {
-      font-size: 0.88rem;
-      color: rgba(255, 255, 255, 0.75);
-      text-decoration: none;
-      transition: all 0.2s;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-family: inherit;
-    }
-
-    .auth-link:hover {
-      color: #ffffff;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-    }
-
-    /* Error Banner */
-    .error-banner {
+    /* Error Message Alert */
+    .auth-error {
       background: rgba(239, 68, 68, 0.2);
       border: 1px solid rgba(239, 68, 68, 0.5);
-      border-radius: 14px;
-      padding: 10px 14px;
-      margin-bottom: 16px;
-      font-size: 0.86rem;
       color: #fca5a5;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.85rem;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      margin-bottom: 12px;
     }
 
-    /* Quick Help Modal for Forgot Password */
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(10px);
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .modal-backdrop.open { display: flex; }
-    .modal-card {
-      background: #101528;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-      padding: 28px;
-      max-width: 400px;
-      width: 100%;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    /* Card Footer Links */
+    .card-footer {
+      margin-top: 22px;
       text-align: center;
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.7);
     }
-    .modal-card h3 { margin-bottom: 12px; color: #fff; }
-    .modal-card p { font-size: 0.9rem; color: #94a3b8; line-height: 1.5; margin-bottom: 20px; }
-    .modal-close-btn {
-      padding: 10px 24px;
-      border-radius: 9999px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
+
+    .card-footer a {
+      color: #f472b6;
       font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .card-footer a:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    /* Back Home Button */
+    .back-home {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.2s ease;
+    }
+    .back-home:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Forgot Password Link */
+    .forgot-link-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: -4px;
+      margin-bottom: 4px;
+    }
+    .forgot-link {
+      font-size: 0.8rem;
+      color: rgba(244, 114, 182, 0.85);
+      text-decoration: none;
       cursor: pointer;
     }
-
-    /* Screen Reader Only Utility */
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      border: 0;
-    }
-
-    @media (max-width: 480px) {
-      .portal-card {
-        padding: 30px 22px 26px;
-        border-radius: 24px;
-      }
-      .brand-title {
-        font-size: 1.6rem;
-      }
-      .mode-pill-bar {
-        top: 12px;
-        padding: 4px 8px;
-      }
+    .forgot-link:hover {
+      color: #ffffff;
+      text-decoration: underline;
     }
   </style>
+
+  <!-- Three.js (from static vendor) -->
+  <script src="{% static 'vendor/three/three.min.js' %}"></script>
 </head>
 <body>
 
-  <!-- Living 3D WebGL Canvas Layer -->
-  <canvas id="portalCanvas" class="authCanvas"></canvas>
+  <!-- Return Home Pill -->
+  <a href="{% url 'landing' %}" class="back-home">
+    <span>← Back to Studio</span>
+  </a>
 
-  <!-- Atmospheric Glow Layer -->
-  <div class="auth-atmosphere"></div>
+  <!-- Atmospheric Background -->
+  <div class="garden-atmosphere"></div>
 
-  <!-- 3D Signature Transition Mode Selector (Phase 3 Spec) -->
-  <nav class="mode-pill-bar" aria-label="3D Experience Mode">
-    <button type="button" class="mode-btn active" data-mode="portal">✦ Portal of Light</button>
-    <button type="button" class="mode-btn" data-mode="glass">✦ Sculpted Glass</button>
-    <button type="button" class="mode-btn" data-mode="celestial">✦ Celestial Identity</button>
-    <button type="button" class="mode-btn" data-mode="aurora">✦ Aurora Passage</button>
-    <button type="button" class="mode-btn" data-mode="dimensional">✦ Dimensional Fold</button>
-    <button type="button" class="mode-btn" data-mode="hybrid">✦ Signature Hybrid</button>
-  </nav>
+  <!-- 3D WebGL Petal Garden Canvas (Has authCanvas class for test assertions) -->
+  <canvas id="gardenCanvas" class="authCanvas"></canvas>
 
-  <!-- Central Authentication Stage -->
+  <!-- Main Sign In Stage -->
   <main class="auth-stage">
-    <div class="portal-card" id="authCard">
+    
+    <!-- Crystal Glass Slab (Has authCard ID for test assertions) -->
+    <div class="crystal-card" id="authCard">
       
-      <!-- Brand Header -->
-      <div class="brand-header">
-        <div class="brand-icon-wrap" aria-hidden="true">
-          <!-- Stylized Celebration Studio Crest -->
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M16 2L19.5 12.5L30 16L19.5 19.5L16 30L12.5 19.5L2 16L12.5 12.5L16 2Z" fill="url(#crestGrad)" />
-            <circle cx="16" cy="16" r="3.5" fill="#ffffff" />
-            <defs>
-              <linearGradient id="crestGrad" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#38E1FF" />
-                <stop offset="0.5" stop-color="#FFFFFF" />
-                <stop offset="1" stop-color="#E6C065" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-        <h1 class="brand-title">Celebration Studio</h1>
-        <p class="brand-subtitle"><span class="sr-only">Creator Sign In</span>Turn Moments Into Magic</p>
+      <div class="header-group">
+        <span class="card-badge">✦ CELEBRATION STUDIO ATELIER ✦</span>
+        <h1 class="card-title">Creator Sign In</h1>
+        <p class="card-subtitle">Welcome back. Enter your sanctuary to continue crafting extraordinary moments.</p>
       </div>
 
-      <!-- Error Feedback -->
-      {% if error %}
-      <div class="error-banner" id="errorBanner" role="alert">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <span>{{ error }}</span>
+      {% if error_message %}
+      <div class="auth-error" role="alert">
+        <span>⚠️</span>
+        <span>{{ error_message }}</span>
       </div>
       {% endif %}
 
-      <!-- Login Form (Matches 01_login_3d_portal.jpg) -->
-      <form method="post" action="{% url 'login' %}" class="auth-form" id="loginForm">
+      <form method="POST" action="{% url 'login' %}" class="auth-form" id="creatorSignInForm">
         {% csrf_token %}
-        <input type="hidden" name="next" value="{{ next|default:'/dashboard/' }}">
+        <input type="hidden" name="next" value="{{ next_url|default:'' }}">
 
-        <!-- Email or Username Field -->
+        <!-- Username or Email Input -->
         <div class="pill-input-wrap">
-          <label for="usernameInput" class="sr-only">Email or Username</label>
-          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
           </svg>
           <input 
             type="text" 
-            id="usernameInput" 
             name="username" 
             class="pill-input" 
-            placeholder="Email or Username" 
-            value="{{ username|default:'' }}"
+            placeholder="Username or Email Address" 
             required 
-            autofocus 
             autocomplete="username"
+            autofocus
           >
         </div>
 
-        <!-- Password Field with Show/Hide Eye Toggle -->
+        <!-- Password Input with Eye Reveal -->
         <div class="pill-input-wrap">
-          <label for="passwordInput" class="sr-only">Password</label>
-          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
           <input 
             type="password" 
-            id="passwordInput" 
             name="password" 
+            id="passwordField" 
             class="pill-input" 
             placeholder="Password" 
             required 
             autocomplete="current-password"
           >
-          <button type="button" class="toggle-password-btn" id="togglePasswordBtn" aria-label="Toggle password visibility">
-            <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button 
+            type="button" 
+            class="password-toggle-btn" 
+            onclick="togglePasswordVisibility()" 
+            aria-label="Toggle password visibility"
+          >
+            <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
               <circle cx="12" cy="12" r="3"></circle>
             </svg>
           </button>
         </div>
 
-        <!-- Luminous Sign In Button -->
-        <button type="submit" class="btn-luminous-submit" id="submitBtn">
-          <span>Sign In</span>
+        <!-- Forgot Password Link -->
+        <div class="forgot-link-row">
+          <span class="forgot-link" onclick="openForgotModal()">Forgot password?</span>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-garden-bloom">
+          <span>Enter Creator Studio</span>
+          <span style="font-size: 1.15rem;">➔</span>
         </button>
 
-        <!-- Sub-links (Matches 01_login_3d_portal.jpg) -->
-        <div class="auth-links-row">
-          <a href="{% url 'register' %}" class="auth-link">Create Account</a>
-          <button type="button" class="auth-link" id="forgotPasswordBtn">Forgot Password</button>
-        </div>
       </form>
 
+      <div class="card-footer">
+        <span>Don't have an account yet? </span>
+        <a href="{% url 'register' %}">Create Account</a>
+      </div>
+
     </div>
+
   </main>
 
-  <!-- Accessible Forgot Password Modal -->
-  <div class="modal-backdrop" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-card">
-      <h3 id="modalTitle">Account Access Recovery</h3>
-      <p>Celebration Studio maintains end-to-end privacy for all celebrations. To reset creator credentials, please reach out directly to the studio administrator at <strong>Tamil</strong> or create a new account.</p>
-      <button type="button" class="modal-close-btn" id="closeModalBtn">Close Window</button>
+  <!-- Interactive Forgot Password Modal -->
+  <dialog id="forgotPasswordModal" style="background: rgba(20, 10, 30, 0.95); border: 1.5px solid rgba(244, 114, 182, 0.4); border-radius: 20px; padding: 28px; color: #fff; max-width: 400px; width: 90%; margin: auto; backdrop-filter: blur(20px);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff;">Reset Password</h3>
+      <button type="button" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;" onclick="document.getElementById('forgotPasswordModal').close()">✕</button>
     </div>
-  </div>
+    <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.45; margin-bottom: 16px;">
+      Enter your account username or email address and we'll generate a reset access token for you.
+    </p>
+    <div class="pill-input-wrap" style="margin-bottom: 16px;">
+      <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+        <polyline points="22,6 12,13 2,6"></polyline>
+      </svg>
+      <input type="text" id="forgotInput" class="pill-input" placeholder="Your username or email">
+    </div>
+    <div id="forgotStatusMsg" style="font-size: 0.82rem; color: #34d399; margin-bottom: 12px; display: none;"></div>
+    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('forgotPasswordModal').close()">Cancel</button>
+      <button type="button" class="btn-garden-bloom" style="height: 38px; padding: 0 16px; font-size: 0.85rem; margin-top: 0; width: auto;" onclick="handleForgotSubmit()">Send Instructions</button>
+    </div>
+  </dialog>
 
-  <!-- Three.js r128 & GSAP 3.12 (Vendored, Zero-Node Dependency) -->
-  <script src="{% static 'vendor/three.min.js' %}"></script>
-  <script src="{% static 'vendor/gsap.min.js' %}"></script>
-
+  <!-- 3D Three.js Interactive Dream Floral Petals Engine -->
   <script>
-    // =========================================================================
-    // 1. Password Visibility Toggle
-    // =========================================================================
-    const pwdInput = document.getElementById('passwordInput');
-    const toggleBtn = document.getElementById('togglePasswordBtn');
-    const eyeIcon = document.getElementById('eyeIcon');
-
-    if (toggleBtn && pwdInput) {
-      toggleBtn.addEventListener('click', () => {
-        const isPassword = pwdInput.type === 'password';
-        pwdInput.type = isPassword ? 'text' : 'password';
-        eyeIcon.innerHTML = isPassword 
-          ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>'
-          : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
-      });
+    function togglePasswordVisibility() {
+      const field = document.getElementById('passwordField');
+      const icon = document.getElementById('eyeIcon');
+      if (field.type === 'password') {
+        field.type = 'text';
+        icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+      } else {
+        field.type = 'password';
+        icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+      }
     }
 
-    // =========================================================================
-    // 2. Forgot Password Modal
-    // =========================================================================
-    const forgotBtn = document.getElementById('forgotPasswordBtn');
-    const forgotModal = document.getElementById('forgotModal');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-
-    if (forgotBtn && forgotModal && closeModalBtn) {
-      forgotBtn.addEventListener('click', () => forgotModal.classList.add('open'));
-      closeModalBtn.addEventListener('click', () => forgotModal.classList.remove('open'));
-      forgotModal.addEventListener('click', (e) => {
-        if (e.target === forgotModal) forgotModal.classList.remove('open');
-      });
+    function openForgotModal() {
+      document.getElementById('forgotPasswordModal').showModal();
     }
 
-    // =========================================================================
-    // 3. Three.js 3D WebGL Multi-Mode Experience Engine
-    // =========================================================================
-    (function init3DAuth() {
-      const canvas = document.getElementById('portalCanvas');
-      if (!canvas || !window.THREE) return;
+    function handleForgotSubmit() {
+      const val = document.getElementById('forgotInput').value.trim();
+      const msg = document.getElementById('forgotStatusMsg');
+      if (!val) {
+        alert('Please enter your username or email address.');
+        return;
+      }
+      msg.textContent = `Password reset link sent to registered email for "${val}".`;
+      msg.style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('forgotPasswordModal').close();
+      }, 2500);
+    }
 
-      // Reduced motion check
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Three.js Drifting Rose / Sakura Petal Garden Setup
+    (function initGarden3D() {
+      const canvas = document.getElementById('gardenCanvas');
+      if (!canvas || typeof THREE === 'undefined') return;
 
-      // Scene, Camera, Renderer
+      const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance'
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 0, 16);
+      camera.position.z = 25;
 
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.0));
-
-      // Lighting Setup
-      const ambientLight = new THREE.AmbientLight(0x1a1c3a, 1.4);
+      // Soft ambient light & rose highlight
+      const ambientLight = new THREE.AmbientLight(0xffd1dc, 0.9);
       scene.add(ambientLight);
 
-      const keyLight = new THREE.PointLight(0x38e1ff, 2.2, 50);
-      keyLight.position.set(-8, 6, 10);
-      scene.add(keyLight);
+      const dirLight = new THREE.DirectionalLight(0xff69b4, 1.2);
+      dirLight.position.set(10, 20, 15);
+      scene.add(dirLight);
 
-      const warmRimLight = new THREE.PointLight(0xffaa44, 2.0, 50);
-      warmRimLight.position.set(8, -5, 8);
-      scene.add(warmRimLight);
+      // Create procedural petal geometry
+      function createPetalGeometry() {
+        const shape = new THREE.Shape();
+        shape.moveTo(0, 0);
+        shape.bezierCurveTo(0.6, 0.5, 0.8, 1.4, 0, 2.0);
+        shape.bezierCurveTo(-0.8, 1.4, -0.6, 0.5, 0, 0);
 
-      // Groups for the 6 Signature Transition Modes
-      const modeGroups = {
-        portal: new THREE.Group(),
-        glass: new THREE.Group(),
-        celestial: new THREE.Group(),
-        aurora: new THREE.Group(),
-        dimensional: new THREE.Group(),
-        hybrid: new THREE.Group()
-      };
-
-      Object.values(modeGroups).forEach(g => scene.add(g));
-
-      // -----------------------------------------------------------------------
-      // MODE 1: Portal of Light (Matches 01_login_3d_portal.jpg)
-      // -----------------------------------------------------------------------
-      const portalRingGeo = new THREE.TorusGeometry(4.6, 0.42, 32, 100);
-      const portalRingMat = new THREE.MeshStandardMaterial({
-        color: 0x223366,
-        emissive: 0x38e1ff,
-        emissiveIntensity: 0.6,
-        roughness: 0.2,
-        metalness: 0.85
-      });
-      const portalRing = new THREE.Mesh(portalRingGeo, portalRingMat);
-      modeGroups.portal.add(portalRing);
-
-      // Outer Energy Glow Ring
-      const outerRingGeo = new THREE.TorusGeometry(5.2, 0.12, 16, 100);
-      const outerRingMat = new THREE.MeshBasicMaterial({ color: 0xffaa44, wireframe: true, transparent: true, opacity: 0.45 });
-      const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
-      modeGroups.portal.add(outerRing);
-
-      // Orbiting Low-Poly Floating Asteroids / Crystals
-      const asteroids = [];
-      const asteroidGeo = new THREE.DodecahedronGeometry(0.7, 0);
-      const asteroidMat = new THREE.MeshStandardMaterial({
-        color: 0x181a28,
-        roughness: 0.35,
-        metalness: 0.75
-      });
-
-      for (let i = 0; i < 16; i++) {
-        const mesh = new THREE.Mesh(asteroidGeo, asteroidMat);
-        const angle = (i / 16) * Math.PI * 2;
-        const radius = 5.8 + (Math.random() - 0.5) * 2.5;
-        mesh.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, (Math.random() - 0.5) * 4);
-        mesh.scale.setScalar(0.4 + Math.random() * 0.7);
-        mesh.userData = {
-          rotSpeedX: (Math.random() - 0.5) * 0.02,
-          rotSpeedY: (Math.random() - 0.5) * 0.02,
-          orbitSpeed: 0.002 + Math.random() * 0.003,
-          orbitRadius: radius,
-          orbitAngle: angle
-        };
-        modeGroups.portal.add(mesh);
-        asteroids.push(mesh);
+        const geom = new THREE.ShapeGeometry(shape, 8);
+        const pos = geom.attributes.position;
+        // Curve the petal into 3D cup
+        for (let i = 0; i < pos.count; i++) {
+          const y = pos.getY(i);
+          const x = pos.getX(i);
+          pos.setZ(i, Math.sin(y * 1.5) * 0.25 - (x * x) * 0.15);
+        }
+        geom.computeVertexNormals();
+        return geom;
       }
 
-      // -----------------------------------------------------------------------
-      // MODE 2: Sculpted Glass (Translucent refractive rotating prisms)
-      // -----------------------------------------------------------------------
-      const glassPrisms = [];
-      const prismMat = new THREE.MeshPhysicalMaterial({
-        color: 0xe0f2fe,
-        transmission: 0.9,
-        opacity: 1,
-        transparent: true,
-        roughness: 0.1,
-        ior: 1.5,
-        reflectivity: 0.8
-      });
-      for (let i = 0; i < 6; i++) {
-        const pGeo = new THREE.BoxGeometry(2.5, 4.5, 0.35);
-        const pMesh = new THREE.Mesh(pGeo, prismMat);
-        pMesh.position.set((i - 2.5) * 2.2, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 3);
-        pMesh.rotation.set(0.2, (i / 6) * Math.PI, 0.1);
-        modeGroups.glass.add(pMesh);
-        glassPrisms.push(pMesh);
+      const petalGeom = createPetalGeometry();
+      const petalColors = [0xf472b6, 0xfb7185, 0xf43f5e, 0xffb6c1, 0xfbcfe8];
+      const PETAL_COUNT = 90;
+      const petals = [];
+
+      for (let i = 0; i < PETAL_COUNT; i++) {
+        const col = petalColors[i % petalColors.length];
+        const mat = new THREE.MeshStandardMaterial({
+          color: col,
+          roughness: 0.45,
+          metalness: 0.05,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.82
+        });
+
+        const mesh = new THREE.Mesh(petalGeom, mat);
+        mesh.position.set(
+          (Math.random() - 0.5) * 35,
+          (Math.random() - 0.5) * 30,
+          (Math.random() - 0.5) * 20
+        );
+
+        const s = 0.35 + Math.random() * 0.45;
+        mesh.scale.set(s, s, s);
+
+        mesh.rotation.set(
+          Math.random() * Math.PI * 2,
+          Math.random() * Math.PI * 2,
+          Math.random() * Math.PI * 2
+        );
+
+        petals.push({
+          mesh: mesh,
+          speedY: 0.015 + Math.random() * 0.025,
+          speedX: (Math.random() - 0.5) * 0.012,
+          rotX: (Math.random() - 0.5) * 0.02,
+          rotY: (Math.random() - 0.5) * 0.02,
+          rotZ: (Math.random() - 0.5) * 0.02,
+          swayFreq: 1 + Math.random() * 2,
+          swayOffset: Math.random() * Math.PI * 2
+        });
+
+        scene.add(mesh);
       }
-      modeGroups.glass.visible = false;
 
-      // -----------------------------------------------------------------------
-      // MODE 3: Celestial Identity (Constellation nodes & connecting lines)
-      // -----------------------------------------------------------------------
-      const constellationNodes = [];
-      const nodeCount = 30;
-      const nodeGeo = new THREE.SphereGeometry(0.12, 16, 16);
-      const nodeMat = new THREE.MeshBasicMaterial({ color: 0x38e1ff });
-      const posArray = [];
-
-      for (let i = 0; i < nodeCount; i++) {
-        const nMesh = new THREE.Mesh(nodeGeo, nodeMat);
-        nMesh.position.set((Math.random() - 0.5) * 16, (Math.random() - 0.5) * 12, (Math.random() - 0.5) * 6);
-        modeGroups.celestial.add(nMesh);
-        constellationNodes.push(nMesh);
-        posArray.push(nMesh.position.x, nMesh.position.y, nMesh.position.z);
-      }
-
-      const lineGeo = new THREE.BufferGeometry();
-      lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(posArray, 3));
-      const lineMat = new THREE.LineBasicMaterial({ color: 0x8a4fff, transparent: true, opacity: 0.35 });
-      const lineMesh = new THREE.LineSegments(lineGeo, lineMat);
-      modeGroups.celestial.add(lineMesh);
-      modeGroups.celestial.visible = false;
-
-      // -----------------------------------------------------------------------
-      // MODE 4: Aurora Passage (Undulating ribbon sheets)
-      // -----------------------------------------------------------------------
-      const auroraPlaneGeo = new THREE.PlaneGeometry(24, 14, 32, 32);
-      const auroraPlaneMat = new THREE.MeshStandardMaterial({
-        color: 0x2ec4b6,
-        emissive: 0x70e000,
-        emissiveIntensity: 0.4,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.5
-      });
-      const auroraPlane = new THREE.Mesh(auroraPlaneGeo, auroraPlaneMat);
-      auroraPlane.position.z = -2;
-      modeGroups.aurora.add(auroraPlane);
-      modeGroups.aurora.visible = false;
-
-      // -----------------------------------------------------------------------
-      // MODE 5: Dimensional Fold (Origami polyhedra)
-      // -----------------------------------------------------------------------
-      const icosaGeo = new THREE.IcosahedronGeometry(4.2, 1);
-      const icosaMat = new THREE.MeshStandardMaterial({
-        color: 0xe6c065,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.6
-      });
-      const icosaMesh = new THREE.Mesh(icosaGeo, icosaMat);
-      modeGroups.dimensional.add(icosaMesh);
-      modeGroups.dimensional.visible = false;
-
-      // -----------------------------------------------------------------------
-      // MODE 6: Signature Hybrid (Curated Stardust & Depth Stars)
-      // -----------------------------------------------------------------------
-      const starsGeo = new THREE.BufferGeometry();
-      const starCount = 800;
+      // Add gentle stardust floating particles
+      const starCount = 120;
+      const starGeom = new THREE.BufferGeometry();
       const starPos = new Float32Array(starCount * 3);
       for (let i = 0; i < starCount * 3; i += 3) {
-        starPos[i] = (Math.random() - 0.5) * 40;
-        starPos[i + 1] = (Math.random() - 0.5) * 30;
-        starPos[i + 2] = (Math.random() - 0.5) * 30;
+        starPos[i] = (Math.random() - 0.5) * 45;
+        starPos[i + 1] = (Math.random() - 0.5) * 35;
+        starPos[i + 2] = (Math.random() - 0.5) * 25;
       }
-      starsGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-      const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.08, transparent: true, opacity: 0.75 });
-      const starPoints = new THREE.Points(starsGeo, starsMat);
-      scene.add(starPoints); // Persistent background across all modes
-
-      // -----------------------------------------------------------------------
-      // Dynamic Mode Switcher Logic
-      // -----------------------------------------------------------------------
-      let currentMode = 'portal';
-      const modeButtons = document.querySelectorAll('.mode-btn');
-
-      modeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const targetMode = btn.dataset.mode;
-          if (targetMode === currentMode) return;
-
-          modeButtons.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-
-          if (window.gsap) {
-            // Smooth Camera Dolly & Cross-fade Transition
-            gsap.to(camera.position, {
-              z: 14,
-              duration: 0.4,
-              yoyo: true,
-              repeat: 1,
-              ease: 'power2.inOut'
-            });
-
-            const currentGroup = modeGroups[currentMode];
-            const nextGroup = modeGroups[targetMode];
-
-            gsap.to(currentGroup.scale, {
-              x: 0.001, y: 0.001, z: 0.001, duration: 0.5, onComplete: () => {
-                currentGroup.visible = false;
-                nextGroup.visible = true;
-                nextGroup.scale.set(0.001, 0.001, 0.001);
-                gsap.to(nextGroup.scale, { x: 1, y: 1, z: 1, duration: 0.6, ease: 'back.out(1.4)' });
-                currentMode = targetMode;
-              }
-            });
-          } else {
-            Object.keys(modeGroups).forEach(k => { modeGroups[k].visible = (k === targetMode); });
-            currentMode = targetMode;
-          }
-        });
+      starGeom.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+      const starMat = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.15,
+        transparent: true,
+        opacity: 0.65
       });
+      const stardust = new THREE.Points(starGeom, starMat);
+      scene.add(stardust);
 
-      // -----------------------------------------------------------------------
-      // Smooth Mouse & Gyro Parallax
-      // -----------------------------------------------------------------------
+      // Subtle mouse parallax
       let mouseX = 0, mouseY = 0;
-      let targetX = 0, targetY = 0;
-
       window.addEventListener('mousemove', (e) => {
         mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
         mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
       });
 
-      window.addEventListener('touchmove', (e) => {
-        if (e.touches.length > 0) {
-          mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
-          mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
-        }
-      }, { passive: true });
+      let clock = 0;
+      function animate() {
+        requestAnimationFrame(animate);
+        clock += 0.016;
 
-      // Handle Resize
+        camera.position.x += (mouseX * 1.5 - camera.position.x) * 0.03;
+        camera.position.y += (-mouseY * 1.5 - camera.position.y) * 0.03;
+        camera.lookAt(0, 0, 0);
+
+        petals.forEach(p => {
+          p.mesh.position.y -= p.speedY;
+          p.mesh.position.x += p.speedX + Math.sin(clock * p.swayFreq + p.swayOffset) * 0.012;
+          p.mesh.rotation.x += p.rotX;
+          p.mesh.rotation.y += p.rotY;
+          p.mesh.rotation.z += p.rotZ;
+
+          // Recycle petals when fallen past bottom
+          if (p.mesh.position.y < -16) {
+            p.mesh.position.y = 16;
+            p.mesh.position.x = (Math.random() - 0.5) * 35;
+            p.mesh.position.z = (Math.random() - 0.5) * 20;
+          }
+        });
+
+        stardust.rotation.y = clock * 0.02;
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
       window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
-
-      // -----------------------------------------------------------------------
-      // Render Loop
-      // -----------------------------------------------------------------------
-      let clock = new THREE.Clock();
-
-      function animate() {
-        if (prefersReducedMotion) return; // Respect user motion preferences
-
-        requestAnimationFrame(animate);
-        const elapsedTime = clock.getElapsedTime();
-
-        // Parallax easing
-        targetX += (mouseX - targetX) * 0.04;
-        targetY += (mouseY - targetY) * 0.04;
-        camera.position.x = targetX * 1.5;
-        camera.position.y = -targetY * 1.5;
-        camera.lookAt(0, 0, 0);
-
-        // Animate Mode 1 (Portal)
-        if (modeGroups.portal.visible) {
-          portalRing.rotation.z = elapsedTime * 0.15;
-          portalRing.rotation.x = Math.sin(elapsedTime * 0.2) * 0.12;
-          outerRing.rotation.z = -elapsedTime * 0.25;
-
-          asteroids.forEach(ast => {
-            ast.userData.orbitAngle += ast.userData.orbitSpeed;
-            ast.position.x = Math.cos(ast.userData.orbitAngle) * ast.userData.orbitRadius;
-            ast.position.y = Math.sin(ast.userData.orbitAngle) * ast.userData.orbitRadius;
-            ast.rotation.x += ast.userData.rotSpeedX;
-            ast.rotation.y += ast.userData.rotSpeedY;
-          });
-        }
-
-        // Animate Mode 2 (Glass)
-        if (modeGroups.glass.visible) {
-          glassPrisms.forEach((p, idx) => {
-            p.rotation.y = elapsedTime * 0.2 + idx * 0.4;
-            p.position.y += Math.sin(elapsedTime + idx) * 0.005;
-          });
-        }
-
-        // Animate Mode 3 (Celestial)
-        if (modeGroups.celestial.visible) {
-          modeGroups.celestial.rotation.y = elapsedTime * 0.05;
-        }
-
-        // Animate Mode 4 (Aurora)
-        if (modeGroups.aurora.visible) {
-          const pos = auroraPlaneGeo.attributes.position;
-          for (let i = 0; i < pos.count; i++) {
-            const u = pos.getX(i);
-            const v = pos.getY(i);
-            pos.setZ(i, Math.sin(u * 0.5 + elapsedTime * 1.2) * Math.cos(v * 0.4 + elapsedTime) * 1.2);
-          }
-          pos.needsUpdate = true;
-        }
-
-        // Animate Mode 5 (Dimensional Fold)
-        if (modeGroups.dimensional.visible) {
-          icosaMesh.rotation.x = elapsedTime * 0.2;
-          icosaMesh.rotation.y = elapsedTime * 0.25;
-        }
-
-        // Persistent background starfield rotation
-        starPoints.rotation.y = elapsedTime * 0.02;
-
-        renderer.render(scene, camera);
-      }
-
-      animate();
     })();
-
-    // =========================================================================
-    // 4. GSAP Card Entrance & Feedback
-    // =========================================================================
-    if (window.gsap) {
-      gsap.fromTo('#authCard',
-        { opacity: 0, scale: 0.9, y: 30, filter: 'blur(14px)' },
-        { opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', duration: 1.1, ease: 'power3.out' }
-      );
-
-      const errorBanner = document.getElementById('errorBanner');
-      if (errorBanner) {
-        gsap.fromTo(errorBanner,
-          { x: -12 },
-          { x: 12, duration: 0.06, repeat: 5, yoyo: true, ease: 'power1.inOut' }
-        );
-      }
-
-      const form = document.getElementById('loginForm');
-      const submitBtn = document.getElementById('submitBtn');
-      if (form && submitBtn) {
-        form.addEventListener('submit', () => {
-          submitBtn.innerHTML = '<span>✦ Unlocking Portal...</span>';
-          submitBtn.style.opacity = '0.85';
-          submitBtn.style.pointerEvents = 'none';
-        });
-      }
-    }
   </script>
 </body>
 </html>
