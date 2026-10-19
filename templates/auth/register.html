@@ -1,0 +1,163 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight_gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Creator Account — Celebration Studio</title>
+  
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/studio.css' %}">
+</head>
+<body style="margin: 0; padding: 0; background: #080a10; min-height: 100vh; overflow-x: hidden;">
+
+  <div class="auth-viewport" style="min-height: 100vh; padding: var(--space-8) var(--space-4);">
+    <!-- Living Golden Embers Ambient Canvas -->
+    <canvas id="authCanvas" class="auth-ambient-canvas"></canvas>
+
+    <!-- Pulsing Radial Atmospheric Core -->
+    <div class="auth-glow-radial"></div>
+
+    <!-- Luxury Glassmorphism Registration Card -->
+    <div class="auth-card" id="authCard" style="max-width: 480px;">
+      <div class="auth-icon-wrap" id="authIcon">
+        <div class="auth-icon-ring"></div>
+        <span>✦</span>
+      </div>
+
+      <div class="auth-badge">✦ JOIN CELEBRATION STUDIO ✦</div>
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-subtitle">Register your creator account to craft, customize, and share deeply personal celebration journeys.</p>
+
+      {% if error %}
+      <div class="auth-error-banner" id="authError">
+        <span>⚠️</span>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'register' %}" class="auth-form" id="registerForm">
+        {% csrf_token %}
+
+        <div class="auth-form-group">
+          <label class="auth-label" for="username">Username *</label>
+          <div class="auth-input-wrap">
+            <input type="text" id="username" name="username" class="auth-input" value="{{ username|default:'' }}" required autofocus placeholder="Choose a username" autocomplete="username">
+          </div>
+        </div>
+
+        <div class="auth-form-group">
+          <label class="auth-label" for="email">Email Address <span style="color: var(--text-dim); font-size: 0.75rem;">(Optional)</span></label>
+          <div class="auth-input-wrap">
+            <input type="email" id="email" name="email" class="auth-input" value="{{ email|default:'' }}" placeholder="name@example.com" autocomplete="email">
+          </div>
+        </div>
+
+        <div class="auth-form-group">
+          <label class="auth-label" for="password">Password *</label>
+          <div class="auth-input-wrap">
+            <input type="password" id="password" name="password" class="auth-input" required placeholder="At least 6 characters" autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="auth-form-group">
+          <label class="auth-label" for="confirm_password">Confirm Password *</label>
+          <div class="auth-input-wrap">
+            <input type="password" id="confirm_password" name="confirm_password" class="auth-input" required placeholder="Repeat your password" autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" class="auth-btn-submit" id="submitBtn">
+          <span>✦ Create Creator Account →</span>
+        </button>
+      </form>
+
+      <div style="margin-top: var(--space-5); text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: var(--space-4);">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: var(--space-2);">
+          Already have an account? 
+          <a href="{% url 'login' %}" style="color: var(--theme-primary); text-decoration: none; font-weight: 600;">
+            Sign in here →
+          </a>
+        </p>
+        <a href="{% url 'landing' %}" style="font-size: 0.8rem; color: var(--text-dim); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-dim)'">
+          ← Return to Public Experience
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor Animation Libraries -->
+  <script src="{% static 'vendor/gsap.min.js' %}"></script>
+
+  <script>
+    // 1. Ambient Stardust Canvas
+    const canvas = document.getElementById('authCanvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w = canvas.width = window.innerWidth;
+      let h = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      });
+
+      const particles = Array.from({ length: 45 }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 2 + 0.8,
+        speedY: -(Math.random() * 0.5 + 0.2),
+        speedX: (Math.random() - 0.5) * 0.3,
+        alpha: Math.random() * 0.6 + 0.2
+      }));
+
+      function render() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#E6C065';
+        particles.forEach(p => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          if (p.y < -10) {
+            p.y = h + 10;
+            p.x = Math.random() * w;
+          }
+          ctx.globalAlpha = p.alpha;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        requestAnimationFrame(render);
+      }
+      render();
+    }
+
+    // 2. Cinematic GSAP Entrance Animation
+    if (window.gsap) {
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+      tl.fromTo('#authCard',
+        { opacity: 0, scale: 0.88, filter: 'blur(16px)', y: 25 },
+        { opacity: 1, scale: 1, filter: 'blur(0px)', y: 0, duration: 1.1 }
+      );
+
+      tl.fromTo('#authIcon',
+        { scale: 0, rotation: -45 },
+        { scale: 1, rotation: 0, duration: 0.8, ease: 'back.out(1.8)' },
+        '-=0.7'
+      );
+
+      tl.fromTo('.auth-form-group',
+        { opacity: 0, y: 15 },
+        { opacity: 1, y: 0, stagger: 0.08, duration: 0.6 },
+        '-=0.4'
+      );
+
+      tl.fromTo('#submitBtn',
+        { opacity: 0, scale: 0.9 },
+        { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.5)' },
+        '-=0.2'
+      );
+    }
+  </script>
+</body>
+</html>

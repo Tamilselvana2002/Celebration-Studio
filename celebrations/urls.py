@@ -9,6 +9,7 @@ urlpatterns = [
 
     # Creator Authentication Portal (Fully Animated)
     path('login/', views.CreatorLoginView.as_view(), name='login'),
+    path('register/', views.CreatorRegisterView.as_view(), name='register'),
     path('logout/', views.CreatorLogoutView.as_view(), name='logout'),
 
     # Experience Studio & Viewports

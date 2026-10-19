@@ -513,5 +513,37 @@ class CelebrationStudioTestCase(TestCase):
         self.assertContains(res, 'Session Securely Closed')
         self.assertContains(res, 'logout-countdown-svg')
 
+    def test_creator_register_renders(self):
+        unauth_client = Client()
+        res = unauth_client.get(reverse('register'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'authCanvas')
+        self.assertContains(res, 'Create Account')
+        self.assertContains(res, '✦ JOIN CELEBRATION STUDIO ✦')
+
+    def test_creator_register_workflow_success(self):
+        unauth_client = Client()
+        res = unauth_client.post(reverse('register'), {
+            'username': 'newuser123',
+            'email': 'newuser@example.com',
+            'password': 'password123',
+            'confirm_password': 'password123'
+        })
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, reverse('dashboard'))
+        self.assertTrue(User.objects.filter(username='newuser123').exists())
+
+    def test_creator_register_password_mismatch(self):
+        unauth_client = Client()
+        res = unauth_client.post(reverse('register'), {
+            'username': 'newuser456',
+            'password': 'password123',
+            'confirm_password': 'different_password'
+        })
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Passwords do not match')
+        self.assertFalse(User.objects.filter(username='newuser456').exists())
+
+
 
 

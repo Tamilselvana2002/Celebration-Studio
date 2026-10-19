@@ -24,11 +24,11 @@
         <span>View My Studio Dashboard →</span>
       </a>
       {% else %}
-      <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
-        <span>✨ Creator Sign In</span>
+      <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+        <span>✨ Create Free Account</span>
       </a>
-      <a href="#showcase" class="btn btn-secondary btn-lg">
-        <span>Explore Experience Engines ↓</span>
+      <a href="{% url 'login' %}" class="btn btn-secondary btn-lg">
+        <span>Creator Sign In →</span>
       </a>
       {% endif %}
     </div>

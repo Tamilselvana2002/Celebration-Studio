@@ -39,9 +39,12 @@
         </a>
       </div>
       {% else %}
-      <div class="nav-actions">
-        <a href="{% url 'login' %}" class="btn btn-primary btn-sm">
-          <span>✦ Creator Sign In</span>
+      <div class="nav-actions" style="display: flex; align-items: center; gap: var(--space-2);">
+        <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">
+          <span>Sign In</span>
+        </a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-sm">
+          <span>✦ Register</span>
         </a>
       </div>
       {% endif %}

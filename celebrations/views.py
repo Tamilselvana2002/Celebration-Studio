@@ -97,6 +97,61 @@ class CreatorLogoutView(View):
         return render(request, 'auth/logout.html', {})
 
 
+class CreatorRegisterView(View):
+    """
+    Fully animated creator registration portal with living stardust particle canvas,
+    frosted glassmorphism card, account creation, and seamless auto-login.
+    """
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('dashboard')
+        return render(request, 'auth/register.html', {'error': None})
+
+    def post(self, request):
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+
+        if not username:
+            return render(request, 'auth/register.html', {
+                'error': 'Please choose a username.',
+                'username': username,
+                'email': email
+            })
+
+        if User.objects.filter(username__iexact=username).exists():
+            return render(request, 'auth/register.html', {
+                'error': f'The username "{username}" is already taken. Please pick another.',
+                'username': username,
+                'email': email
+            })
+
+        if len(password) < 6:
+            return render(request, 'auth/register.html', {
+                'error': 'Password must be at least 6 characters long.',
+                'username': username,
+                'email': email
+            })
+
+        if password != confirm_password:
+            return render(request, 'auth/register.html', {
+                'error': 'Passwords do not match. Please verify and try again.',
+                'username': username,
+                'email': email
+            })
+
+        # Create user & authenticate
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+        login(request, user)
+        return redirect('dashboard')
+
+
+
 class LandingView(TemplateView):
     template_name = 'landing.html'
 

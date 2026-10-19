@@ -59,8 +59,14 @@
         </button>
       </form>
 
-      <div style="margin-top: var(--space-6); text-align: center;">
-        <a href="{% url 'landing' %}" style="font-size: 0.8rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'">
+      <div style="margin-top: var(--space-5); text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: var(--space-4);">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: var(--space-2);">
+          Don't have an account yet? 
+          <a href="{% url 'register' %}" style="color: var(--theme-primary); text-decoration: none; font-weight: 600;">
+            Create one here →
+          </a>
+        </p>
+        <a href="{% url 'landing' %}" style="font-size: 0.8rem; color: var(--text-dim); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-dim)'">
           ← Return to Public Experience
         </a>
       </div>
