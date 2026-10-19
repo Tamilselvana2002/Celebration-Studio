@@ -544,6 +544,44 @@ class CelebrationStudioTestCase(TestCase):
         self.assertContains(res, 'Passwords do not match')
         self.assertFalse(User.objects.filter(username='newuser456').exists())
 
+    def test_master_admin_unauthenticated_redirect(self):
+        unauth_client = Client()
+        res = unauth_client.get(reverse('master_admin_dashboard'))
+        self.assertEqual(res.status_code, 302)
+        self.assertIn(reverse('login'), res.url)
+
+    def test_master_admin_non_superuser_forbidden(self):
+        # Regular authenticated user (non-superuser) must be blocked with 403
+        res = self.client.get(reverse('master_admin_dashboard'))
+        self.assertEqual(res.status_code, 403)
+        self.assertIn(b'Master Administrator clearance required', res.content)
+
+    def test_master_admin_superuser_access(self):
+        # Superuser Tamil gets full 200 access
+        superuser = User.objects.create_superuser('superadmin', 'admin@example.com', 'adminpass123')
+        admin_client = Client()
+        admin_client.force_login(superuser)
+        res = admin_client.get(reverse('master_admin_dashboard'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Master Admin Command Center')
+        self.assertContains(res, 'Administrator Authority Council')
+
+    def test_master_admin_can_create_new_admin(self):
+        superuser = User.objects.create_superuser('chiefadmin', 'chief@example.com', 'adminpass123')
+        admin_client = Client()
+        admin_client.force_login(superuser)
+        res = admin_client.post(reverse('master_admin_create_admin'), {
+            'admin_username': 'deputyadmin',
+            'admin_email': 'deputy@example.com',
+            'admin_password': 'securepass123',
+            'admin_confirm_password': 'securepass123'
+        })
+        self.assertEqual(res.status_code, 302)
+        new_admin = User.objects.get(username='deputyadmin')
+        self.assertTrue(new_admin.is_superuser)
+        self.assertTrue(new_admin.is_staff)
+
+
 
 
 

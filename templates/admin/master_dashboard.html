@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Master Admin Portal — Celebration Studio{% endblock %}
+
+{% block content %}
+<div class="dashboard-container" style="max-width: 1300px; margin: 0 auto; padding: var(--space-8) var(--space-6);">
+
+  <!-- Master Admin Top Banner -->
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-8); border-bottom: 1px solid rgba(230, 192, 101, 0.2); padding-bottom: var(--space-6);">
+    <div>
+      <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(230, 192, 101, 0.12); border: 1px solid rgba(230, 192, 101, 0.35); padding: 4px 12px; border-radius: var(--radius-full); font-size: 0.75rem; color: #ffd700; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: var(--space-2);">
+        <span>👑</span> <span>Master Admin Command Center</span>
+      </div>
+      <h1 class="font-display" style="font-size: clamp(1.8rem, 3.5vw, 2.6rem); margin: 0; background: linear-gradient(135deg, #ffffff 40%, #e6c065 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Executive Administration
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">
+        Logged in as <strong style="color: #ffd700;">{{ request.user.username }}</strong>. Only authorized administrators can access this console.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: var(--space-3); align-items: center;">
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm">
+        <span>← Creator Dashboard</span>
+      </a>
+      <a href="#adminSection" class="btn btn-primary btn-sm" style="box-shadow: 0 0 20px rgba(230, 192, 101, 0.4);">
+        <span>+ Create New Admin</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Success / Error Notifications -->
+  {% if message %}
+  <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-6); color: #34d399; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+    <span>✓</span> <span>{{ message }}</span>
+  </div>
+  {% endif %}
+  {% if error %}
+  <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-6); color: #f87171; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+    <span>⚠️</span> <span>{{ error }}</span>
+  </div>
+  {% endif %}
+
+  <!-- Section 1: Platform Metrics Overview -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-10);">
+    
+    <div style="background: rgba(15, 20, 30, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-lg); padding: var(--space-5);">
+      <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Total Registered Creators</div>
+      <div style="font-size: 2.2rem; font-weight: 700; color: #ffffff; margin-top: 6px; font-family: var(--font-display);">{{ total_users_count }}</div>
+      <div style="font-size: 0.75rem; color: #38e1ff; margin-top: 4px;">Platform Accounts</div>
+    </div>
+
+    <div style="background: rgba(15, 20, 30, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(230, 192, 101, 0.25); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: inset 0 0 20px rgba(230, 192, 101, 0.05);">
+      <div style="font-size: 0.8rem; color: #ffd700; text-transform: uppercase; letter-spacing: 0.1em;">Authorized Admins</div>
+      <div style="font-size: 2.2rem; font-weight: 700; color: #ffd700; margin-top: 6px; font-family: var(--font-display);">{{ admin_users.count }}</div>
+      <div style="font-size: 0.75rem; color: #e6c065; margin-top: 4px;">Master Administrators</div>
+    </div>
+
+    <div style="background: rgba(15, 20, 30, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-lg); padding: var(--space-5);">
+      <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Total Celebrations</div>
+      <div style="font-size: 2.2rem; font-weight: 700; color: #ffffff; margin-top: 6px; font-family: var(--font-display);">{{ total_celebrations_count }}</div>
+      <div style="font-size: 0.75rem; color: #a78bfa; margin-top: 4px;">{{ published_celebrations_count }} Published Live</div>
+    </div>
+
+    <div style="background: rgba(15, 20, 30, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-lg); padding: var(--space-5);">
+      <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Media Assets Uploaded</div>
+      <div style="font-size: 2.2rem; font-weight: 700; color: #ffffff; margin-top: 6px; font-family: var(--font-display);">{{ total_media_count }}</div>
+      <div style="font-size: 0.75rem; color: #f472b6; margin-top: 4px;">Photos & Soundtracks</div>
+    </div>
+
+  </div>
+
+  <!-- Section 2: Admin Creation & Admin Council -->
+  <div id="adminSection" style="margin-bottom: var(--space-12);">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-5);">
+      <div>
+        <h2 class="font-display" style="font-size: var(--text-xl); margin: 0; color: #ffffff;">
+          👑 Administrator Authority Council
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">
+          Only you (the Master Admin) can create or authorize additional administrators. No public visitor can register as an admin.
+        </p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: var(--space-6); align-items: start;">
+      
+      <!-- Create New Admin Form -->
+      <div style="background: rgba(18, 24, 38, 0.8); backdrop-filter: blur(16px); border: 1px solid rgba(230, 192, 101, 0.3); border-radius: var(--radius-xl); padding: var(--space-6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-4);">
+          <span style="font-size: 1.2rem;">✦</span>
+          <h3 style="margin: 0; font-size: 1.1rem; color: #ffd700; font-family: var(--font-display);">Create New Administrator</h3>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: var(--space-5);">
+          This creates an administrator account with access to this Master Admin console.
+        </p>
+
+        <form method="post" action="{% url 'master_admin_create_admin' %}">
+          {% csrf_token %}
+          <div style="margin-bottom: var(--space-4);">
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600;">Admin Username *</label>
+            <input type="text" name="admin_username" required placeholder="e.g. trusted_admin" class="auth-input" style="width: 100%; box-sizing: border-box;">
+          </div>
+
+          <div style="margin-bottom: var(--space-4);">
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600;">Admin Email</label>
+            <input type="email" name="admin_email" placeholder="admin@example.com" class="auth-input" style="width: 100%; box-sizing: border-box;">
+          </div>
+
+          <div style="margin-bottom: var(--space-4);">
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600;">Password * (min 6 chars)</label>
+            <input type="password" name="admin_password" required placeholder="••••••••••••" class="auth-input" style="width: 100%; box-sizing: border-box;">
+          </div>
+
+          <div style="margin-bottom: var(--space-6);">
+            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600;">Confirm Password *</label>
+            <input type="password" name="admin_confirm_password" required placeholder="••••••••••••" class="auth-input" style="width: 100%; box-sizing: border-box;">
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+            <span>👑 Authorize New Administrator</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Current Admins List -->
+      <div style="background: rgba(15, 20, 30, 0.8); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-xl); padding: var(--space-6);">
+        <h3 style="margin: 0 0 var(--space-4) 0; font-size: 1.1rem; color: #ffffff; font-family: var(--font-display);">Current Active Administrators</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+          {% for admin in admin_users %}
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-3) var(--space-4); background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--radius-md);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(230, 192, 101, 0.2); border: 1px solid rgba(230, 192, 101, 0.4); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #ffd700;">
+                👑
+              </div>
+              <div>
+                <div style="font-weight: 600; color: #ffffff; font-size: 0.95rem;">
+                  {{ admin.username }}
+                  {% if admin.id == request.user.id %}
+                    <span style="font-size: 0.7rem; background: #e6c065; color: #000; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">YOU (OWNER)</span>
+                  {% endif %}
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-dim);">{{ admin.email|default:"No email set" }} • Joined {{ admin.date_joined|date:"M d, Y" }}</div>
+              </div>
+            </div>
+
+            {% if admin.id != request.user.id %}
+            <form method="post" action="{% url 'master_admin_toggle_admin' admin.id %}" onsubmit="return confirm('Demote this admin to regular creator?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm" style="color: #f87171; border-color: rgba(239, 68, 68, 0.3);">
+                Demote
+              </button>
+            </form>
+            {% else %}
+            <span style="font-size: 0.75rem; color: #ffd700; font-weight: 600;">Active Session</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 3: All Registered Users & Creators -->
+  <div style="margin-bottom: var(--space-12);">
+    <h2 class="font-display" style="font-size: var(--text-xl); margin: 0 0 var(--space-4) 0; color: #ffffff;">
+      👥 Registered Creators Directory ({{ regular_users.count }})
+    </h2>
+
+    <div style="background: rgba(15, 20, 30, 0.8); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-xl); overflow: hidden;">
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;">
+              <th style="padding: var(--space-3) var(--space-4);">Username</th>
+              <th style="padding: var(--space-3) var(--space-4);">Email</th>
+              <th style="padding: var(--space-3) var(--space-4);">Date Joined</th>
+              <th style="padding: var(--space-3) var(--space-4);">Celebrations</th>
+              <th style="padding: var(--space-3) var(--space-4); text-align: right;">Admin Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in regular_users %}
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+              <td style="padding: var(--space-3) var(--space-4); font-weight: 600; color: #ffffff;">
+                {{ user.username }}
+              </td>
+              <td style="padding: var(--space-3) var(--space-4); color: var(--text-muted);">
+                {{ user.email|default:"—" }}
+              </td>
+              <td style="padding: var(--space-3) var(--space-4); color: var(--text-dim); font-size: 0.8rem;">
+                {{ user.date_joined|date:"M d, Y" }}
+              </td>
+              <td style="padding: var(--space-3) var(--space-4);">
+                <span style="background: rgba(167, 139, 250, 0.15); color: #c4b5fd; font-size: 0.75rem; padding: 2px 8px; border-radius: var(--radius-full); font-weight: 600;">
+                  {{ user.celebrations.count }}
+                </span>
+              </td>
+              <td style="padding: var(--space-3) var(--space-4); text-align: right;">
+                <form method="post" action="{% url 'master_admin_toggle_admin' user.id %}" style="display: inline-block;" onsubmit="return confirm('Promote {{ user.username }} to Administrator?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-ghost btn-sm" style="font-size: 0.75rem; color: #ffd700; border-color: rgba(230, 192, 101, 0.3);">
+                    👑 Promote to Admin
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" style="padding: var(--space-6); text-align: center; color: var(--text-dim);">
+                No other creators registered yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: All Platform Celebrations (Fleet Master List) -->
+  <div>
+    <h2 class="font-display" style="font-size: var(--text-xl); margin: 0 0 var(--space-4) 0; color: #ffffff;">
+      🎉 All Platform Celebrations ({{ total_celebrations_count }})
+    </h2>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: -6px; margin-bottom: var(--space-5);">
+      View, inspect, or remove any celebration across the entire platform. Personal celebrations remain hidden from public visitors.
+    </p>
+
+    <div style="background: rgba(15, 20, 30, 0.8); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-xl); overflow: hidden;">
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;">
+              <th style="padding: var(--space-3) var(--space-4);">Celebration Title</th>
+              <th style="padding: var(--space-3) var(--space-4);">Owner</th>
+              <th style="padding: var(--space-3) var(--space-4);">Event Type</th>
+              <th style="padding: var(--space-3) var(--space-4);">Theme</th>
+              <th style="padding: var(--space-3) var(--space-4);">Status</th>
+              <th style="padding: var(--space-3) var(--space-4);">Scenes</th>
+              <th style="padding: var(--space-3) var(--space-4); text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for celeb in all_celebrations %}
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+              <td style="padding: var(--space-3) var(--space-4); font-weight: 600; color: #ffffff;">
+                {{ celeb.title }}
+              </td>
+              <td style="padding: var(--space-3) var(--space-4); color: var(--text-muted);">
+                {{ celeb.owner.username|default:"System Sample" }}
+              </td>
+              <td style="padding: var(--space-3) var(--space-4); color: var(--text-dim); font-size: 0.8rem;">
+                {{ celeb.get_event_type_display }}
+              </td>
+              <td style="padding: var(--space-3) var(--space-4); font-size: 0.8rem; color: var(--theme-primary);">
+                {{ celeb.theme_id|title }}
+              </td>
+              <td style="padding: var(--space-3) var(--space-4);">
+                {% if celeb.status == 'published' %}
+                  <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.75rem; padding: 2px 8px; border-radius: var(--radius-full); font-weight: 600;">● Published</span>
+                {% else %}
+                  <span style="background: rgba(255, 255, 255, 0.08); color: var(--text-dim); font-size: 0.75rem; padding: 2px 8px; border-radius: var(--radius-full);">Draft</span>
+                {% endif %}
+              </td>
+              <td style="padding: var(--space-3) var(--space-4); color: var(--text-muted);">
+                {{ celeb.scenes.count }}
+              </td>
+              <td style="padding: var(--space-3) var(--space-4); text-align: right;">
+                <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
+                  <a href="{{ celeb.get_absolute_url }}" target="_blank" class="btn btn-ghost btn-sm" style="font-size: 0.75rem;">
+                    View ↗
+                  </a>
+                  {% if celeb.slug != 'marcus-chen-graduation' and celeb.slug != 'elena-starlight-birthday' %}
+                  <form method="post" action="{% url 'master_admin_delete_celebration' celeb.id %}" onsubmit="return confirm('Permanently delete celebration: {{ celeb.title }}?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-ghost btn-sm" style="font-size: 0.75rem; color: #f87171; border-color: rgba(239, 68, 68, 0.3);">
+                      Delete
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

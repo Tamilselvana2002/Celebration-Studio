@@ -811,4 +811,133 @@ class UpdateAudioConfigAPI(CreatorAPIMixin, View):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
+# ==========================================================================
+# MASTER ADMIN COMMAND CENTER (EXCLUSIVE TO SUPERUSERS)
+# ==========================================================================
+
+class SuperuserRequiredMixin:
+    """
+    Enforces strict Superuser / Master Admin authentication.
+    Only users with is_superuser=True can access.
+    Non-superusers and unauthenticated visitors are completely blocked.
+    """
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"{reverse('login')}?next={request.path}")
+        if not request.user.is_superuser:
+            return HttpResponseForbidden("Access Denied: Master Administrator clearance required.")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class MasterAdminDashboardView(SuperuserRequiredMixin, View):
+    """
+    Exclusive Master Admin Command Center dashboard.
+    Overview of system metrics, creator accounts, admin authorization, and celebration fleet.
+    """
+    def get(self, request):
+        admin_users = User.objects.filter(is_superuser=True).order_by('-date_joined')
+        regular_users = User.objects.filter(is_superuser=False).prefetch_related('celebrations').order_by('-date_joined')
+        all_celebrations = Celebration.objects.select_related('owner').prefetch_related('scenes').order_by('-created_at')
+
+        total_users_count = User.objects.count()
+        total_celebrations_count = all_celebrations.count()
+        published_celebrations_count = all_celebrations.filter(status='published').count()
+        total_media_count = MediaAsset.objects.count()
+
+        message = request.session.pop('admin_message', None)
+        error = request.session.pop('admin_error', None)
+
+        return render(request, 'admin/master_dashboard.html', {
+            'admin_users': admin_users,
+            'regular_users': regular_users,
+            'all_celebrations': all_celebrations,
+            'total_users_count': total_users_count,
+            'total_celebrations_count': total_celebrations_count,
+            'published_celebrations_count': published_celebrations_count,
+            'total_media_count': total_media_count,
+            'message': message,
+            'error': error,
+        })
+
+
+class MasterAdminCreateAdminView(SuperuserRequiredMixin, View):
+    """
+    Only an existing Master Administrator can create a new administrator.
+    Public registration cannot create admin accounts.
+    """
+    def post(self, request):
+        username = request.POST.get('admin_username', '').strip()
+        email = request.POST.get('admin_email', '').strip()
+        password = request.POST.get('admin_password', '')
+        confirm_password = request.POST.get('admin_confirm_password', '')
+
+        if not username:
+            request.session['admin_error'] = 'Admin username is required.'
+            return redirect('master_admin_dashboard')
+
+        if User.objects.filter(username__iexact=username).exists():
+            request.session['admin_error'] = f'The username "{username}" is already in use.'
+            return redirect('master_admin_dashboard')
+
+        if len(password) < 6:
+            request.session['admin_error'] = 'Password must be at least 6 characters.'
+            return redirect('master_admin_dashboard')
+
+        if password != confirm_password:
+            request.session['admin_error'] = 'Passwords do not match.'
+            return redirect('master_admin_dashboard')
+
+        # Create new superuser & staff administrator
+        admin_user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+        admin_user.is_superuser = True
+        admin_user.is_staff = True
+        admin_user.save()
+
+        request.session['admin_message'] = f'Successfully created and authorized new administrator "{username}".'
+        return redirect('master_admin_dashboard')
+
+
+class MasterAdminToggleAdminView(SuperuserRequiredMixin, View):
+    """
+    Allows Master Admin to promote or demote administrator privileges.
+    Prevents self-demotion to avoid locking out the owner.
+    """
+    def post(self, request, user_id):
+        target_user = get_object_or_404(User, id=user_id)
+        if target_user.id == request.user.id:
+            request.session['admin_error'] = 'Security alert: You cannot modify your own administrator clearance.'
+            return redirect('master_admin_dashboard')
+
+        new_status = not target_user.is_superuser
+        target_user.is_superuser = new_status
+        target_user.is_staff = new_status
+        target_user.save()
+
+        action_name = 'promoted to Administrator' if new_status else 'demoted to Regular Creator'
+        request.session['admin_message'] = f'User "{target_user.username}" was {action_name}.'
+        return redirect('master_admin_dashboard')
+
+
+class MasterAdminDeleteCelebrationView(SuperuserRequiredMixin, View):
+    """
+    Allows Master Admin to delete any inappropriate or test celebration across the system.
+    Protects built-in system sample showcases.
+    """
+    def post(self, request, celebration_id):
+        celebration = get_object_or_404(Celebration, id=celebration_id)
+        if celebration.slug in ['marcus-chen-graduation', 'elena-starlight-birthday']:
+            request.session['admin_error'] = 'Built-in sample showcases cannot be deleted.'
+            return redirect('master_admin_dashboard')
+
+        title = celebration.title
+        celebration.delete()
+        request.session['admin_message'] = f'Successfully deleted celebration "{title}".'
+        return redirect('master_admin_dashboard')
+
+
+
 

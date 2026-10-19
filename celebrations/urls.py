@@ -34,4 +34,10 @@ urlpatterns = [
     path('celebrations/<uuid:celebration_id>/update-animations/', views.UpdateAnimationConfigAPI.as_view(), name='api_update_animations'),
     path('celebrations/<uuid:celebration_id>/upload-audio/', views.UploadAudioAPI.as_view(), name='api_upload_audio'),
     path('celebrations/<uuid:celebration_id>/update-audio/', views.UpdateAudioConfigAPI.as_view(), name='api_update_audio'),
+
+    # Master Admin Command Center (Strictly Protected)
+    path('master-admin/', views.MasterAdminDashboardView.as_view(), name='master_admin_dashboard'),
+    path('master-admin/create-admin/', views.MasterAdminCreateAdminView.as_view(), name='master_admin_create_admin'),
+    path('master-admin/users/<int:user_id>/toggle-admin/', views.MasterAdminToggleAdminView.as_view(), name='master_admin_toggle_admin'),
+    path('master-admin/celebrations/<uuid:celebration_id>/delete/', views.MasterAdminDeleteCelebrationView.as_view(), name='master_admin_delete_celebration'),
 ]
