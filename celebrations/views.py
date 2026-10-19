@@ -429,7 +429,7 @@ class CreatorProfileView(LoginRequiredMixin, View):
         return redirect('profile')
 
 
-class TemplateGalleryView(CreatorRequiredMixin, View):
+class TemplateGalleryView(View):
     """
     Renders the 24 Master Celebration Templates Catalogue matching 04_template_gallery.jpg.
     Allows filtering by category (Cinematic, Romantic, Memory, Sculptural, Cosmic) and search.
@@ -446,7 +446,17 @@ class TemplateGalleryView(CreatorRequiredMixin, View):
         })
 
 
-class WizardCreateView(CreatorRequiredMixin, View):
+class WizardCreateView(View):
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.info(request, "Please sign in or register to compose your celebration.")
+            template_param = request.GET.get('template', '')
+            next_url = reverse('wizard_create')
+            if template_param:
+                next_url += f"?template={template_param}"
+            return redirect(f"{reverse('login')}?next={next_url}")
+        return super().dispatch(request, *args, **kwargs)
+
     def get(self, request):
         recipients = RecipientProfile.objects.filter(user=request.user)
         template_id = request.GET.get('template')
@@ -657,7 +667,8 @@ class ExperienceStudioView(CreatorRequiredMixin, View):
     def get(self, request, celebration_id):
         celebration = get_object_or_404(Celebration.objects.prefetch_related('scenes', 'participants__recipient'), id=celebration_id)
         if celebration.owner and celebration.owner != request.user:
-            return redirect('landing')
+            messages.warning(request, "You do not have permission to edit this celebration.")
+            return redirect('dashboard')
         publication, _ = Publication.objects.get_or_create(celebration=celebration)
         
         scenes_data = [
