@@ -3,9 +3,7 @@
 
 {% block title %}Media Vault & Photo Parallax Atelier — {{ SITE_TITLE }}{% endblock %}
 
-{% block extra_head %}
-<!-- Three.js for 3D Photo Parallax Inspection -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+{% block extra_css %}
 <style>
   :root {
     --vault-glass: rgba(16, 23, 38, 0.72);
@@ -656,15 +654,25 @@
 
         </div>
         {% empty %}
-        <div style="grid-column: 2 / -1; text-align: center; padding: var(--space-12); background: var(--vault-glass); border-radius: var(--radius-xl); border: 1px solid var(--vault-border);">
-          <div style="font-size: 3rem; margin-bottom: var(--space-3);">🖼️</div>
-          <h3 class="font-display" style="font-size: var(--text-lg); margin-bottom: var(--space-2);">No Media Assets Found</h3>
-          <p style="color: var(--text-muted); font-size: var(--text-sm); max-width: 400px; margin: 0 auto var(--space-6);">
-            Upload memorable portrait photos, emotional voice recordings, or celebration music to build unforgettable experiences.
-          </p>
-          <button type="button" class="btn btn-primary" onclick="openUploadModal()">
-            Upload First Asset
-          </button>
+        <div style="grid-column: 1 / -1; padding: var(--space-8); background: var(--vault-glass); border-radius: var(--radius-xl); border: 1px solid var(--vault-border); margin-top: var(--space-2);">
+          <div style="text-align: center; max-width: 580px; margin: 0 auto;">
+            <div style="font-size: 2.8rem; margin-bottom: var(--space-2);">✨</div>
+            <h3 class="font-display" style="font-size: var(--text-xl); margin-bottom: var(--space-2); color: #fff;">Your Studio Media Vault is Ready</h3>
+            <p style="color: var(--text-muted); font-size: var(--text-sm); line-height: 1.6; margin-bottom: var(--space-6);">
+              You have not uploaded any personal photos or soundtracks yet. You can upload media using the card above, or click below to preview interactive 3D Photo Parallax with sample celebration artworks.
+            </p>
+            <div style="display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-primary" onclick="openUploadModal()">
+                + Upload Your Photos / Music
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="openParallaxViewer('{% static 'images/animation-themes/01_cosmic_galaxy.jpg' %}', 'Cosmic Galaxy 3D Parallax Sample')">
+                🔮 Test 3D Parallax (Cosmic)
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="openParallaxViewer('{% static 'images/animation-themes/03_golden_bokeh.jpg' %}', 'Golden Bokeh 3D Parallax Sample')">
+                ✨ Test 3D Parallax (Gold)
+              </button>
+            </div>
+          </div>
         </div>
         {% endfor %}
 
@@ -739,6 +747,11 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<!-- Vendored Three.js for 3D Photo Parallax Inspection -->
+<script src="{% static 'vendor/three.min.js' %}"></script>
 <script>
   function openUploadModal() {
     document.getElementById('uploadDialog').showModal();

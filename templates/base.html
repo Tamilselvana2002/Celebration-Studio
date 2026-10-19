@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="{% static 'css/studio.css' %}">
   <link rel="stylesheet" href="{% static 'css/animation-engine.css' %}">
   {% block extra_css %}{% endblock %}
+  {% block extra_head %}{% endblock %}
 </head>
 <body data-intensity="{{ USER_ANIMATION_SETTINGS.intensity|default:'balanced' }}">
 
@@ -120,6 +121,19 @@
 
   <!-- Main Content Area -->
   <main class="main-content">
+    {% if messages %}
+    <div class="messages-container" style="max-width: 1400px; margin: 0 auto var(--space-4); padding: 0 var(--space-6);">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }}" style="padding: 12px 18px; border-radius: 12px; margin-bottom: 10px; background: rgba(56, 225, 255, 0.12); border: 1px solid rgba(56, 225, 255, 0.3); color: #e0f2fe; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); animation: fadeInDown 0.3s ease;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.1rem;">✨</span>
+          <span style="font-size: 0.9rem;">{{ message }}</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: #fff; cursor: pointer; font-size: 1.1rem; opacity: 0.7; padding: 0 4px;" aria-label="Dismiss alert">✕</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 

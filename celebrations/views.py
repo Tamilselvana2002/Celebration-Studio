@@ -52,6 +52,7 @@ class CreatorRequiredMixin:
     """
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
+            messages.info(request, "Please sign in to access your Creator Atelier, VIP Recipients, or Media Vault.")
             return redirect('landing')
         return super().dispatch(request, *args, **kwargs)
 
@@ -758,25 +759,98 @@ class PublicCelebrationView(View):
 
 class RecipientDirectoryView(CreatorRequiredMixin, View):
     def get(self, request):
-        recipients = RecipientProfile.objects.filter(user=request.user)
-        return render(request, 'recipients.html', {'recipients': recipients})
+        base_recipients = RecipientProfile.objects.filter(user=request.user).prefetch_related('celebration_links')
+        
+        search_query = request.GET.get('q', '').strip()
+        relationship_filter = request.GET.get('relationship', 'all').lower()
+
+        recipients = base_recipients
+        if search_query:
+            recipients = recipients.filter(
+                Q(full_name__icontains=search_query) |
+                Q(nickname__icontains=search_query) |
+                Q(personal_notes__icontains=search_query)
+            )
+
+        if relationship_filter != 'all':
+            if relationship_filter == 'partners':
+                recipients = recipients.filter(relationship__in=['partner', 'wife', 'husband', 'girlfriend', 'boyfriend'])
+            elif relationship_filter == 'friends':
+                recipients = recipients.filter(relationship__in=['best_friend', 'friend'])
+            elif relationship_filter == 'family':
+                recipients = recipients.filter(relationship__in=['parent', 'mother', 'father', 'daughter', 'son', 'sibling', 'family_member'])
+            elif relationship_filter == 'colleagues':
+                recipients = recipients.filter(relationship__in=['colleague', 'mentor', 'teacher', 'group'])
+
+        total_count = base_recipients.count()
+        total_links = sum(r.celebration_links.count() for r in base_recipients)
+        partners_count = base_recipients.filter(relationship__in=['partner', 'wife', 'husband', 'girlfriend', 'boyfriend']).count()
+        friends_count = base_recipients.filter(relationship__in=['best_friend', 'friend']).count()
+        family_count = base_recipients.filter(relationship__in=['parent', 'mother', 'father', 'daughter', 'son', 'sibling', 'family_member']).count()
+
+        context = {
+            'recipients': recipients,
+            'search_query': search_query,
+            'active_relationship': relationship_filter,
+            'total_count': total_count,
+            'total_links': total_links,
+            'partners_count': partners_count,
+            'friends_count': friends_count,
+            'family_count': family_count,
+        }
+        return render(request, 'recipients.html', context)
 
     def post(self, request):
         user = request.user
-        full_name = request.POST.get('full_name')
-        nickname = request.POST.get('nickname')
+        action = request.POST.get('action')
+
+        if action == 'delete':
+            recipient_id = request.POST.get('recipient_id')
+            if recipient_id:
+                deleted_count, _ = RecipientProfile.objects.filter(id=recipient_id, user=user).delete()
+                if deleted_count:
+                    messages.success(request, "VIP recipient successfully removed from your directory.")
+            return redirect('recipient_directory')
+
+        if action == 'seed_sample':
+            if not RecipientProfile.objects.filter(user=user).exists():
+                RecipientProfile.objects.create(
+                    user=user,
+                    full_name="Maya Lin",
+                    nickname="Maya",
+                    relationship="best_friend",
+                    birth_date=timezone.now().date(),
+                    personal_notes="Loves midnight starscapes, indie acoustic melodies, and warm caramel matcha."
+                )
+                RecipientProfile.objects.create(
+                    user=user,
+                    full_name="Alexander Wright",
+                    nickname="Alex",
+                    relationship="partner",
+                    personal_notes="Favorite color is emerald green. Enjoys heartfelt photo timelines and cinematic music."
+                )
+                messages.success(request, "Sample VIP recipient profiles added to your Atelier directory!")
+            return redirect('recipient_directory')
+
+        full_name = request.POST.get('full_name', '').strip()
+        nickname = request.POST.get('nickname', '').strip()
         relationship = request.POST.get('relationship', 'friend')
         birth_date = request.POST.get('birth_date') or None
-        personal_notes = request.POST.get('personal_notes', '')
+        anniversary_date = request.POST.get('anniversary_date') or None
+        personal_notes = request.POST.get('personal_notes', '').strip()
 
-        RecipientProfile.objects.create(
-            user=user,
-            full_name=full_name,
-            nickname=nickname,
-            relationship=relationship,
-            birth_date=birth_date,
-            personal_notes=personal_notes
-        )
+        if full_name:
+            RecipientProfile.objects.create(
+                user=user,
+                full_name=full_name,
+                nickname=nickname,
+                relationship=relationship,
+                birth_date=birth_date,
+                anniversary_date=anniversary_date,
+                personal_notes=personal_notes
+            )
+            messages.success(request, f"VIP recipient '{full_name}' successfully added to your Atelier directory!")
+
         return redirect('recipient_directory')
 
 
