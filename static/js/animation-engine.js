@@ -87,7 +87,12 @@
 
       this.ctx = this.canvas.getContext('2d');
       this.resizeCanvas();
-      window.addEventListener('resize', () => this.resizeCanvas());
+      
+      let resizeDebounce;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeDebounce);
+        resizeDebounce = setTimeout(() => this.resizeCanvas(), 100);
+      }, { passive: true });
 
       this.seedParticles(this.activeTheme);
       this.startLoop();
@@ -95,8 +100,16 @@
 
     resizeCanvas: function () {
       if (!this.canvas) return;
-      this.canvas.width = window.innerWidth;
-      this.canvas.height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      this.canvas.width = w * dpr;
+      this.canvas.height = h * dpr;
+      this.canvas.style.width = w + 'px';
+      this.canvas.style.height = h + 'px';
+      if (this.ctx) {
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
     },
 
     seedParticles: function (theme) {
@@ -109,22 +122,25 @@
       const baseColor = (theme && theme.primary_color) || '#b388ff';
       const accentColor = (theme && theme.accent_color) || '#ffd700';
 
-      let count = 45;
-      if (this.settings.intensity === 'subtle') count = 20;
-      if (this.settings.intensity === 'cinematic') count = 75;
+      let count = 40;
+      if (this.settings.intensity === 'subtle') count = 18;
+      if (this.settings.intensity === 'cinematic') count = 65;
+
+      const w = window.innerWidth;
+      const h = window.innerHeight;
 
       this.particles = [];
       for (let i = 0; i < count; i++) {
         this.particles.push({
-          x: Math.random() * this.canvas.width,
-          y: Math.random() * this.canvas.height,
-          radius: Math.random() * 2.8 + 0.8,
+          x: Math.random() * w,
+          y: Math.random() * h,
+          radius: Math.random() * 2.4 + 0.8,
           color: Math.random() > 0.4 ? baseColor : accentColor,
-          alpha: Math.random() * 0.7 + 0.2,
-          speedX: (Math.random() - 0.5) * 0.6,
-          speedY: (Math.random() * -0.8) - 0.2, // Drift upward
+          alpha: Math.random() * 0.6 + 0.2,
+          speedX: (Math.random() - 0.5) * 0.4,
+          speedY: (Math.random() * -0.6) - 0.2, // Gentle upward float
           wobble: Math.random() * Math.PI * 2,
-          wobbleSpeed: Math.random() * 0.03 + 0.01,
+          wobbleSpeed: Math.random() * 0.025 + 0.008,
           type: pType
         });
       }
@@ -145,19 +161,21 @@
 
     renderParticles: function () {
       if (!this.ctx || !this.canvas) return;
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      this.ctx.clearRect(0, 0, w, h);
 
       for (let i = 0; i < this.particles.length; i++) {
         const p = this.particles[i];
 
         p.wobble += p.wobbleSpeed;
-        p.x += p.speedX + Math.sin(p.wobble) * 0.4;
+        p.x += p.speedX + Math.sin(p.wobble) * 0.35;
         p.y += p.speedY;
 
-        // Wrap around boundaries
-        if (p.y < -10) p.y = this.canvas.height + 10;
-        if (p.x < -10) p.x = this.canvas.width + 10;
-        if (p.x > this.canvas.width + 10) p.x = -10;
+        // Wrap around boundaries gracefully
+        if (p.y < -15) p.y = h + 10;
+        if (p.x < -15) p.x = w + 10;
+        if (p.x > w + 15) p.x = -10;
 
         this.ctx.save();
         this.ctx.globalAlpha = p.alpha;
@@ -165,7 +183,7 @@
 
         // Custom shape rendering according to particle type
         if (p.type === 'confetti' || p.type === 'geometric_nodes') {
-          this.ctx.fillRect(p.x, p.y, p.radius * 2.2, p.radius * 2.2);
+          this.ctx.fillRect(p.x, p.y, p.radius * 2, p.radius * 2);
         } else if (p.type === 'rose_petals' || p.type === 'sakura_petals') {
           this.ctx.beginPath();
           this.ctx.ellipse(p.x, p.y, p.radius * 1.8, p.radius * 0.9, p.wobble, 0, Math.PI * 2);

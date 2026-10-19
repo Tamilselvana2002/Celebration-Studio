@@ -15,7 +15,9 @@ from django.http import JsonResponse, HttpResponseForbidden, Http404
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
+from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponse
 
@@ -82,7 +84,12 @@ class CreatorLoginView(View):
         if request.user.is_authenticated:
             return redirect('dashboard')
         next_url = request.GET.get('next', reverse('dashboard'))
-        return render(request, 'auth/login.html', {'next': next_url, 'error': None})
+        return render(request, 'auth/login.html', {
+            'next_url': next_url,
+            'next': next_url,
+            'error_message': None,
+            'error': None
+        })
 
     def post(self, request):
         username = request.POST.get('username', '').strip()
@@ -100,25 +107,35 @@ class CreatorLoginView(View):
             login(request, user)
             return redirect(next_url)
         else:
+            err_msg = 'Invalid email/username or password. Please try again.'
             return render(request, 'auth/login.html', {
+                'next_url': next_url,
                 'next': next_url,
-                'error': 'Invalid email/username or password. Please try again.',
+                'error_message': err_msg,
+                'error': err_msg,
                 'username': username
             })
 
 
+@method_decorator(never_cache, name='dispatch')
 class CreatorLogoutView(View):
     """
-    Fully animated sign out screen with celestial ambient particles,
-    closing lock animation, circular countdown ring, and graceful redirect to home.
+    Terminates creator session cleanly, flushes session state, prevents caching,
+    and returns user to login portal with clear confirmation.
+    Supports animated exit screen if requested via ?animated=1.
     """
     def get(self, request):
-        logout(request)
-        return render(request, 'auth/logout.html', {})
+        return self._perform_logout(request)
 
     def post(self, request):
+        return self._perform_logout(request)
+
+    def _perform_logout(self, request):
         logout(request)
-        return render(request, 'auth/logout.html', {})
+        if request.GET.get('animated') == '1':
+            return render(request, 'auth/logout.html', {})
+        messages.success(request, "You have been successfully signed out of Celebration Studio.")
+        return redirect(f"{reverse('login')}?logged_out=1")
 
 
 class CreatorRegisterView(View):

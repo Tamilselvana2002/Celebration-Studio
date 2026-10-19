@@ -44,7 +44,7 @@
         </ul>
       </nav>
 
-      <div class="nav-actions" style="display: flex; align-items: center; gap: var(--space-3);">
+      <div class="nav-actions">
         <a href="{% url 'profile' %}" class="btn btn-ghost btn-sm" style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(244, 114, 182, 0.3); border-radius: 999px; padding: 5px 14px; background: rgba(244, 114, 182, 0.08);" title="Creator Atelier Profile">
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
           <span style="font-weight: 600; color: #fdf2f8;">{{ request.user.username }}</span>
@@ -57,11 +57,60 @@
         </a>
       </div>
       {% else %}
-      <div class="nav-actions" style="display: flex; align-items: center; gap: var(--space-2);">
+      <div class="nav-actions">
         <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">
           <span>Sign In</span>
         </a>
         <a href="{% url 'register' %}" class="btn btn-primary btn-sm">
+          <span>✦ Register</span>
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Mobile Hamburger Toggle -->
+      <button type="button" class="nav-mobile-toggle" id="navMobileToggle" aria-label="Toggle navigation drawer" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
+    <!-- Luxury Mobile Navigation Drawer -->
+    <div class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+      {% if request.user.is_authenticated %}
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #34d399; box-shadow: 0 0 10px #34d399;"></span>
+          <span style="font-weight: 700; color: #fff; font-size: 1rem;">{{ request.user.username }}</span>
+        </div>
+        <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #f472b6; background: rgba(244,114,182,0.15); border: 1px solid rgba(244,114,182,0.3); padding: 3px 10px; border-radius: 999px;">Atelier Creator</span>
+      </div>
+
+      <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+        <li><a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">🎉 Dashboard</a></li>
+        <li><a href="{% url 'template_gallery' %}" class="nav-link {% if request.resolver_match.url_name == 'template_gallery' %}active{% endif %}">🏛️ Templates (24 Concepts)</a></li>
+        <li><a href="{% url 'recipient_directory' %}" class="nav-link {% if request.resolver_match.url_name == 'recipient_directory' %}active{% endif %}">👥 VIP Recipients</a></li>
+        <li><a href="{% url 'media_vault' %}" class="nav-link {% if request.resolver_match.url_name == 'media_vault' %}active{% endif %}">🖼️ Media Vault</a></li>
+        <li><a href="{% url 'profile' %}" class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">👤 Profile & Themes</a></li>
+        {% if request.user.is_superuser %}
+        <li><a href="{% url 'master_admin_dashboard' %}" class="nav-link {% if 'master_admin' in request.resolver_match.url_name %}active{% endif %}" style="color: #ffd700; font-weight: 700;">👑 Master Admin</a></li>
+        {% endif %}
+      </ul>
+
+      <div class="mobile-nav-actions">
+        <a href="{% url 'wizard_create' %}" class="btn btn-primary" style="width: 100%; text-align: center;">
+          <span>+ Create Celebration</span>
+        </a>
+        <a href="{% url 'logout' %}" class="btn btn-ghost" style="width: 100%; text-align: center; border: 1px solid rgba(244,63,94,0.35); color: #fecdd3;">
+          <span>Sign Out ⎋</span>
+        </a>
+      </div>
+      {% else %}
+      <div class="mobile-nav-actions" style="margin-top: 0; border-top: none;">
+        <a href="{% url 'login' %}" class="btn btn-ghost" style="width: 100%; text-align: center;">
+          <span>Sign In</span>
+        </a>
+        <a href="{% url 'register' %}" class="btn btn-primary" style="width: 100%; text-align: center;">
           <span>✦ Register</span>
         </a>
       </div>
@@ -91,6 +140,51 @@
         const settings = JSON.parse(settingsScript.textContent || '{}');
         CelebrationAnimationEngine.init(theme, settings);
       }
+
+      // Responsive Mobile Nav Drawer Controller
+      const header = document.querySelector('.studio-header');
+      const toggleBtn = document.getElementById('navMobileToggle');
+      const drawer = document.getElementById('mobileNavDrawer');
+
+      if (toggleBtn && drawer) {
+        toggleBtn.addEventListener('click', function () {
+          const isOpen = drawer.classList.toggle('open');
+          toggleBtn.classList.toggle('open', isOpen);
+          toggleBtn.setAttribute('aria-expanded', String(isOpen));
+          drawer.setAttribute('aria-hidden', String(!isOpen));
+        });
+
+        // Close when clicking any nav link
+        drawer.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', () => {
+            drawer.classList.remove('open');
+            toggleBtn.classList.remove('open');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            drawer.setAttribute('aria-hidden', 'true');
+          });
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && drawer.classList.contains('open')) {
+            drawer.classList.remove('open');
+            toggleBtn.classList.remove('open');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            drawer.setAttribute('aria-hidden', 'true');
+          }
+        });
+      }
+
+      // Header Scroll Glassmorphism State
+      function checkScroll() {
+        if (window.scrollY > 20) {
+          header?.classList.add('scrolled');
+        } else {
+          header?.classList.remove('scrolled');
+        }
+      }
+      window.addEventListener('scroll', checkScroll, { passive: true });
+      checkScroll();
     });
   </script>
 </body>

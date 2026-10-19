@@ -42,9 +42,14 @@
         Returning to Celebration Studio in <strong id="countdownText" style="color: var(--theme-primary);">3</strong> seconds...
       </p>
 
-      <a href="{% url 'landing' %}" class="auth-btn-submit" id="homeBtn" style="text-decoration: none;">
-        <span>Return to Home Now →</span>
-      </a>
+      <div style="display: flex; gap: 10px; margin-top: 14px; width: 100%;">
+        <a href="{% url 'login' %}" class="auth-btn-submit" id="signInAgainBtn" style="flex: 1; text-decoration: none; text-align: center;">
+          <span>Sign In Again →</span>
+        </a>
+        <a href="{% url 'landing' %}" class="btn btn-ghost" id="homeBtn" style="flex: 1; text-decoration: none; text-align: center; border: 1px solid rgba(255,255,255,0.15); border-radius: 999px;">
+          <span>Return Home</span>
+        </a>
+      </div>
     </div>
   </div>
 
@@ -121,6 +126,11 @@
     const card = document.getElementById('logoutCard');
 
     function exitToHome() {
+      clearInterval(timer);
+      const redirectTimer = setTimeout(() => {
+        window.location.href = homeUrl;
+      }, 500);
+
       if (window.gsap && card) {
         gsap.to(card, {
           opacity: 0,
@@ -129,10 +139,12 @@
           duration: 0.45,
           ease: 'power2.in',
           onComplete: () => {
+            clearTimeout(redirectTimer);
             window.location.href = homeUrl;
           }
         });
       } else {
+        clearTimeout(redirectTimer);
         window.location.href = homeUrl;
       }
     }

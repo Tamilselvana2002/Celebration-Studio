@@ -358,6 +358,13 @@
         <p class="card-subtitle">Welcome back. Enter your sanctuary to continue crafting extraordinary moments.</p>
       </div>
 
+      {% if request.GET.logged_out or messages %}
+      <div class="auth-success" id="successBanner" role="status" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(52, 211, 153, 0.16); border: 1px solid rgba(52, 211, 153, 0.45); color: #a7f3d0; padding: 12px 20px; border-radius: 999px; font-size: 0.88rem; font-weight: 500; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);">
+        <span>✨</span>
+        <span>{% if messages %}{% for message in messages %}{{ message }}{% endfor %}{% else %}You have been safely signed out. See you soon in the Atelier!{% endif %}</span>
+      </div>
+      {% endif %}
+
       {% if error_message %}
       <div class="auth-error" id="errorBanner" role="alert">
         <span>⚠️</span>

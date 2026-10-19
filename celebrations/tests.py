@@ -508,8 +508,13 @@ class CelebrationStudioTestCase(TestCase):
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res.url, reverse('dashboard'))
 
-    def test_creator_logout_animated_renders(self):
+    def test_creator_logout_redirects_to_login(self):
         res = self.client.get(reverse('logout'))
+        self.assertEqual(res.status_code, 302)
+        self.assertIn(reverse('login'), res.url)
+
+    def test_creator_logout_animated_renders(self):
+        res = self.client.get(f"{reverse('logout')}?animated=1")
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, 'logoutCanvas')
         self.assertContains(res, 'logoutCard')

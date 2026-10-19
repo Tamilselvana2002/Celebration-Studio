@@ -58,27 +58,37 @@ h1, h2, h3, h4, .font-display {
 }
 
 /* ==========================================================================
-   NAVIGATION BAR (Glassmorphism Atelier Bar)
+   NAVIGATION BAR (Glassmorphism Luxury Atelier Bar & Mobile Drawer)
    ========================================================================== */
 
 .studio-header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: var(--bg-surface-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--bg-surface-glass-border);
-  transition: background var(--duration-normal) ease;
+  z-index: 1000;
+  background: rgba(10, 6, 16, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.studio-header.scrolled {
+  background: rgba(8, 4, 14, 0.94);
+  border-bottom-color: rgba(244, 114, 182, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(236, 72, 153, 0.15);
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 .header-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: var(--space-4) var(--space-6);
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  transition: padding 0.3s ease;
 }
 
 .brand-logo {
@@ -89,46 +99,185 @@ h1, h2, h3, h4, .font-display {
   font-size: var(--text-xl);
   font-weight: 800;
   color: #ffffff;
+  text-decoration: none;
+  transition: transform 0.25s ease;
+}
+
+.brand-logo:hover {
+  transform: translateY(-1px);
 }
 
 .brand-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+  background: linear-gradient(135deg, var(--theme-primary, #ec4899), var(--theme-accent, #ffd700));
   display: flex;
   align-items: center;
   justify-content: center;
   color: #000;
-  font-size: 1.2rem;
-  box-shadow: 0 0 20px var(--theme-glow);
+  font-size: 1.25rem;
+  box-shadow: 0 0 20px var(--theme-glow, rgba(236, 72, 153, 0.35));
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.brand-logo:hover .brand-icon {
+  transform: rotate(10deg) scale(1.05);
+  box-shadow: 0 0 25px var(--theme-glow, rgba(236, 72, 153, 0.55));
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
+  gap: 6px;
   list-style: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 4px 6px;
 }
 
 .nav-link {
-  color: var(--text-muted);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  transition: all var(--duration-fast) ease;
+  position: relative;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.32) 0%, rgba(139, 92, 246, 0.3) 100%);
+  border: 1px solid rgba(244, 114, 182, 0.45);
+  box-shadow: 0 0 16px rgba(236, 72, 153, 0.28);
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: 10px;
+}
+
+/* Mobile Hamburger Toggle Button */
+.nav-mobile-toggle {
+  display: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  transition: all 0.25s ease;
+  z-index: 1002;
+}
+
+.nav-mobile-toggle:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(244, 114, 182, 0.4);
+}
+
+.nav-mobile-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-mobile-toggle.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.nav-mobile-toggle.open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.nav-mobile-toggle.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Luxury Mobile Nav Drawer Overlay */
+.mobile-nav-drawer {
+  position: fixed;
+  top: 66px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(12, 7, 20, 0.97);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px 40px;
+  gap: 16px;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  overflow-y: auto;
+  border-bottom: 1.5px solid rgba(244, 114, 182, 0.25);
+}
+
+.mobile-nav-drawer.open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-nav-drawer .nav-link {
+  font-size: 1rem;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.mobile-nav-drawer .nav-link.active {
+  background: rgba(236, 72, 153, 0.2);
+  border-color: rgba(244, 114, 182, 0.45);
+}
+
+.mobile-nav-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 992px) {
+  .nav-links {
+    display: none;
+  }
+  .nav-actions {
+    display: none;
+  }
+  .nav-mobile-toggle {
+    display: flex;
+  }
 }
 
 /* ==========================================================================
