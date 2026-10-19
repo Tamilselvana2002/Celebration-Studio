@@ -28,6 +28,7 @@
           <li><a href="{% url 'template_gallery' %}" class="nav-link {% if request.resolver_match.url_name == 'template_gallery' %}active{% endif %}">🏛️ Templates</a></li>
           <li><a href="{% url 'recipient_directory' %}" class="nav-link {% if request.resolver_match.url_name == 'recipient_directory' %}active{% endif %}">VIP Recipients</a></li>
           <li><a href="{% url 'media_vault' %}" class="nav-link {% if request.resolver_match.url_name == 'media_vault' %}active{% endif %}">Media Vault</a></li>
+          <li><a href="{% url 'profile' %}" class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">👤 Profile</a></li>
           {% if request.user.is_superuser %}
           <li><a href="{% url 'master_admin_dashboard' %}" class="nav-link {% if 'master_admin' in request.resolver_match.url_name %}active{% endif %}" style="color: #ffd700; font-weight: 700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);">👑 Master Admin</a></li>
           {% endif %}
@@ -35,6 +36,10 @@
       </nav>
 
       <div class="nav-actions" style="display: flex; align-items: center; gap: var(--space-3);">
+        <a href="{% url 'profile' %}" class="btn btn-ghost btn-sm" style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(244, 114, 182, 0.3); border-radius: 999px; padding: 5px 14px; background: rgba(244, 114, 182, 0.08);" title="Creator Atelier Profile">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
+          <span style="font-weight: 600; color: #fdf2f8;">{{ request.user.username }}</span>
+        </a>
         <a href="{% url 'wizard_create' %}" class="btn btn-primary btn-sm">
           <span>+ Create Celebration</span>
         </a>

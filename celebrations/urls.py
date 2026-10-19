@@ -5,6 +5,7 @@ urlpatterns = [
     # Marketing & Core Dashboards
     path('', views.LandingView.as_view(), name='landing'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
+    path('profile/', views.CreatorProfileView.as_view(), name='profile'),
     path('templates/', views.TemplateGalleryView.as_view(), name='template_gallery'),
     path('create/', views.WizardCreateView.as_view(), name='wizard_create'),
 

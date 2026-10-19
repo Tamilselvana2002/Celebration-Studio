@@ -1,0 +1,1132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Creator Atelier Profile — {{ user.username }} — {{ SITE_TITLE }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ==========================================================================
+     3D ANIMATED CREATOR PROFILE ATELIER — CELEBRATION STUDIO
+     Holographic Persona Orb, Interactive Gyroscope Glass Tilt & Studio Dossier
+     ========================================================================== */
+  :root {
+    --profile-glow: rgba(236, 72, 153, 0.4);
+    --profile-accent: #f472b6;
+  }
+
+  .profile-viewport {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+    position: relative;
+  }
+
+  /* Atmospheric Background Glow */
+  .profile-atmosphere {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+    background: 
+      radial-gradient(circle at 15% 25%, rgba(244, 114, 182, 0.15) 0%, transparent 45%),
+      radial-gradient(circle at 85% 75%, rgba(139, 92, 246, 0.14) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(18, 9, 24, 0.3) 0%, transparent 70%);
+  }
+
+  /* 2-Column Responsive Layout */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 32px;
+    position: relative;
+    z-index: 2;
+    align-items: start;
+  }
+
+  @media (max-width: 1024px) {
+    .profile-grid {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+  }
+
+  /* ==========================================================================
+     1. LEFT COLUMN: 3D HOLOGRAPHIC STAGE & TILT CARD
+     ========================================================================== */
+  .id-stage {
+    perspective: 1200px;
+    position: sticky;
+    top: 96px;
+  }
+
+  .crystal-id-card {
+    position: relative;
+    background: radial-gradient(130% 100% at 85% 15%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 220, 240, 0.08) 45%, rgba(24, 12, 34, 0.85) 100%);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1.5px solid rgba(255, 255, 255, 0.32);
+    border-radius: 32px;
+    padding: 32px 28px;
+    box-shadow: 
+      0 30px 70px rgba(0, 0, 0, 0.7),
+      0 0 50px var(--profile-glow),
+      inset 0 1px 2px rgba(255, 255, 255, 0.6);
+    transform-style: preserve-3d;
+    transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+    will-change: transform;
+    overflow: hidden;
+  }
+
+  /* Specular Light Sheen */
+  .crystal-id-card::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 70%);
+    pointer-events: none;
+    filter: blur(8px);
+  }
+
+  /* 3D Holographic Canvas Container */
+  .orb-canvas-wrap {
+    position: relative;
+    width: 100%;
+    height: 230px;
+    border-radius: 24px;
+    background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.15) 0%, rgba(15, 7, 22, 0.8) 75%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+  }
+
+  #profileOrbCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+  }
+
+  #profileOrbCanvas:active {
+    cursor: grabbing;
+  }
+
+  .orb-tag {
+    position: absolute;
+    bottom: 12px;
+    right: 14px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 3px 10px;
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    pointer-events: none;
+  }
+
+  .id-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .creator-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #f472b6;
+    background: rgba(244, 114, 182, 0.12);
+    border: 1px solid rgba(244, 114, 182, 0.35);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+
+  .creator-badge .pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 8px #34d399;
+    animation: pulseGlow 2s infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  .id-name {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  }
+
+  .id-handle {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .id-bio {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    padding: 16px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: rgba(253, 242, 248, 0.9);
+    margin-bottom: 24px;
+    font-style: italic;
+    text-align: center;
+  }
+
+  .id-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    padding-top: 20px;
+  }
+
+  .id-meta-item {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .id-meta-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.45);
+    margin-bottom: 3px;
+  }
+
+  /* ==========================================================================
+     2. RIGHT COLUMN: 3D METRICS DOCK & ATELIER TABS
+     ========================================================================== */
+  .profile-main-dock {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  /* Feedback Alerts */
+  .alert-banner {
+    padding: 14px 20px;
+    border-radius: 16px;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: fadeInSlide 0.3s ease;
+  }
+  .alert-success {
+    background: rgba(16, 185, 129, 0.16);
+    border: 1px solid rgba(52, 211, 153, 0.45);
+    color: #a7f3d0;
+  }
+  .alert-error {
+    background: rgba(244, 63, 94, 0.16);
+    border: 1px solid rgba(244, 63, 94, 0.45);
+    color: #fecdd3;
+  }
+
+  @keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Live 3D Stats Counter Strip */
+  .stats-deck {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 680px) {
+    .stats-deck {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .stat-tile {
+    background: radial-gradient(130% 100% at 75% 15%, rgba(255, 255, 255, 0.14) 0%, rgba(25, 12, 36, 0.7) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    border-radius: 22px;
+    padding: 20px 18px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .stat-tile:hover {
+    transform: translateY(-3px);
+    border-color: rgba(244, 114, 182, 0.5);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 25px rgba(236, 72, 153, 0.2);
+  }
+
+  .stat-tile-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .stat-tile-icon {
+    font-size: 1.4rem;
+  }
+
+  .stat-tile-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .stat-tile-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.65);
+    letter-spacing: 0.02em;
+  }
+
+  /* Tabbed Settings Slab */
+  .tabs-card {
+    background: radial-gradient(130% 100% at 75% 15%, rgba(255, 255, 255, 0.12) 0%, rgba(20, 10, 28, 0.85) 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
+    border-radius: 28px;
+    padding: 32px 30px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Tabs Navigation Bar */
+  .tabs-nav {
+    display: flex;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding-bottom: 18px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: rgba(255, 255, 255, 0.65);
+    padding: 9px 20px;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .tab-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .tab-btn.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.35) 0%, rgba(139, 92, 246, 0.3) 100%);
+    border-color: rgba(244, 114, 182, 0.5);
+    box-shadow: 0 4px 20px rgba(236, 72, 153, 0.25);
+  }
+
+  /* Tab Panels */
+  .tab-pane {
+    display: none;
+  }
+  .tab-pane.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Form Elements */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 18px;
+  }
+
+  @media (max-width: 600px) {
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .field-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .field-input, .field-textarea, .field-select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    color: #ffffff;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  .field-input:focus, .field-textarea:focus, .field-select:focus {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: #f472b6;
+    box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.2);
+  }
+
+  .field-textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .field-select option {
+    background: #1e112a;
+    color: #ffffff;
+  }
+
+  /* Preset Selection Chips */
+  .orb-chip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 6px;
+  }
+
+  .orb-chip {
+    cursor: pointer;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 12px;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+
+  .orb-chip:hover {
+    border-color: rgba(244, 114, 182, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .orb-chip.selected {
+    border-color: #f472b6;
+    background: rgba(236, 72, 153, 0.18);
+    box-shadow: 0 0 16px rgba(236, 72, 153, 0.3);
+  }
+
+  .orb-chip-icon {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+
+  .orb-chip-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  /* Action Buttons */
+  .btn-atelier-save {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 50%, #8b5cf6 100%);
+    color: #ffffff;
+    font-size: 0.96rem;
+    font-weight: 600;
+    padding: 13px 32px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(236, 72, 153, 0.4);
+    transition: all 0.25s ease;
+  }
+
+  .btn-atelier-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(236, 72, 153, 0.55);
+  }
+
+  /* Recent Celebrations Mini Showcase */
+  .portfolio-section {
+    margin-top: 10px;
+  }
+
+  .section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .recent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .recent-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 20px;
+    padding: 18px;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .recent-card:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(244, 114, 182, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .recent-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 6px;
+  }
+
+  .recent-card-theme {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #f472b6;
+    margin-bottom: 12px;
+  }
+
+  .recent-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-viewport">
+  
+  <div class="profile-atmosphere"></div>
+
+  <!-- Status Banners -->
+  {% if success_message %}
+  <div class="alert-banner alert-success" role="alert" style="margin-bottom: 24px;">
+    <span>✨</span>
+    <span>{{ success_message }}</span>
+  </div>
+  {% endif %}
+
+  {% if error_message %}
+  <div class="alert-banner alert-error" role="alert" style="margin-bottom: 24px;">
+    <span>⚠️</span>
+    <span>{{ error_message }}</span>
+  </div>
+  {% endif %}
+
+  <div class="profile-grid">
+    
+    <!-- ====================================================================
+         LEFT COLUMN: 3D HOLOGRAPHIC PERSONA & TILT CARD
+         ==================================================================== -->
+    <aside class="id-stage">
+      <div class="crystal-id-card" id="creatorIdCard">
+        
+        <!-- Interactive 3D WebGL Persona Canvas -->
+        <div class="orb-canvas-wrap" id="orbCanvasWrap">
+          <canvas id="profileOrbCanvas"></canvas>
+          <span class="orb-tag" id="orbStyleTag">{{ profile.get_avatar_orb_style_display|default:"Aurora Prism" }}</span>
+        </div>
+
+        <div class="id-header">
+          <div class="creator-badge">
+            <span class="pulse-dot"></span>
+            <span>ATELIER ARCHITECT</span>
+          </div>
+          
+          <h1 class="id-name">
+            {% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}
+          </h1>
+          
+          <div class="id-handle">
+            <span>@{{ user.username }}</span>
+            <span style="opacity: 0.4;">•</span>
+            <span style="color: #a7f3d0; font-size: 0.8rem;">🔒 Verified</span>
+          </div>
+        </div>
+
+        <div class="id-bio" id="cardBioText">
+          "{{ profile.bio|default:'Passionate celebration architect crafting unforgettable memories.' }}"
+        </div>
+
+        <div class="id-meta-grid">
+          <div class="id-meta-item">
+            <div class="id-meta-label">Member Since</div>
+            <div style="font-weight: 600; color: #fff;">{{ user.date_joined|date:"M Y" }}</div>
+          </div>
+          <div class="id-meta-item">
+            <div class="id-meta-label">Studio Theme</div>
+            <div style="font-weight: 600; color: #f472b6;" id="cardThemeLabel">{{ profile.preferred_theme|title }}</div>
+          </div>
+          <div class="id-meta-item">
+            <div class="id-meta-label">Account Security</div>
+            <div style="font-weight: 600; color: #34d399;">Active (Protected)</div>
+          </div>
+          <div class="id-meta-item">
+            <div class="id-meta-label">Status</div>
+            <div style="font-weight: 600; color: #cbd5e1;">Master Tier</div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ====================================================================
+         RIGHT COLUMN: 3D METRICS DOCK & ATELIER TABS
+         ==================================================================== -->
+    <main class="profile-main-dock">
+      
+      <!-- Live Real-Time Statistics Counters -->
+      <section class="stats-deck">
+        <div class="stat-tile">
+          <div class="stat-tile-top">
+            <span class="stat-tile-icon">🎉</span>
+            <span class="stat-tile-num">{{ stats.total_celebrations }}</span>
+          </div>
+          <div class="stat-tile-label">Celebrations</div>
+        </div>
+
+        <div class="stat-tile">
+          <div class="stat-tile-top">
+            <span class="stat-tile-icon">🌐</span>
+            <span class="stat-tile-num" style="color: #34d399;">{{ stats.published_count }}</span>
+          </div>
+          <div class="stat-tile-label">Published Live</div>
+        </div>
+
+        <div class="stat-tile">
+          <div class="stat-tile-top">
+            <span class="stat-tile-icon">👥</span>
+            <span class="stat-tile-num" style="color: #c084fc;">{{ stats.recipients_count }}</span>
+          </div>
+          <div class="stat-tile-label">VIP Recipients</div>
+        </div>
+
+        <div class="stat-tile">
+          <div class="stat-tile-top">
+            <span class="stat-tile-icon">🖼️</span>
+            <span class="stat-tile-num" style="color: #f472b6;">{{ stats.media_count }}</span>
+          </div>
+          <div class="stat-tile-label">Vault Assets</div>
+        </div>
+      </section>
+
+      <!-- Settings & Customization Slab -->
+      <section class="tabs-card">
+        
+        <!-- Navigation Tab Headers -->
+        <nav class="tabs-nav" role="tablist">
+          <button type="button" class="tab-btn active" onclick="switchProfileTab('identityTab', this)">
+            <span>👤</span>
+            <span>Creative Identity</span>
+          </button>
+          <button type="button" class="tab-btn" onclick="switchProfileTab('preferencesTab', this)">
+            <span>🎨</span>
+            <span>Studio Preferences</span>
+          </button>
+          <button type="button" class="tab-btn" onclick="switchProfileTab('securityTab', this)">
+            <span>🛡️</span>
+            <span>Security & Passwords</span>
+          </button>
+        </nav>
+
+        <!-- TAB 1: CREATIVE IDENTITY & BIO -->
+        <div class="tab-pane active" id="identityTab">
+          <form method="POST" action="{% url 'profile' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_profile">
+            <input type="hidden" name="preferred_theme" value="{{ profile.preferred_theme }}" id="formThemeInput">
+            <input type="hidden" name="avatar_orb_style" value="{{ profile.avatar_orb_style }}" id="formOrbInput">
+
+            <div class="form-row">
+              <div class="field-group">
+                <label class="field-label">First Name</label>
+                <input type="text" name="first_name" class="field-input" value="{{ user.first_name }}" placeholder="e.g. Elena">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Last Name</label>
+                <input type="text" name="last_name" class="field-input" value="{{ user.last_name }}" placeholder="e.g. Vance">
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Email Address (Used for SMTP Recovery & Notifications)</label>
+              <input type="email" name="email" class="field-input" value="{{ user.email }}" placeholder="your-email@domain.com" required>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Creative Atelier Bio</label>
+              <textarea name="bio" class="field-textarea" placeholder="Describe your creative celebration signature...">{{ profile.bio }}</textarea>
+            </div>
+
+            <!-- 3D Holographic Persona Orb Preset Selector -->
+            <div class="field-group">
+              <label class="field-label">3D Holographic Persona Orb Style</label>
+              <div class="orb-chip-grid">
+                <div class="orb-chip {% if profile.avatar_orb_style == 'aurora_prism' %}selected{% endif %}" onclick="selectOrbPreset('aurora_prism', 'Aurora Prism', this)">
+                  <div class="orb-chip-icon">💎</div>
+                  <div class="orb-chip-name">Aurora Prism</div>
+                </div>
+                <div class="orb-chip {% if profile.avatar_orb_style == 'celestial_gold' %}selected{% endif %}" onclick="selectOrbPreset('celestial_gold', 'Celestial Gold', this)">
+                  <div class="orb-chip-icon">👑</div>
+                  <div class="orb-chip-name">Celestial Gold</div>
+                </div>
+                <div class="orb-chip {% if profile.avatar_orb_style == 'cosmic_stardust' %}selected{% endif %}" onclick="selectOrbPreset('cosmic_stardust', 'Cosmic Stardust', this)">
+                  <div class="orb-chip-icon">🌌</div>
+                  <div class="orb-chip-name">Cosmic Stardust</div>
+                </div>
+                <div class="orb-chip {% if profile.avatar_orb_style == 'emerald_dream' %}selected{% endif %}" onclick="selectOrbPreset('emerald_dream', 'Emerald Dream', this)">
+                  <div class="orb-chip-icon">🌿</div>
+                  <div class="orb-chip-name">Emerald Dream</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 24px;">
+              <button type="submit" class="btn-atelier-save" id="saveIdentityBtn">
+                <span>Save Profile Changes</span>
+                <span>➔</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 2: STUDIO PREFERENCES -->
+        <div class="tab-pane" id="preferencesTab">
+          <form method="POST" action="{% url 'profile' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_profile">
+            <input type="hidden" name="first_name" value="{{ user.first_name }}">
+            <input type="hidden" name="last_name" value="{{ user.last_name }}">
+            <input type="hidden" name="email" value="{{ user.email }}">
+            <input type="hidden" name="bio" value="{{ profile.bio }}">
+            <input type="hidden" name="avatar_orb_style" value="{{ profile.avatar_orb_style }}">
+
+            <div class="field-group">
+              <label class="field-label">Default Creative Visual Theme</label>
+              <p style="font-size: 0.82rem; color: rgba(255, 255, 255, 0.6); margin-bottom: 12px;">
+                Choose the signature atmosphere applied by default when creating new celebrations.
+              </p>
+              <select name="preferred_theme" class="field-select" onchange="updateThemePreview(this.value)">
+                {% for theme_key, theme in master_themes.items %}
+                <option value="{{ theme_key }}" {% if profile.preferred_theme == theme_key %}selected{% endif %}>
+                  {{ theme.name }} — {{ theme.atmosphere_type|title }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div style="margin-top: 24px;">
+              <button type="submit" class="btn-atelier-save">
+                <span>Save Studio Preferences</span>
+                <span>➔</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 3: ACCOUNT SECURITY & PASSWORD -->
+        <div class="tab-pane" id="securityTab">
+          <form method="POST" action="{% url 'profile' %}" style="margin-bottom: 32px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="change_password">
+
+            <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 16px;">Update Password</h3>
+
+            <div class="field-group">
+              <label class="field-label">Current Password</label>
+              <input type="password" name="current_password" class="field-input" placeholder="Enter current password" required>
+            </div>
+
+            <div class="form-row">
+              <div class="field-group">
+                <label class="field-label">New Password</label>
+                <input type="password" name="new_password1" class="field-input" placeholder="Minimum 6 characters" required>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Confirm New Password</label>
+                <input type="password" name="new_password2" class="field-input" placeholder="Repeat new password" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-atelier-save">
+              <span>Update Password</span>
+              <span>➔</span>
+            </button>
+          </form>
+
+          <!-- Gmail SMTP Password Reset Fallback -->
+          <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 20px;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #f472b6; margin-bottom: 6px;">Forgot your current password?</h4>
+            <p style="font-size: 0.84rem; color: #cbd5e1; margin-bottom: 14px; line-height: 1.5;">
+              You can trigger a secure, tokenized password reset link dispatched directly to your registered email address (<strong>{{ user.email }}</strong>) via Gmail SMTP.
+            </p>
+            <form method="POST" action="{% url 'password_reset' %}" style="display: inline-block;">
+              {% csrf_token %}
+              <input type="hidden" name="email" value="{{ user.email }}">
+              <button type="submit" class="btn btn-secondary btn-sm" style="border-radius: 999px;">
+                <span>✉️ Dispatch Reset Link to My Email</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Recent Celebrations Showcase Grid -->
+      <section class="portfolio-section">
+        <div class="section-title-row">
+          <div class="section-title">
+            <span>✨</span>
+            <span>Recent Masterpieces</span>
+          </div>
+          <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-sm" style="font-size: 0.8rem;">View All Celebrations →</a>
+        </div>
+
+        {% if recent_celebrations %}
+        <div class="recent-grid">
+          {% for celeb in recent_celebrations %}
+          <div class="recent-card">
+            <div>
+              <div class="recent-card-theme">{{ celeb.theme_id|title }} Atmosphere</div>
+              <h4 class="recent-card-title">{{ celeb.title }}</h4>
+              <p style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.6);">
+                Recipient: <strong>{{ celeb.recipient_name|default:"VIP Star" }}</strong>
+              </p>
+            </div>
+            <div class="recent-card-actions">
+              <a href="{% url 'experience_studio' celeb.id %}" class="btn btn-secondary btn-sm" style="flex: 1; text-align: center; font-size: 0.78rem;">
+                <span>🛠️ Edit Studio</span>
+              </a>
+              <a href="{% url 'celebration_preview' celeb.id %}" class="btn btn-primary btn-sm" style="flex: 1; text-align: center; font-size: 0.78rem;">
+                <span>👁️ Preview</span>
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 32px; text-align: center;">
+          <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 14px;">No celebrations crafted yet. Your canvas awaits!</p>
+          <a href="{% url 'wizard_create' %}" class="btn btn-primary btn-sm">Create Your First Celebration ➔</a>
+        </div>
+        {% endif %}
+      </section>
+
+    </main>
+
+  </div>
+</div>
+
+<!-- Vendored Three.js & GSAP (Zero-Node Dependency) -->
+<script src="{% static 'vendor/three.min.js' %}"></script>
+<script src="{% static 'vendor/gsap.min.js' %}"></script>
+
+<script>
+  // =========================================================================
+  // 1. Tab Switching Engine
+  // =========================================================================
+  function switchProfileTab(tabId, btnElement) {
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    
+    const target = document.getElementById(tabId);
+    if (target) target.classList.add('active');
+    if (btnElement) btnElement.classList.add('active');
+  }
+
+  // =========================================================================
+  // 2. Interactive 3D Card Tilt Physics (Gyroscope / Mouse Coordinates)
+  // =========================================================================
+  (function initCardTilt() {
+    const card = document.getElementById('creatorIdCard');
+    if (!card) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    let bounds = card.getBoundingClientRect();
+    window.addEventListener('resize', () => { bounds = card.getBoundingClientRect(); });
+
+    card.addEventListener('mousemove', (e) => {
+      const x = e.clientX - bounds.left;
+      const y = e.clientY - bounds.top;
+      const centerX = bounds.width / 2;
+      const centerY = bounds.height / 2;
+
+      const rotateX = ((y - centerY) / centerY) * -10;
+      const rotateY = ((x - centerX) / centerX) * 10;
+
+      card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(8px)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0px)';
+    });
+  })();
+
+  // =========================================================================
+  // 3. Three.js Real-Time 3D Holographic Persona Orb Simulation
+  // =========================================================================
+  let orbScene, orbCamera, orbRenderer, orbMesh, orbParticles, orbMaterial;
+  const currentOrbPreset = '{{ profile.avatar_orb_style|default:"aurora_prism" }}';
+
+  const ORB_PRESETS = {
+    aurora_prism: {
+      color: 0xec4899,
+      emissive: 0x8b5cf6,
+      particleColor: 0xf472b6,
+      roughness: 0.2,
+      metalness: 0.75,
+      light1: 0xff007f,
+      light2: 0x00f5ff
+    },
+    celestial_gold: {
+      color: 0xffd700,
+      emissive: 0xb8860b,
+      particleColor: 0xfff08a,
+      roughness: 0.15,
+      metalness: 0.95,
+      light1: 0xffaa00,
+      light2: 0xffe680
+    },
+    cosmic_stardust: {
+      color: 0x3b82f6,
+      emissive: 0x1d4ed8,
+      particleColor: 0x93c5fd,
+      roughness: 0.25,
+      metalness: 0.8,
+      light1: 0x60a5fa,
+      light2: 0xa855f7
+    },
+    emerald_dream: {
+      color: 0x10b981,
+      emissive: 0x047857,
+      particleColor: 0x6ee7b7,
+      roughness: 0.2,
+      metalness: 0.85,
+      light1: 0x34d399,
+      light2: 0x06b6d4
+    }
+  };
+
+  (function init3DOrb() {
+    const canvas = document.getElementById('profileOrbCanvas');
+    const wrap = document.getElementById('orbCanvasWrap');
+    if (!canvas || !wrap || typeof THREE === 'undefined') return;
+
+    orbRenderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance'
+    });
+    orbRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    orbRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+
+    orbScene = new THREE.Scene();
+    orbCamera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+    orbCamera.position.z = 4.2;
+
+    // Dynamic Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    orbScene.add(ambientLight);
+
+    const pointLight1 = new THREE.PointLight(0xff007f, 2.5, 50);
+    pointLight1.position.set(3, 3, 3);
+    orbScene.add(pointLight1);
+
+    const pointLight2 = new THREE.PointLight(0x00f5ff, 2, 50);
+    pointLight2.position.set(-3, -3, 2);
+    orbScene.add(pointLight2);
+
+    // Sculptural Faceted Crystal Gemstone (Icosahedron)
+    const geometry = new THREE.IcosahedronGeometry(1.2, 1);
+    const initialConfig = ORB_PRESETS[currentOrbPreset] || ORB_PRESETS.aurora_prism;
+
+    orbMaterial = new THREE.MeshStandardMaterial({
+      color: initialConfig.color,
+      emissive: initialConfig.emissive,
+      emissiveIntensity: 0.45,
+      roughness: initialConfig.roughness,
+      metalness: initialConfig.metalness,
+      wireframe: false,
+      flatShading: true
+    });
+
+    orbMesh = new THREE.Mesh(geometry, orbMaterial);
+    orbScene.add(orbMesh);
+
+    // Orbiting Stardust Rings
+    const particleCount = 180;
+    const particleGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (i / particleCount) * Math.PI * 2;
+      const radius = 1.7 + (Math.random() - 0.5) * 0.4;
+      positions[i * 3] = Math.cos(angle) * radius;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 0.6;
+      positions[i * 3 + 2] = Math.sin(angle) * radius;
+    }
+
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particleMat = new THREE.PointsMaterial({
+      color: initialConfig.particleColor,
+      size: 0.05,
+      transparent: true,
+      opacity: 0.85
+    });
+
+    orbParticles = new THREE.Points(particleGeo, particleMat);
+    orbScene.add(orbParticles);
+
+    // Interactive Drag / Orbit rotation
+    let isDragging = false;
+    let prevMouseX = 0;
+    let prevMouseY = 0;
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      prevMouseX = e.clientX;
+      prevMouseY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - prevMouseX;
+      const deltaY = e.clientY - prevMouseY;
+      orbMesh.rotation.y += deltaX * 0.01;
+      orbMesh.rotation.x += deltaY * 0.01;
+      orbParticles.rotation.y += deltaX * 0.008;
+      prevMouseX = e.clientX;
+      prevMouseY = e.clientY;
+    });
+
+    // Render Loop
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!isDragging) {
+        orbMesh.rotation.y += 0.007;
+        orbMesh.rotation.x += 0.003;
+        orbParticles.rotation.y += 0.004;
+      }
+      orbRenderer.render(orbScene, orbCamera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      if (!wrap || !orbRenderer || !orbCamera) return;
+      orbCamera.aspect = wrap.clientWidth / wrap.clientHeight;
+      orbCamera.updateProjectionMatrix();
+      orbRenderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    });
+  })();
+
+  // Live Preset Switcher for 3D Orb
+  function selectOrbPreset(presetKey, displayName, element) {
+    document.querySelectorAll('.orb-chip').forEach(el => el.classList.remove('selected'));
+    if (element) element.classList.add('selected');
+
+    const formOrbInput = document.getElementById('formOrbInput');
+    if (formOrbInput) formOrbInput.value = presetKey;
+
+    const tag = document.getElementById('orbStyleTag');
+    if (tag) tag.textContent = displayName;
+
+    const config = ORB_PRESETS[presetKey];
+    if (config && orbMaterial) {
+      orbMaterial.color.setHex(config.color);
+      orbMaterial.emissive.setHex(config.emissive);
+      orbMaterial.roughness = config.roughness;
+      orbMaterial.metalness = config.metalness;
+      if (orbParticles) {
+        orbParticles.material.color.setHex(config.particleColor);
+      }
+    }
+  }
+
+  function updateThemePreview(val) {
+    const cardTheme = document.getElementById('cardThemeLabel');
+    if (cardTheme) {
+      cardTheme.textContent = val.replace('_', ' ').toUpperCase();
+    }
+    const formThemeInput = document.getElementById('formThemeInput');
+    if (formThemeInput) formThemeInput.value = val;
+  }
+</script>
+{% endblock %}

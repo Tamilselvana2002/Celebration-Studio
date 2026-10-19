@@ -4,6 +4,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.contrib.auth.hashers import make_password, check_password
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 def generate_unique_slug():
@@ -318,3 +320,34 @@ class Publication(models.Model):
     def __str__(self):
         status = "Published" if self.is_published else "Draft"
         return f"Publication ({status}) for {self.celebration.title}"
+
+
+class CreatorProfile(models.Model):
+    AVATAR_ORB_CHOICES = [
+        ('aurora_prism', 'Aurora Prism'),
+        ('celestial_gold', 'Celestial Gold'),
+        ('cosmic_stardust', 'Cosmic Stardust'),
+        ('emerald_dream', 'Emerald Dream'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='creator_profile')
+    bio = models.TextField(
+        max_length=500, 
+        blank=True, 
+        default="Passionate celebration architect crafting unforgettable memories."
+    )
+    preferred_theme = models.CharField(max_length=50, default='romantic_aurora')
+    avatar_orb_style = models.CharField(max_length=50, choices=AVATAR_ORB_CHOICES, default='aurora_prism')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"CreatorProfile({self.user.username})"
+
+
+@receiver(post_save, sender=User)
+def create_or_save_creator_profile(sender, instance, created, **kwargs):
+    if created:
+        CreatorProfile.objects.get_or_create(user=instance)
+

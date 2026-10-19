@@ -4,7 +4,7 @@ import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.views.generic import TemplateView, ListView, CreateView
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 from .models import (
     Celebration, RecipientProfile, CelebrationParticipant,
-    CelebrationScene, MediaAsset, Publication
+    CelebrationScene, MediaAsset, Publication, CreatorProfile
 )
 from .animation_registry import (
     ANIMATION_REGISTRY, ANIMATION_PRESETS,
@@ -269,6 +269,106 @@ class DashboardView(CreatorRequiredMixin, View):
             'query': query,
             'event_filter': event_filter
         })
+
+
+class CreatorProfileView(LoginRequiredMixin, View):
+    """
+    3D Animated Creator Profile & Atelier Command Center:
+    - Interactive 3D Holographic Persona Canvas (Three.js WebGL)
+    - 3D perspective glassmorphic ID card with gyroscope/mouse tilt
+    - Real-time celebration portfolio statistics & quick-launch links
+    - Tabbed identity management, studio default theme preferences, and security controls
+    """
+    login_url = 'login'
+
+    def get(self, request):
+        user = request.user
+        profile, _ = CreatorProfile.objects.get_or_create(user=user)
+
+        # Calculate metrics
+        user_celebrations = Celebration.objects.filter(owner=user)
+        total_celebrations = user_celebrations.count()
+        published_count = user_celebrations.filter(status='published').count()
+        draft_count = user_celebrations.filter(status='draft').count()
+        recipients_count = RecipientProfile.objects.filter(user=user).count()
+        media_count = MediaAsset.objects.filter(celebration__owner=user).count()
+
+        recent_celebrations = user_celebrations.order_by('-updated_at')[:4]
+        master_themes = get_master_themes()
+
+        context = {
+            'profile': profile,
+            'user': user,
+            'stats': {
+                'total_celebrations': total_celebrations,
+                'published_count': published_count,
+                'draft_count': draft_count,
+                'recipients_count': recipients_count,
+                'media_count': media_count,
+            },
+            'recent_celebrations': recent_celebrations,
+            'master_themes': master_themes,
+            'orb_styles': CreatorProfile.AVATAR_ORB_CHOICES,
+            'success_message': request.session.pop('profile_success', None),
+            'error_message': request.session.pop('profile_error', None),
+        }
+        return render(request, 'profile.html', context)
+
+    def post(self, request):
+        user = request.user
+        profile, _ = CreatorProfile.objects.get_or_create(user=user)
+        action = request.POST.get('action', 'update_profile')
+
+        if action == 'update_profile':
+            first_name = request.POST.get('first_name', '').strip()
+            last_name = request.POST.get('last_name', '').strip()
+            email = request.POST.get('email', '').strip()
+            bio = request.POST.get('bio', '').strip()
+            preferred_theme = request.POST.get('preferred_theme', profile.preferred_theme).strip()
+            avatar_orb_style = request.POST.get('avatar_orb_style', profile.avatar_orb_style).strip()
+
+            if email:
+                if User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
+                    request.session['profile_error'] = f"The email '{email}' is already registered to another account."
+                    return redirect('profile')
+                user.email = email
+
+            user.first_name = first_name
+            user.last_name = last_name
+            user.save()
+
+            profile.bio = bio
+            profile.preferred_theme = preferred_theme
+            profile.avatar_orb_style = avatar_orb_style
+            profile.save()
+
+            request.session['profile_success'] = "Creator Atelier profile updated successfully!"
+            return redirect('profile')
+
+        elif action == 'change_password':
+            current_password = request.POST.get('current_password', '')
+            new_password1 = request.POST.get('new_password1', '')
+            new_password2 = request.POST.get('new_password2', '')
+
+            if not user.check_password(current_password):
+                request.session['profile_error'] = "Current password does not match. Please verify and try again."
+                return redirect('profile')
+
+            if len(new_password1) < 6:
+                request.session['profile_error'] = "New password must be at least 6 characters long."
+                return redirect('profile')
+
+            if new_password1 != new_password2:
+                request.session['profile_error'] = "New passwords do not match. Please verify and try again."
+                return redirect('profile')
+
+            user.set_password(new_password1)
+            user.save()
+            update_session_auth_hash(request, user)
+            request.session['profile_success'] = "Password updated securely!"
+            return redirect('profile')
+
+        return redirect('profile')
 
 
 class TemplateGalleryView(CreatorRequiredMixin, View):

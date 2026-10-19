@@ -779,6 +779,90 @@ class PasswordResetFlowTestCase(TestCase):
         self.assertContains(res, reverse('login'))
 
 
+class CreatorProfileTestCase(TestCase):
+    """
+    Test suite for the 3D Animated Creator Profile Atelier:
+    - Authentication shielding
+    - Profile rendering and 3D canvas presence
+    - Identity and bio mutations
+    - In-profile password update and validation
+    """
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='profilestar',
+            email='star@celebrationstudio.test',
+            password='InitialPassword123!'
+        )
+
+    def test_unauthenticated_user_redirected(self):
+        res = self.client.get(reverse('profile'))
+        self.assertEqual(res.status_code, 302)
+        self.assertIn(reverse('login'), res.url)
+
+    def test_profile_page_renders_for_creator(self):
+        self.client.force_login(self.user)
+        res = self.client.get(reverse('profile'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'profilestar')
+        self.assertContains(res, 'profileOrbCanvas')
+        self.assertContains(res, 'creatorIdCard')
+        self.assertContains(res, 'Creative Identity')
+        self.assertContains(res, 'Studio Preferences')
+
+    def test_update_profile_identity_and_preferences(self):
+        self.client.force_login(self.user)
+        res = self.client.post(reverse('profile'), {
+            'action': 'update_profile',
+            'first_name': 'Astrid',
+            'last_name': 'Nova',
+            'email': 'astrid.nova@celebrationstudio.test',
+            'bio': 'Crafting cinematic celestial journeys.',
+            'preferred_theme': 'cosmic_nebula',
+            'avatar_orb_style': 'cosmic_stardust',
+        })
+        self.assertEqual(res.status_code, 302)
+        self.assertRedirects(res, reverse('profile'))
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.first_name, 'Astrid')
+        self.assertEqual(self.user.last_name, 'Nova')
+        self.assertEqual(self.user.email, 'astrid.nova@celebrationstudio.test')
+
+        profile = self.user.creator_profile
+        self.assertEqual(profile.bio, 'Crafting cinematic celestial journeys.')
+        self.assertEqual(profile.preferred_theme, 'cosmic_nebula')
+        self.assertEqual(profile.avatar_orb_style, 'cosmic_stardust')
+
+    def test_change_password_on_profile_success(self):
+        self.client.force_login(self.user)
+        res = self.client.post(reverse('profile'), {
+            'action': 'change_password',
+            'current_password': 'InitialPassword123!',
+            'new_password1': 'NewBrandPass888!',
+            'new_password2': 'NewBrandPass888!',
+        })
+        self.assertEqual(res.status_code, 302)
+        self.assertRedirects(res, reverse('profile'))
+
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('NewBrandPass888!'))
+        self.assertFalse(self.user.check_password('InitialPassword123!'))
+
+    def test_change_password_wrong_current_password(self):
+        self.client.force_login(self.user)
+        res = self.client.post(reverse('profile'), {
+            'action': 'change_password',
+            'current_password': 'WrongPassword!',
+            'new_password1': 'NewBrandPass888!',
+            'new_password2': 'NewBrandPass888!',
+        })
+        self.assertEqual(res.status_code, 302)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('InitialPassword123!'))
+
+
+
 
 
 
