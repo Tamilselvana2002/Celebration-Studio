@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Studio Dashboard — {{ SITE_TITLE }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  
+  <!-- Header & Primary Action -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-8); flex-wrap: wrap; gap: var(--space-4);">
+    <div>
+      <h1 class="font-display" style="font-size: var(--text-3xl); margin-bottom: var(--space-1);">Creator Atelier</h1>
+      <p style="color: var(--text-muted); font-size: var(--text-sm);">Manage your personalized celebration stories, recipient rosters, and publishing links.</p>
+    </div>
+    <a href="{% url 'wizard_create' %}" class="btn btn-primary">
+      <span>+ New Celebration</span>
+    </a>
+  </div>
+
+  <!-- Real Statistics Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">✨</div>
+      <div>
+        <div class="stat-value">{{ total_count }}</div>
+        <div class="stat-label">Total Celebrations</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="color: var(--color-success); background: rgba(16, 185, 129, 0.15);">🌐</div>
+      <div>
+        <div class="stat-value">{{ published_count }}</div>
+        <div class="stat-label">Published Live</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="color: var(--color-warning); background: rgba(245, 158, 11, 0.15);">✏️</div>
+      <div>
+        <div class="stat-value">{{ draft_count }}</div>
+        <div class="stat-label">Draft Projects</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="color: #b588ff; background: rgba(181, 136, 255, 0.15);">👥</div>
+      <div>
+        <div class="stat-value">{{ total_recipients }}</div>
+        <div class="stat-label">VIP Recipients</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Controls -->
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-8); flex-wrap: wrap;">
+    <form method="GET" style="display: flex; gap: var(--space-3); flex: 1; max-width: 480px;">
+      <input type="text" name="q" value="{{ query }}" placeholder="Search celebrations or recipients..." class="form-control" style="padding: 0.5rem 1rem;">
+      <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+      {% if query %}
+        <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-sm">Clear</a>
+      {% endif %}
+    </form>
+
+    <div style="display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: 4px;">
+      <a href="{% url 'dashboard' %}" class="btn {% if not event_filter %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">All</a>
+      <a href="?event=birthday" class="btn {% if event_filter == 'birthday' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">🎂 Birthday</a>
+      <a href="?event=graduation" class="btn {% if event_filter == 'graduation' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">🎓 Graduation</a>
+      <a href="?event=anniversary" class="btn {% if event_filter == 'anniversary' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">🥂 Anniversary</a>
+      <a href="?event=valentine" class="btn {% if event_filter == 'valentine' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">🌹 Valentine</a>
+    </div>
+  </div>
+
+  <!-- Celebrations Grid -->
+  {% if celebrations %}
+    <div class="celebration-grid">
+      {% for celebration in celebrations %}
+      <div class="celebration-card" data-theme="{{ celebration.theme_id }}">
+        <div class="card-header-bar">
+          {% if celebration.status == 'published' %}
+            <span class="badge-status badge-published">● Published</span>
+          {% else %}
+            <span class="badge-status badge-draft">Draft</span>
+          {% endif %}
+          <span class="scene-count-pill">{{ celebration.scenes.count }} Scenes</span>
+        </div>
+
+        <div class="card-body-content">
+          <h3 class="celebration-card-title">{{ celebration.title }}</h3>
+          <div class="celebration-recipient">
+            <span>👑 {{ celebration.recipient_summary }}</span>
+          </div>
+          <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4);">
+            <span style="font-size: var(--text-xs); color: var(--text-dim);">
+              Theme: <strong style="color: var(--theme-primary);">{{ celebration.theme_id|title }}</strong>
+            </span>
+            <span style="font-size: var(--text-xs); color: var(--text-dim);">•</span>
+            <span style="font-size: var(--text-xs); color: var(--text-dim);">
+              Occasion: {{ celebration.get_event_type_display }}
+            </span>
+            <span style="font-size: var(--text-xs); color: var(--text-dim);">•</span>
+            <span style="font-size: var(--text-xs); color: var(--text-dim);">
+              👁️ {{ celebration.view_count }} Views
+            </span>
+          </div>
+        </div>
+
+        <div class="card-footer-actions">
+          <a href="{% url 'experience_studio' celebration.id %}" class="btn btn-secondary btn-sm">
+            <span>✏️ Open Studio</span>
+          </a>
+          <a href="{{ celebration.get_absolute_url }}" target="_blank" class="btn btn-primary btn-sm">
+            <span>Preview ↗</span>
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: var(--space-16) var(--space-6); background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px dashed var(--bg-surface-glass-border);">
+      <div style="font-size: 3rem; margin-bottom: var(--space-4);">🎨</div>
+      <h3 style="margin-bottom: var(--space-2);">No Celebrations Found</h3>
+      <p style="color: var(--text-muted); font-size: var(--text-sm); max-width: 450px; margin: 0 auto var(--space-6);">
+        Create your first animation-first celebration journey with the guided creator wizard.
+      </p>
+      <a href="{% url 'wizard_create' %}" class="btn btn-primary">Create Your First Celebration</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight_gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ SITE_TITLE }} — Cinematic Celebration Platform{% endblock %}</title>
+  
+  <!-- Design Tokens & Master Stylesheet -->
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/studio.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="studio-header">
+    <div class="header-container">
+      <a href="{% url 'landing' %}" class="brand-logo">
+        <div class="brand-icon">✨</div>
+        <span>Celebration Studio</span>
+      </a>
+
+      {% if request.user.is_authenticated %}
+      <nav>
+        <ul class="nav-links">
+          <li><a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+          <li><a href="{% url 'recipient_directory' %}" class="nav-link {% if request.resolver_match.url_name == 'recipient_directory' %}active{% endif %}">VIP Recipients</a></li>
+          <li><a href="{% url 'media_vault' %}" class="nav-link {% if request.resolver_match.url_name == 'media_vault' %}active{% endif %}">Media Vault</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions" style="display: flex; align-items: center; gap: var(--space-3);">
+        <a href="{% url 'wizard_create' %}" class="btn btn-primary btn-sm">
+          <span>+ Create Celebration</span>
+        </a>
+        <a href="{% url 'logout' %}" class="btn btn-ghost btn-sm" title="Sign out of creator session">
+          <span>Sign Out ⎋</span>
+        </a>
+      </div>
+      {% else %}
+      <div class="nav-actions">
+        <a href="{% url 'login' %}" class="btn btn-primary btn-sm">
+          <span>✦ Creator Sign In</span>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

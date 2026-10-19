@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create New Celebration — {{ SITE_TITLE }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container" style="max-width: 800px;">
+  
+  <div style="text-align: center; margin-bottom: var(--space-8);">
+    <h1 class="font-display" style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">Experience Creator Wizard</h1>
+    <p style="color: var(--text-muted); font-size: var(--text-sm);">Follow the 4 simple steps to compose an emotionally resonant, animation-rich celebration.</p>
+  </div>
+
+  <form method="POST" action="{% url 'wizard_create' %}" style="background: var(--bg-surface); border: 1px solid var(--bg-surface-glass-border); border-radius: var(--radius-xl); padding: var(--space-8); box-shadow: var(--shadow-lg);">
+    {% csrf_token %}
+
+    <!-- Step 1: Celebration Title & Occasion -->
+    <div style="margin-bottom: var(--space-8);">
+      <h3 class="font-display" style="font-size: var(--text-lg); margin-bottom: var(--space-4); color: var(--theme-primary);">
+        1. Celebration Title & Occasion
+      </h3>
+      
+      <div class="form-group">
+        <label class="form-label">Celebration Title</label>
+        <input type="text" name="title" required class="form-control" placeholder="e.g. A Starlit Odyssey for Sarah">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Occasion / Event Type</label>
+        <select name="event_type" class="form-select">
+          {% for code, label, emoji, desc in EVENT_TYPES %}
+            <option value="{{ code }}">{{ emoji }} {{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Step 2: Recipient Details -->
+    <div style="margin-bottom: var(--space-8); border-top: 1px solid var(--bg-surface-glass-border); padding-top: var(--space-6);">
+      <h3 class="font-display" style="font-size: var(--text-lg); margin-bottom: var(--space-4); color: var(--theme-primary);">
+        2. Who is this Celebration For?
+      </h3>
+
+      {% if recipients %}
+      <div class="form-group">
+        <label class="form-label">Select from Saved VIP Recipients</label>
+        <select name="recipient_id" class="form-select">
+          <option value="">-- Create a new recipient profile below --</option>
+          {% for r in recipients %}
+            <option value="{{ r.id }}">{{ r.full_name }} ({{ r.get_relationship_display }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="text-align: center; margin: var(--space-3) 0; color: var(--text-dim); font-size: var(--text-xs);">— OR —</div>
+      {% endif %}
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">New Recipient Name</label>
+          <input type="text" name="new_recipient_name" class="form-control" placeholder="e.g. Aria, Lucas, Maya...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Relationship</label>
+          <select id="relationshipSelect" name="recipient_relationship" class="form-select" onchange="toggleCustomRelationship(this.value)">
+            {% for key, label, icon in RELATIONSHIP_OPTIONS %}
+              <option value="{{ key }}" {% if key == 'sister' %}selected{% endif %}>{{ icon }} {{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Custom Relationship Label Field (shown when 'custom' is selected) -->
+      <div id="customRelationshipRow" class="form-group" style="display: none; margin-top: var(--space-3);">
+        <label class="form-label">Custom Relationship Title</label>
+        <input type="text" name="custom_relationship_label" class="form-control" placeholder="e.g. Soul Sister, Gym Bro, Godmother, Studio Partner...">
+        <span style="font-size: var(--text-xs); color: var(--text-dim); margin-top: 4px; display: block;">
+          Enter any relationship label you wish — all quotes and messages will automatically harmonize with this title.
+        </span>
+      </div>
+    </div>
+
+    <!-- Step 3: Color Palette & Visual Tone -->
+    <div style="margin-bottom: var(--space-8); border-top: 1px solid var(--bg-surface-glass-border); padding-top: var(--space-6);">
+      <h3 class="font-display" style="font-size: var(--text-lg); margin-bottom: var(--space-4); color: var(--theme-primary);">
+        3. Visual Palette & Atmosphere
+      </h3>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--space-3);">
+        {% for theme in THEME_PRESETS %}
+        <label style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); cursor: pointer;">
+          <input type="radio" name="theme_id" value="{{ theme.id }}" {% if forloop.first %}checked{% endif %}>
+          <div style="width: 14px; height: 14px; border-radius: 50%; background: {{ theme.primary }};"></div>
+          <span style="font-size: var(--text-xs); font-weight: 500;">{{ theme.name }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Step 4: Cinematic Animation Style -->
+    <div style="margin-bottom: var(--space-8); border-top: 1px solid var(--bg-surface-glass-border); padding-top: var(--space-6);">
+      <h3 class="font-display" style="font-size: var(--text-lg); margin-bottom: var(--space-4); color: var(--theme-primary);">
+        4. Cinematic Animation Style
+      </h3>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-3);">
+        {% for pid, preset in animation_presets.items %}
+        <label style="display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: var(--space-2);">
+            <input type="radio" name="animation_preset" value="{{ pid }}" {% if forloop.first %}checked{% endif %}>
+            <span style="font-size: 1.1rem;">{{ preset.icon }}</span>
+            <strong style="font-size: var(--text-xs); color: #fff;">{{ preset.name }}</strong>
+          </div>
+          <span style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.4;">{{ preset.description }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Step 5: Starter Journey Blueprint -->
+    <div style="margin-bottom: var(--space-8); border-top: 1px solid var(--bg-surface-glass-border); padding-top: var(--space-6);">
+      <h3 class="font-display" style="font-size: var(--text-lg); margin-bottom: var(--space-4); color: var(--theme-primary);">
+        5. Experience Sequence Blueprint
+      </h3>
+
+      <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+        <label style="display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); cursor: pointer;">
+          <input type="radio" name="starter_pack" value="full_story" checked style="margin-top: 4px;">
+          <div>
+            <strong style="color: #fff; font-size: var(--text-sm);">Complete 5-Engine Journey (Recommended)</strong>
+            <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px;">
+              Cinematic Opening → Romantic Dream → Memory Timeline → Secret Surprise Box → Cosmic Starlight Finale.
+            </p>
+          </div>
+        </label>
+
+        <label style="display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); cursor: pointer;">
+          <input type="radio" name="starter_pack" value="romantic" style="margin-top: 4px;">
+          <div>
+            <strong style="color: #fff; font-size: var(--text-sm);">Romantic Keepsake</strong>
+            <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px;">
+              Petals & Light → Memory Timeline → Wax-Sealed Surprise Letter.
+            </p>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Submit Action -->
+    <div style="display: flex; justify-content: flex-end; gap: var(--space-4);">
+      <a href="{% url 'dashboard' %}" class="btn btn-ghost">Cancel</a>
+      <button type="submit" class="btn btn-primary btn-lg">
+        <span>Create Celebration & Enter Studio →</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+function toggleCustomRelationship(val) {
+  const row = document.getElementById('customRelationshipRow');
+  if (row) {
+    row.style.display = (val === 'custom') ? 'block' : 'none';
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ celebration.theme_id }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ celebration.title }} — Celebration Experience</title>
+  
+  <meta name="description" content="A cinematic personalized celebration for {{ celebration.recipient_summary }}">
+  <meta property="og:title" content="{{ celebration.title }}">
+  <meta property="og:description" content="A cinematic personalized celebration for {{ celebration.recipient_summary }}">
+
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/studio.css' %}">
+  <link rel="stylesheet" href="{% static 'css/engines.css' %}">
+</head>
+<body style="margin: 0; padding: 0; overflow: hidden; background: var(--bg-primary);">
+
+  {% include 'includes/celebration_stage.html' %}
+
+  <!-- Vendor Animation Libraries -->
+  <script src="{% static 'vendor/gsap.min.js' %}"></script>
+  <script src="{% static 'vendor/three.min.js' %}"></script>
+  <script src="{% static 'vendor/canvas-confetti.min.js' %}"></script>
+
+  <!-- Audio Controller & Master Scene Orchestrator -->
+  <script src="{% static 'js/audio_controller.js' %}"></script>
+  <script type="module" src="{% static 'js/orchestrator.js' %}"></script>
+</body>
+</html>

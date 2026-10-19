@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}VIP Recipients Directory — {{ SITE_TITLE }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-8); flex-wrap: wrap; gap: var(--space-4);">
+    <div>
+      <h1 class="font-display" style="font-size: var(--text-3xl); margin-bottom: var(--space-1);">VIP Recipients Directory</h1>
+      <p style="color: var(--text-muted); font-size: var(--text-sm);">Manage and reuse recipient profiles across birthdays, anniversaries, and milestones without data contamination.</p>
+    </div>
+
+    <button type="button" class="btn btn-primary" onclick="document.getElementById('recipientDialog').showModal()">
+      <span>+ Add VIP Recipient</span>
+    </button>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-6);">
+    {% for r in recipients %}
+    <div style="background: var(--bg-surface); border: 1px solid var(--bg-surface-glass-border); border-radius: var(--radius-lg); padding: var(--space-6); display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--theme-primary-alpha); border: 1px solid var(--theme-primary); color: var(--theme-primary); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700;">
+            {{ r.full_name|slice:":1" }}
+          </div>
+          <span class="badge-status badge-draft">{{ r.get_relationship_display }}</span>
+        </div>
+
+        <h3 style="font-size: var(--text-xl); margin-bottom: var(--space-1);">{{ r.full_name }}</h3>
+        {% if r.nickname %}
+          <div style="color: var(--theme-primary); font-size: var(--text-xs); margin-bottom: var(--space-3);">Known as “{{ r.nickname }}”</div>
+        {% endif %}
+
+        {% if r.birth_date %}
+          <div style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-2);">
+            🎂 Birthday: <strong>{{ r.birth_date|date:"F d, Y" }}</strong>
+          </div>
+        {% endif %}
+
+        {% if r.personal_notes %}
+          <p style="font-size: var(--text-xs); color: var(--text-dim); background: rgba(0,0,0,0.25); padding: var(--space-3); border-radius: var(--radius-sm); margin-top: var(--space-3); line-height: 1.5;">
+            {{ r.personal_notes }}
+          </p>
+        {% endif %}
+      </div>
+
+      <div style="margin-top: var(--space-6); border-top: 1px solid rgba(255,255,255,0.05); padding-top: var(--space-4); display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: var(--text-xs); color: var(--text-dim);">
+          Linked Celebrations: <strong>{{ r.celebration_links.count }}</strong>
+        </span>
+        <a href="{% url 'wizard_create' %}" class="btn btn-secondary btn-sm">
+          Celebrate 🎉
+        </a>
+      </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: var(--space-12); background: var(--bg-surface); border-radius: var(--radius-lg);">
+      <p style="color: var(--text-muted);">No recipients registered yet. Add someone special to begin.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- Modal Dialog: Add New Recipient -->
+<dialog id="recipientDialog" class="studio-dialog">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6);">
+    <h3 class="font-display" style="font-size: var(--text-xl);">Register VIP Recipient</h3>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('recipientDialog').close()">✕</button>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input type="text" name="full_name" required class="form-control" placeholder="e.g. Maya Lin">
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+      <div class="form-group">
+        <label class="form-label">Nickname (Optional)</label>
+        <input type="text" name="nickname" class="form-control" placeholder="e.g. Maya">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Relationship</label>
+        <select name="relationship" class="form-select">
+          <option value="partner">Partner / Spouse</option>
+          <option value="best_friend" selected>Best Friend</option>
+          <option value="friend">Friend</option>
+          <option value="parent">Parent / Elder</option>
+          <option value="child">Child / Youth</option>
+          <option value="sibling">Sibling</option>
+          <option value="colleague">Colleague</option>
+          <option value="group">Group / Team</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Birthday (Optional)</label>
+      <input type="date" name="birth_date" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Personal Notes & Favorites</label>
+      <textarea name="personal_notes" class="form-textarea" placeholder="Favorite colors, songs, memories, or inside jokes..."></textarea>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-6);">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('recipientDialog').close()">Cancel</button>
+      <button type="submit" class="btn btn-primary">Save Recipient Profile</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

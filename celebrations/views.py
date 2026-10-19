@@ -1,0 +1,754 @@
+import json
+import uuid
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from django.views.generic import TemplateView, ListView, CreateView
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.models import User
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse, HttpResponseForbidden, Http404
+from django.urls import reverse_lazy, reverse
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+from .models import (
+    Celebration, RecipientProfile, CelebrationParticipant,
+    CelebrationScene, MediaAsset, Publication
+)
+from .animation_registry import (
+    ANIMATION_REGISTRY, ANIMATION_PRESETS,
+    get_default_animation_config, resolve_celebration_animations,
+    validate_animation_payload
+)
+
+
+class CreatorRequiredMixin:
+    """
+    Enforces authentication for all creator routes.
+    If an unauthenticated visitor tries to access creator routes (e.g. by tampering
+    with the URL in the browser address bar), they are gracefully redirected to the
+    public landing page, completely shielding creator dashboards, directories, and editors.
+    """
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('landing')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class CreatorAPIMixin:
+    """
+    Enforces authentication and ownership on all creator API endpoints.
+    Returns HTTP 403 Forbidden with JSON detail if unauthorized.
+    """
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'status': 'forbidden', 'message': 'Authentication required'}, status=403)
+        
+        celebration_id = kwargs.get('celebration_id')
+        if celebration_id:
+            celebration = get_object_or_404(Celebration, id=celebration_id)
+            if celebration.owner and celebration.owner != request.user:
+                return JsonResponse({'status': 'forbidden', 'message': 'Permission denied'}, status=403)
+            request.celebration = celebration
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+class CreatorLoginView(View):
+    """
+    Fully animated creator login portal with living stardust particle canvas,
+    frosted glassmorphism card, and interactive validation animations.
+    """
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('dashboard')
+        next_url = request.GET.get('next', reverse('dashboard'))
+        return render(request, 'auth/login.html', {'next': next_url, 'error': None})
+
+    def post(self, request):
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        next_url = request.POST.get('next') or reverse('dashboard')
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect(next_url)
+        else:
+            return render(request, 'auth/login.html', {
+                'next': next_url,
+                'error': 'Invalid username or password. Please try again.',
+                'username': username
+            })
+
+
+class CreatorLogoutView(View):
+    """
+    Fully animated sign out screen with celestial ambient particles,
+    closing lock animation, circular countdown ring, and graceful redirect to home.
+    """
+    def get(self, request):
+        logout(request)
+        return render(request, 'auth/logout.html', {})
+
+    def post(self, request):
+        logout(request)
+        return render(request, 'auth/logout.html', {})
+
+
+class LandingView(TemplateView):
+    template_name = 'landing.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['featured_celebrations'] = Celebration.objects.filter(status='published').order_by('-created_at')[:3]
+        return ctx
+
+
+class DashboardView(CreatorRequiredMixin, View):
+    def get(self, request):
+        user = request.user
+        
+        # Real statistics strictly from authenticated creator's records
+        celebrations = Celebration.objects.filter(owner=user)
+        recipients = RecipientProfile.objects.filter(user=user)
+
+        total_count = celebrations.count()
+        published_count = celebrations.filter(status='published').count()
+        draft_count = celebrations.filter(status='draft').count()
+        total_recipients = recipients.count()
+
+        query = request.GET.get('q', '')
+        if query:
+            celebrations = celebrations.filter(title__icontains=query)
+
+        event_filter = request.GET.get('event', '')
+        if event_filter:
+            celebrations = celebrations.filter(event_type=event_filter)
+
+        return render(request, 'dashboard.html', {
+            'celebrations': celebrations,
+            'total_count': total_count,
+            'published_count': published_count,
+            'draft_count': draft_count,
+            'total_recipients': total_recipients,
+            'query': query,
+            'event_filter': event_filter
+        })
+
+
+class WizardCreateView(CreatorRequiredMixin, View):
+    def get(self, request):
+        recipients = RecipientProfile.objects.filter(user=request.user)
+        return render(request, 'wizard.html', {
+            'recipients': recipients,
+            'animation_presets': ANIMATION_PRESETS
+        })
+
+    def post(self, request):
+        title = request.POST.get('title', 'My Celebration')
+        event_type = request.POST.get('event_type', 'birthday')
+        theme_id = request.POST.get('theme_id', 'midnight_gold')
+        animation_preset = request.POST.get('animation_preset', 'cinematic_luxury')
+        recipient_id = request.POST.get('recipient_id')
+        new_recipient_name = request.POST.get('new_recipient_name', '').strip()
+        recipient_relationship = request.POST.get('recipient_relationship', 'friend')
+        custom_relationship_label = request.POST.get('custom_relationship_label', '').strip()
+        starter_pack = request.POST.get('starter_pack', 'full_story')
+
+        owner = request.user
+
+        # Handle recipient creation or reuse
+        recipient = None
+        if recipient_id:
+            try:
+                recipient = RecipientProfile.objects.get(id=recipient_id)
+            except RecipientProfile.DoesNotExist:
+                recipient = None
+
+        if not recipient and new_recipient_name:
+            recipient = RecipientProfile.objects.create(
+                user=owner,
+                full_name=new_recipient_name,
+                nickname=new_recipient_name.split()[0],
+                relationship=recipient_relationship,
+                custom_relationship_label=custom_relationship_label
+            )
+
+        # Create Celebration with chosen animation config
+        initial_anim_config = get_default_animation_config(animation_preset)
+        celebration = Celebration.objects.create(
+            owner=owner,
+            title=title,
+            event_type=event_type,
+            theme_id=theme_id,
+            animation_config=initial_anim_config,
+            status='draft'
+        )
+
+        if recipient:
+            CelebrationParticipant.objects.create(
+                celebration=celebration,
+                recipient=recipient,
+                role='Honoree',
+                display_order=0
+            )
+
+        # Create Publication record
+        Publication.objects.create(
+            celebration=celebration,
+            is_published=False
+        )
+
+        rec_name = recipient.display_name if recipient else "Special Someone"
+        rel_key = recipient.relationship if recipient else recipient_relationship
+        custom_label = recipient.custom_relationship_label if recipient else custom_relationship_label
+
+        # Adaptive Relationship Content Pack (Sister, Brother, Sibling, etc.)
+        from .relationship_content import get_relationship_content
+        rel_pack = get_relationship_content(rel_key, custom_label=custom_label, recipient_name=rec_name)
+
+        # Seed initial scenes based on selected starter pack & relationship
+        order = 0
+        CelebrationScene.objects.create(
+            celebration=celebration,
+            scene_type='cinematic',
+            order=order,
+            title='The Starlit Prelude',
+            content={
+                'title_prefix': rel_pack['title_prefix'],
+                'recipient_name': rec_name,
+                'subtitle': rel_pack['subtitle'],
+                'tagline': rel_pack['tagline'],
+                'countdown_enabled': True,
+                'countdown_seconds': 3,
+                'climax_text': rel_pack['climax_text']
+            }
+        )
+        order += 1
+
+        if starter_pack in ['full_story', 'romantic']:
+            CelebrationScene.objects.create(
+                celebration=celebration,
+                scene_type='romantic_dream',
+                order=order,
+                title='Reflections of Grace',
+                content={
+                    'headline': rel_pack['quote_headline'],
+                    'quote': rel_pack['quote'],
+                    'message_body': f"Wishing {rec_name} every ounce of joy and radiance in this new chapter.",
+                    'petals_type': 'roses_and_sakura',
+                    'heart_sparkle': True
+                }
+            )
+            order += 1
+
+        CelebrationScene.objects.create(
+            celebration=celebration,
+            scene_type='memory_lane',
+            order=order,
+            title='Echoes of Memory',
+            content={
+                'headline': rel_pack['memory_headline'],
+                'intro': 'Moments cherished in starlight...',
+                'memories': rel_pack['memories']
+            }
+        )
+        order += 1
+
+        CelebrationScene.objects.create(
+            celebration=celebration,
+            scene_type='secret_surprise',
+            order=order,
+            title='The Mystery Box',
+            content={
+                'prompt': 'Tap to unlock a surprise prepared just for you...',
+                'gift_style': 'cosmic_relic',
+                'box_style': 'cosmic_relic',
+                'box_color': '#b91c1c',
+                'ribbon_color': '#f59e0b',
+                'surprise_title': rel_pack['surprise_title'],
+                'surprise_letter': rel_pack['surprise_letter'],
+                'signature': rel_pack['signature'],
+                'confetti_colors': ['#FFD700', '#FFFFFF', '#38E1FF', '#E6C065']
+            }
+        )
+        order += 1
+
+        CelebrationScene.objects.create(
+            celebration=celebration,
+            scene_type='cosmic_universe',
+            order=order,
+            title='Infinite Constellations',
+            content={
+                'headline': rel_pack['final_headline'],
+                'constellation_name': f'Constellation of {rec_name}',
+                'closing_message': rel_pack['final_message'],
+                'signature': rel_pack['signature'],
+                'wishes': rel_pack['final_wishes'],
+                'final_cheer': 'Here is to a brilliant and triumphant future!'
+            }
+        )
+
+        return redirect('experience_studio', celebration_id=celebration.id)
+
+
+class ExperienceStudioView(CreatorRequiredMixin, View):
+    def get(self, request, celebration_id):
+        celebration = get_object_or_404(Celebration.objects.prefetch_related('scenes', 'participants__recipient'), id=celebration_id)
+        if celebration.owner and celebration.owner != request.user:
+            return redirect('landing')
+        publication, _ = Publication.objects.get_or_create(celebration=celebration)
+        
+        scenes_data = [
+            {
+                'id': str(s.id),
+                'scene_type': s.scene_type,
+                'title': s.title,
+                'order': s.order,
+                'content': s.content,
+                'is_skippable': s.is_skippable
+            }
+            for s in celebration.scenes.all()
+        ]
+
+        anim_config = resolve_celebration_animations(celebration)
+        audio_config = celebration.get_default_audio_config()
+
+        return render(request, 'editor.html', {
+            'celebration': celebration,
+            'publication': publication,
+            'scenes': celebration.scenes.all(),
+            'scenes_json': json.dumps(scenes_data),
+            'share_url': request.build_absolute_uri(reverse('public_celebration', kwargs={'slug': celebration.slug})),
+            'animation_config': anim_config,
+            'animation_config_json': json.dumps(anim_config),
+            'animation_presets': ANIMATION_PRESETS,
+            'animation_registry': ANIMATION_REGISTRY,
+            'audio_config': audio_config,
+            'audio_config_json': json.dumps(audio_config),
+        })
+
+
+class CelebrationPreviewView(CreatorRequiredMixin, View):
+    def get(self, request, celebration_id):
+        celebration = get_object_or_404(Celebration.objects.prefetch_related('scenes'), id=celebration_id)
+        if celebration.owner and celebration.owner != request.user:
+            return redirect('landing')
+        scenes = celebration.scenes.all()
+        anim_config = resolve_celebration_animations(celebration)
+        audio_config = celebration.get_default_audio_config()
+        return render(request, 'preview.html', {
+            'celebration': celebration,
+            'scenes': scenes,
+            'is_preview': True,
+            'animation_config': anim_config,
+            'animation_config_json': json.dumps(anim_config),
+            'audio_config': audio_config,
+            'audio_config_json': json.dumps(audio_config),
+        })
+
+
+class PublicCelebrationView(View):
+    def get(self, request, slug):
+        celebration = get_object_or_404(Celebration.objects.prefetch_related('scenes', 'participants__recipient'), slug=slug)
+        publication, _ = Publication.objects.get_or_create(celebration=celebration)
+
+        # Check if password protected and unlocked in session
+        if publication.is_password_protected:
+            session_key = f'unlocked_celebration_{celebration.id}'
+            if not request.session.get(session_key):
+                return render(request, 'password_prompt.html', {
+                    'celebration': celebration,
+                    'error': None
+                })
+
+        # Increment view count
+        celebration.view_count += 1
+        celebration.save(update_fields=['view_count'])
+
+        anim_config = resolve_celebration_animations(celebration)
+        audio_config = celebration.get_default_audio_config()
+
+        return render(request, 'public_celebration.html', {
+            'celebration': celebration,
+            'scenes': celebration.scenes.all(),
+            'publication': publication,
+            'animation_config': anim_config,
+            'animation_config_json': json.dumps(anim_config),
+            'audio_config': audio_config,
+            'audio_config_json': json.dumps(audio_config),
+        })
+
+    def post(self, request, slug):
+        # Password verification POST
+        celebration = get_object_or_404(Celebration, slug=slug)
+        publication = get_object_or_404(Publication, celebration=celebration)
+
+        password = request.POST.get('password', '')
+        if publication.verify_password(password):
+            request.session[f'unlocked_celebration_{celebration.id}'] = True
+            return redirect('public_celebration', slug=slug)
+        else:
+            return render(request, 'password_prompt.html', {
+                'celebration': celebration,
+                'error': 'Incorrect passcode. Please try again.'
+            })
+
+
+class RecipientDirectoryView(CreatorRequiredMixin, View):
+    def get(self, request):
+        recipients = RecipientProfile.objects.filter(user=request.user)
+        return render(request, 'recipients.html', {'recipients': recipients})
+
+    def post(self, request):
+        user = request.user
+        full_name = request.POST.get('full_name')
+        nickname = request.POST.get('nickname')
+        relationship = request.POST.get('relationship', 'friend')
+        birth_date = request.POST.get('birth_date') or None
+        personal_notes = request.POST.get('personal_notes', '')
+
+        RecipientProfile.objects.create(
+            user=user,
+            full_name=full_name,
+            nickname=nickname,
+            relationship=relationship,
+            birth_date=birth_date,
+            personal_notes=personal_notes
+        )
+        return redirect('recipient_directory')
+
+
+class MediaVaultView(CreatorRequiredMixin, View):
+    def get(self, request):
+        assets = MediaAsset.objects.filter(celebration__owner=request.user)
+        return render(request, 'media_vault.html', {'assets': assets})
+
+    def post(self, request):
+        uploaded_file = request.FILES.get('file')
+        caption = request.POST.get('caption', '')
+        alt_text = request.POST.get('alt_text', '')
+
+        if uploaded_file:
+            asset_type = 'audio' if uploaded_file.name.endswith(('.mp3', '.wav', '.ogg')) else 'image'
+            MediaAsset.objects.create(
+                file=uploaded_file,
+                asset_type=asset_type,
+                caption=caption,
+                alt_text=alt_text,
+                file_size=uploaded_file.size
+            )
+        return redirect('media_vault')
+
+
+# ==========================================================================
+# AJAX JSON API ENDPOINTS FOR LIVE STUDIO UPDATES (SECURED)
+# ==========================================================================
+
+class UpdateThemeAPI(CreatorAPIMixin, View):
+    def post(self, request, celebration_id):
+        celebration = getattr(request, 'celebration', None) or get_object_or_404(Celebration, id=celebration_id)
+        try:
+            data = json.loads(request.body)
+            new_theme = data.get('theme_id')
+            if new_theme:
+                celebration.theme_id = new_theme
+                celebration.save(update_fields=['theme_id'])
+                return JsonResponse({'status': 'ok', 'theme_id': new_theme})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+        return JsonResponse({'status': 'invalid'}, status=400)
+
+
+class PublishToggleAPI(CreatorAPIMixin, View):
+    def post(self, request, celebration_id):
+        celebration = getattr(request, 'celebration', None) or get_object_or_404(Celebration, id=celebration_id)
+        publication, _ = Publication.objects.get_or_create(celebration=celebration)
+
+        is_published = request.POST.get('is_published') == 'true'
+        raw_password = request.POST.get('password', '').strip()
+
+        publication.is_published = is_published
+        if is_published and not publication.published_at:
+            publication.published_at = timezone.now()
+        
+        if raw_password:
+            publication.set_password(raw_password)
+        else:
+            publication.set_password('')
+
+        publication.save()
+
+        celebration.status = 'published' if is_published else 'draft'
+        celebration.save(update_fields=['status'])
+
+        share_url = request.build_absolute_uri(reverse('public_celebration', kwargs={'slug': celebration.slug}))
+        return JsonResponse({
+            'status': 'ok',
+            'is_published': is_published,
+            'is_password_protected': publication.is_password_protected,
+            'share_url': share_url
+        })
+
+
+class UpdateSceneContentAPI(CreatorAPIMixin, View):
+    def post(self, request, celebration_id, scene_id):
+        celebration = getattr(request, 'celebration', None) or get_object_or_404(Celebration, id=celebration_id)
+        scene = get_object_or_404(CelebrationScene, id=scene_id, celebration=celebration)
+
+        try:
+            data = json.loads(request.body)
+            new_title = data.get('title')
+            new_content = data.get('content')
+            is_skippable = data.get('is_skippable')
+
+            if new_title is not None:
+                scene.title = new_title
+            if new_content is not None and isinstance(new_content, dict):
+                # Deep merge or replace scene content payload
+                merged = scene.content.copy()
+                merged.update(new_content)
+                scene.content = merged
+            if is_skippable is not None:
+                scene.is_skippable = bool(is_skippable)
+
+            scene.save()
+            return JsonResponse({'status': 'ok', 'scene_id': str(scene.id), 'content': scene.content, 'title': scene.title})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+class ReorderScenesAPI(CreatorAPIMixin, View):
+    def post(self, request, celebration_id):
+        celebration = getattr(request, 'celebration', None) or get_object_or_404(Celebration, id=celebration_id)
+        try:
+            data = json.loads(request.body)
+            ordered_scene_ids = data.get('scene_ids', [])
+
+            for index, s_id in enumerate(ordered_scene_ids):
+                CelebrationScene.objects.filter(celebration=celebration, id=s_id).update(order=index)
+
+            return JsonResponse({'status': 'ok', 'message': 'Scenes reordered successfully'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+class AddSceneAPI(CreatorAPIMixin, View):
+    def post(self, request, celebration_id):
+        celebration = getattr(request, 'celebration', None) or get_object_or_404(Celebration, id=celebration_id)
+        try:
+            data = json.loads(request.body)
+            scene_type = data.get('scene_type', 'memory_lane')
+            title = data.get('title', 'New Scene')
+
+            current_max_order = celebration.scenes.count()
+            
+            # Default content based on scene type
+            defaults = {
+                'cinematic': {'title_prefix': 'Celebrating', 'recipient_name': celebration.recipient_summary, 'subtitle': 'A momentous occasion', 'countdown_enabled': True, 'countdown_seconds': 3},
+                'romantic_dream': {'headline': 'A Garden of Warm Wishes', 'quote': '“Some moments shine brighter than the rest.”', 'petals_type': 'roses_and_sakura'},
+                'memory_lane': {'headline': 'Cherished Highlights', 'intro': 'Precious moments in time', 'memories': []},
+                'secret_surprise': {'prompt': 'Tap to open your special surprise...', 'gift_style': 'cosmic_relic', 'box_style': 'cosmic_relic', 'box_color': '#b91c1c', 'ribbon_color': '#f59e0b', 'surprise_title': 'A Special Wish', 'surprise_letter': 'May your day be filled with endless joy and light!'},
+                'cosmic_universe': {'headline': 'Infinite Starlight', 'constellation_name': f'Constellation of {celebration.recipient_summary}', 'wishes': ['Joy', 'Peace', 'Prosperity']}
+            }
+
+            new_scene = CelebrationScene.objects.create(
+                celebration=celebration,
+                scene_type=scene_type,
+                order=current_max_order,
+                title=title,
+                content=defaults.get(scene_type, {})
+            )
+
+            return JsonResponse({'status': 'ok', 'scene_id': str(new_scene.id), 'scene_type': new_scene.scene_type, 'title': new_scene.title, 'order': new_scene.order})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+class DeleteSceneAPI(CreatorAPIMixin, View):
+    def post(self, request, celebration_id, scene_id):
+        celebration = getattr(request, 'celebration', None) or get_object_or_404(Celebration, id=celebration_id)
+        scene = get_object_or_404(CelebrationScene, id=scene_id, celebration=celebration)
+
+        # Ensure celebration keeps at least one scene
+        if celebration.scenes.count() <= 1:
+            return JsonResponse({'status': 'error', 'message': 'A celebration must contain at least one scene.'}, status=400)
+
+        scene.delete()
+
+        # Re-index remaining scenes
+        for idx, s in enumerate(celebration.scenes.order_by('order')):
+            s.order = idx
+            s.save(update_fields=['order'])
+
+        return JsonResponse({'status': 'ok', 'message': 'Scene removed successfully'})
+
+
+class UploadPhotoAPI(CreatorAPIMixin, View):
+    def post(self, request, celebration_id):
+        celebration = getattr(request, 'celebration', None) or get_object_or_404(Celebration, id=celebration_id)
+        uploaded_file = request.FILES.get('file')
+
+        if not uploaded_file:
+            return JsonResponse({'status': 'error', 'message': 'No file uploaded'}, status=400)
+
+        try:
+            asset = MediaAsset.objects.create(
+                celebration=celebration,
+                file=uploaded_file,
+                asset_type='image',
+                caption=request.POST.get('caption', uploaded_file.name),
+                file_size=uploaded_file.size
+            )
+            return JsonResponse({
+                'status': 'ok',
+                'asset_id': str(asset.id),
+                'file_url': asset.file.url,
+                'caption': asset.caption
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+class UpdateAnimationConfigAPI(CreatorAPIMixin, View):
+    def post(self, request, celebration_id):
+        celebration = getattr(request, 'celebration', None) or get_object_or_404(Celebration, id=celebration_id)
+        try:
+            data = json.loads(request.body)
+            errors = validate_animation_payload(data)
+            if errors:
+                return JsonResponse({'status': 'error', 'errors': errors, 'message': 'Validation failed'}, status=400)
+
+            # Check if preset changed
+            preset_id = data.get('preset_id')
+            existing_config = celebration.animation_config or {}
+            
+            if preset_id and preset_id != existing_config.get('preset_id'):
+                config = get_default_animation_config(preset_id)
+            else:
+                config = resolve_celebration_animations(celebration)
+
+            # Update customizable fields
+            for key in ['preset_id', 'screen_transition', 'image_transition', 'background_effect', 
+                        'gift_effect', 'finale_effect', 'intensity', 'speed', 
+                        'respect_reduced_motion', 'sound_effects_enabled']:
+                if key in data:
+                    config[key] = data[key]
+
+            celebration.animation_config = config
+            celebration.save(update_fields=['animation_config'])
+
+            return JsonResponse({
+                'status': 'ok',
+                'animation_config': config,
+                'message': 'Animation configuration saved successfully'
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+class UploadAudioAPI(CreatorAPIMixin, View):
+    def post(self, request, celebration_id):
+        celebration = getattr(request, 'celebration', None) or get_object_or_404(Celebration, id=celebration_id)
+        uploaded_file = request.FILES.get('audio_file') or request.FILES.get('file')
+
+        if not uploaded_file:
+            return JsonResponse({'status': 'error', 'message': 'No audio file uploaded'}, status=400)
+
+        # File format validation: MP3, WAV, OGG, M4A, AAC
+        valid_extensions = ['.mp3', '.wav', '.ogg', '.m4a', '.aac']
+        name_lower = uploaded_file.name.lower()
+        if not any(name_lower.endswith(ext) for ext in valid_extensions):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Unsupported audio format. Please upload MP3, WAV, OGG, M4A, or AAC audio files.'
+            }, status=400)
+
+        # File size limit: 20MB
+        max_size = 20 * 1024 * 1024
+        if uploaded_file.size > max_size:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Audio file exceeds 20MB limit ({uploaded_file.size / (1024*1024):.1f}MB).'
+            }, status=400)
+
+        try:
+            # Save to celebration.custom_audio
+            celebration.custom_audio = uploaded_file
+            celebration.save(update_fields=['custom_audio'])
+
+            cfg = celebration.get_default_audio_config()
+            cfg['source_type'] = 'custom'
+            cfg['custom_url'] = celebration.custom_audio.url
+            celebration.audio_config = cfg
+            celebration.save(update_fields=['audio_config'])
+
+            # Also store as a managed MediaAsset
+            MediaAsset.objects.create(
+                celebration=celebration,
+                file=uploaded_file,
+                asset_type='audio',
+                caption=uploaded_file.name,
+                file_size=uploaded_file.size
+            )
+
+            return JsonResponse({
+                'status': 'ok',
+                'file_url': celebration.custom_audio.url,
+                'track_name': uploaded_file.name,
+                'file_size': uploaded_file.size,
+                'audio_config': cfg,
+                'message': 'Custom soundtrack uploaded successfully'
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+class UpdateAudioConfigAPI(CreatorAPIMixin, View):
+    def post(self, request, celebration_id):
+        celebration = getattr(request, 'celebration', None) or get_object_or_404(Celebration, id=celebration_id)
+        try:
+            data = json.loads(request.body)
+            cfg = celebration.get_default_audio_config()
+
+            if 'enabled' in data:
+                cfg['enabled'] = bool(data['enabled'])
+            if 'source_type' in data:
+                cfg['source_type'] = data['source_type']
+            if 'soundtrack_preset' in data:
+                celebration.soundtrack_preset = data['soundtrack_preset']
+                celebration.save(update_fields=['soundtrack_preset'])
+            if 'volume' in data:
+                cfg['volume'] = max(0.0, min(1.0, float(data['volume'])))
+            if 'loop' in data:
+                cfg['loop'] = bool(data['loop'])
+            if 'start_time' in data:
+                cfg['start_time'] = max(0.0, float(data['start_time']))
+            if 'fade_in_seconds' in data:
+                cfg['fade_in_seconds'] = max(0.0, float(data['fade_in_seconds']))
+            if 'fade_out_seconds' in data:
+                cfg['fade_out_seconds'] = max(0.0, float(data['fade_out_seconds']))
+            if 'ducking_on_reveal' in data:
+                cfg['ducking_on_reveal'] = bool(data['ducking_on_reveal'])
+            if 'clear_custom' in data and data['clear_custom']:
+                celebration.custom_audio = None
+                celebration.save(update_fields=['custom_audio'])
+                cfg['custom_url'] = ''
+                cfg['source_type'] = 'preset'
+
+            celebration.audio_config = cfg
+            celebration.save(update_fields=['audio_config'])
+
+            return JsonResponse({
+                'status': 'ok',
+                'audio_config': cfg,
+                'soundtrack_preset': celebration.soundtrack_preset,
+                'message': 'Audio configuration saved successfully'
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+

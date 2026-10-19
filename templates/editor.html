@@ -1,0 +1,722 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Story Studio — {{ celebration.title }}{% endblock %}
+
+{% block content %}
+<div class="studio-workbench" data-celebration-id="{{ celebration.id }}">
+  {% csrf_token %}
+  
+  <!-- Left Column: Story Studio Creative Suite -->
+  <aside class="studio-sidebar">
+    <div class="sidebar-header">
+      <div>
+        <div style="font-size: var(--text-xs); color: var(--theme-primary); font-weight: 700; text-transform: uppercase;">
+          {{ celebration.get_event_type_display }} • {{ celebration.recipient_summary }}
+        </div>
+        <h2 style="font-size: var(--text-base); margin-top: 2px;">{{ celebration.title }}</h2>
+      </div>
+
+      <div style="display: flex; gap: var(--space-2); align-items: center;">
+        <span id="saveStatusIndicator" class="save-status-indicator saved">
+          <span class="status-dot">●</span> <span>Saved</span>
+        </span>
+        <button id="publishModalBtn" class="btn {% if celebration.status == 'published' %}btn-secondary{% else %}btn-primary{% endif %} btn-sm" onclick="document.getElementById('publishDialog').showModal()">
+          {% if celebration.status == 'published' %}Published ✓{% else %}Publish ↗{% endif %}
+        </button>
+      </div>
+    </div>
+
+    <!-- Multi-Tab Creative Navigation -->
+    <div class="studio-tabs">
+      <button type="button" class="studio-tab-btn active" data-tab="tab-flow">Story Flow</button>
+      <button type="button" class="studio-tab-btn" data-tab="tab-content">Scene Content</button>
+      <button type="button" class="studio-tab-btn" data-tab="tab-photos">Photos &amp; Memories</button>
+      <button type="button" class="studio-tab-btn" data-tab="tab-theme">Atmosphere</button>
+      <button type="button" class="studio-tab-btn" data-tab="tab-audio">🎵 Audio &amp; Music</button>
+      <button type="button" class="studio-tab-btn" data-tab="tab-animation">⚡ Animations &amp; Transitions</button>
+    </div>
+
+    <div class="sidebar-scroll-area">
+      
+      <!-- ============================================================== -->
+      <!-- TAB 1: STORY FLOW & SCENE REORDERING                           -->
+      <!-- ============================================================== -->
+      <div id="tab-flow" class="studio-tab-pane active">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+          <div>
+            <span class="form-label" style="margin: 0;">Celebration Story Flow</span>
+            <span style="font-size: var(--text-xs); color: var(--text-dim); display: block;">Reorder, jump to, or add scenes</span>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="openAddSceneDialog()">+ Add Scene</button>
+        </div>
+
+        <div id="scenesContainer" class="scene-sortable-list">
+          {% for scene in scenes %}
+          <div class="scene-item-card {% if forloop.first %}active{% endif %}" data-scene-id="{{ scene.id }}" data-scene-type="{{ scene.scene_type }}" data-scene-index="{{ forloop.counter0 }}">
+            <div class="scene-badge-order">{{ forloop.counter }}</div>
+            <div class="scene-item-meta">
+              <div class="scene-item-title">{{ scene.title }}</div>
+              <div class="scene-item-type">
+                {% if scene.scene_type == 'cinematic' %}🎬 Cinematic Prelude{% endif %}
+                {% if scene.scene_type == 'romantic_dream' %}🌸 Romantic Dream World{% endif %}
+                {% if scene.scene_type == 'memory_lane' %}📷 Memory Lane Timeline{% endif %}
+                {% if scene.scene_type == 'secret_surprise' %}🎁 Interactive Gift Box{% endif %}
+                {% if scene.scene_type == 'cosmic_universe' %}🌌 Cosmic Finale & Signature{% endif %}
+              </div>
+            </div>
+            <div class="scene-reorder-actions" onclick="event.stopPropagation()">
+              <button type="button" class="btn-icon-xs move-up-btn" title="Move Up" onclick="moveSceneUp('{{ scene.id }}')">▲</button>
+              <button type="button" class="btn-icon-xs move-down-btn" title="Move Down" onclick="moveSceneDown('{{ scene.id }}')">▼</button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div style="padding: var(--space-4); background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.08); border-radius: var(--radius-md); font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-4);">
+          <strong style="color: var(--theme-primary);">✦ Story Tip:</strong> Reordering changes the live playback and public URL experience immediately upon saving.
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- TAB 2: SCENE CONTENT EDITOR                                    -->
+      <!-- ============================================================== -->
+      <div id="tab-content" class="studio-tab-pane">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+          <div>
+            <span class="form-label" style="margin: 0;">Selected Scene Content</span>
+            <span id="selectedSceneLabel" style="font-size: var(--text-xs); color: var(--theme-primary); font-weight: 600;">Scene 1</span>
+          </div>
+          <button type="button" class="btn btn-secondary btn-xs" onclick="switchTab('tab-animation')" title="Edit Animations & Transitions">
+            ⚡ Edit Transitions &amp; FX →
+          </button>
+        </div>
+
+        <!-- Dynamic Scene Forms injected / toggled via JS -->
+        <div id="sceneContentForms">
+          <!-- 1. Cinematic Editor -->
+          <div class="scene-editor-panel" data-for-type="cinematic">
+            <div class="editor-field-group">
+              <label>Scene Title</label>
+              <input type="text" class="form-control" name="cinematic_scene_title" placeholder="The Starlit Prelude">
+            </div>
+            <div class="editor-field-group">
+              <label>Opening Prefix</label>
+              <input type="text" class="form-control" name="cinematic_prefix" placeholder="Celebrating My Sister / Celebrating">
+            </div>
+            <div class="editor-field-group">
+              <label>Recipient Name</label>
+              <input type="text" class="form-control" name="cinematic_name" placeholder="Aria">
+            </div>
+            <div class="editor-field-group">
+              <label>Personalized Welcome Message / Subtitle</label>
+              <textarea class="form-control" name="cinematic_subtitle" rows="3" placeholder="A momentous occasion to cherish and remember..."></textarea>
+            </div>
+            <div class="editor-field-group">
+              <label>Countdown Seconds</label>
+              <input type="number" class="form-control" name="cinematic_countdown" min="1" max="10" value="3">
+            </div>
+          </div>
+
+          <!-- 2. Romantic Dream Editor -->
+          <div class="scene-editor-panel" data-for-type="romantic_dream">
+            <div class="editor-field-group">
+              <label>Scene Title</label>
+              <input type="text" class="form-control" name="romantic_scene_title">
+            </div>
+            <div class="editor-field-group">
+              <label>Garden Headline</label>
+              <input type="text" class="form-control" name="romantic_headline">
+            </div>
+            <div class="editor-field-group">
+              <label>Heartfelt Quote / Message</label>
+              <textarea class="form-control" name="romantic_quote" rows="4"></textarea>
+            </div>
+          </div>
+
+          <!-- 3. Memory Lane Header Editor -->
+          <div class="scene-editor-panel" data-for-type="memory_lane">
+            <div class="editor-field-group">
+              <label>Timeline Title</label>
+              <input type="text" class="form-control" name="memory_scene_title">
+            </div>
+            <div class="editor-field-group">
+              <label>Timeline Headline</label>
+              <input type="text" class="form-control" name="memory_headline">
+            </div>
+            <div style="margin-top: var(--space-4); text-align: center;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="switchTab('tab-photos')">
+                📷 Open Photo &amp; Memory Manager ({{ scenes.count }} Photos) →
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. Secret Surprise (Gift Box) Editor -->
+          <div class="scene-editor-panel" data-for-type="secret_surprise">
+            <div class="editor-field-group">
+              <label>Scene Title</label>
+              <input type="text" class="form-control" name="surprise_scene_title">
+            </div>
+            <div class="editor-field-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                <label style="margin: 0;">Gift Box Sculptural Style</label>
+                <span style="font-size: var(--text-xs); color: var(--theme-primary); font-weight: 600;">Click to select &amp; preview</span>
+              </div>
+              <input type="hidden" name="surprise_gift_style" id="surpriseGiftStyleInput" value="cosmic_relic">
+
+              <!-- Visual Gift Box Card Selection Gallery -->
+              <div class="gift-box-visual-selector-grid">
+                <!-- 1. Cosmic Starlight Relic (User Image #1) -->
+                <div class="gift-box-card active" data-style="cosmic_relic" onclick="selectGiftBoxStyle('cosmic_relic')">
+                  <div class="gift-card-preview-thumb preview-cosmic-relic">
+                    <span style="font-size: 1.5rem; text-shadow: 0 0 10px #ffd700;">✦</span>
+                  </div>
+                  <div class="gift-card-info">
+                    <div class="gift-card-title">🌟 Cosmic Starlight Relic</div>
+                    <div class="gift-card-desc">Fabergé gilded egg with radiant starlight core</div>
+                    <span class="gift-card-badge badge-celestial">✦ Celestial Dream (Image #1)</span>
+                  </div>
+                </div>
+
+                <!-- 2. Champagne Royal Gold Satin Box (User Image #2) -->
+                <div class="gift-box-card" data-style="champagne_gold" onclick="selectGiftBoxStyle('champagne_gold')">
+                  <div class="gift-card-preview-thumb preview-champagne-gold">
+                    <span style="font-size: 1.5rem;">👑</span>
+                  </div>
+                  <div class="gift-card-info">
+                    <div class="gift-card-title">👑 Champagne Royal Gold</div>
+                    <div class="gift-card-desc">Metallic satin cube with sheer organza bow</div>
+                    <span class="gift-card-badge badge-luxury">✦ Luxury Satin (Image #2)</span>
+                  </div>
+                </div>
+
+                <!-- 3. Cyber Neon Dream Prism (User Image #3) -->
+                <div class="gift-box-card" data-style="dream_prism" onclick="selectGiftBoxStyle('dream_prism')">
+                  <div class="gift-card-preview-thumb preview-dream-prism">
+                    <span style="font-size: 1.5rem;">🔮</span>
+                  </div>
+                  <div class="gift-card-info">
+                    <div class="gift-card-title">🔮 Cyber Dream Prism</div>
+                    <div class="gift-card-desc">Refractive crystal with neon cyan &amp; violet glow</div>
+                    <span class="gift-card-badge badge-cyber">✦ Futuristic Neon (Image #3)</span>
+                  </div>
+                </div>
+
+                <!-- 4. Liquid Glass Casket -->
+                <div class="gift-box-card" data-style="liquid_glass" onclick="selectGiftBoxStyle('liquid_glass')">
+                  <div class="gift-card-preview-thumb preview-liquid-glass">
+                    <span style="font-size: 1.5rem;">💎</span>
+                  </div>
+                  <div class="gift-card-info">
+                    <div class="gift-card-title">💎 Liquid Glass Casket</div>
+                    <div class="gift-card-desc">Hand-blown crystal with chromatic color sheen</div>
+                    <span class="gift-card-badge badge-dreamy">✦ Dreamy Crystal</span>
+                  </div>
+                </div>
+
+                <!-- 5. Velvet Heritage Jewelry Box -->
+                <div class="gift-box-card" data-style="velvet_jewelry" onclick="selectGiftBoxStyle('velvet_jewelry')">
+                  <div class="gift-card-preview-thumb preview-velvet-box">
+                    <span style="font-size: 1.5rem;">💍</span>
+                  </div>
+                  <div class="gift-card-info">
+                    <div class="gift-card-title">💍 Velvet Heritage Jewelry</div>
+                    <div class="gift-card-desc">Plush imperial velvet with baroque brass brackets</div>
+                    <span class="gift-card-badge badge-heritage">✦ Imperial Heritage</span>
+                  </div>
+                </div>
+
+                <!-- 6. Enchanted Floral Rose -->
+                <div class="gift-box-card" data-style="enchanted_floral" onclick="selectGiftBoxStyle('enchanted_floral')">
+                  <div class="gift-card-preview-thumb preview-floral-shell">
+                    <span style="font-size: 1.5rem;">🌺</span>
+                  </div>
+                  <div class="gift-card-info">
+                    <div class="gift-card-title">🌺 Enchanted Floral Rose</div>
+                    <div class="gift-card-desc">Rose petal blossom with golden ivy vines</div>
+                    <span class="gift-card-badge badge-romance">✦ Romance Blossom</span>
+                  </div>
+                </div>
+
+                <!-- 7. Holographic Future Display -->
+                <div class="gift-box-card" data-style="holographic_future" onclick="selectGiftBoxStyle('holographic_future')">
+                  <div class="gift-card-preview-thumb preview-holo-grid">
+                    <span style="font-size: 1.5rem;">💠</span>
+                  </div>
+                  <div class="gift-card-info">
+                    <div class="gift-card-title">💠 Holographic Future</div>
+                    <div class="gift-card-desc">Isometric cyber matrix with energy core</div>
+                    <span class="gift-card-badge badge-cyber">✦ Cyber Hologram</span>
+                  </div>
+                </div>
+
+                <!-- 8. Origami Paper Blossom -->
+                <div class="gift-box-card" data-style="paper_sculpture" onclick="selectGiftBoxStyle('paper_sculpture')">
+                  <div class="gift-card-preview-thumb preview-paper-origami">
+                    <span style="font-size: 1.5rem;">📄</span>
+                  </div>
+                  <div class="gift-card-info">
+                    <div class="gift-card-title">📄 Origami Paper Blossom</div>
+                    <div class="gift-card-desc">Geometric folded washi paper lantern</div>
+                    <span class="gift-card-badge badge-artisan">✦ Artisan Craft</span>
+                  </div>
+                </div>
+
+                <!-- 9. Minimalist Art Monolith -->
+                <div class="gift-box-card" data-style="minimal_art" onclick="selectGiftBoxStyle('minimal_art')">
+                  <div class="gift-card-preview-thumb preview-minimal-art">
+                    <span style="font-size: 1.5rem;">🏛️</span>
+                  </div>
+                  <div class="gift-card-info">
+                    <div class="gift-card-title">🏛️ Minimalist Art Monolith</div>
+                    <div class="gift-card-desc">Carrara marble with gold leaf seam line</div>
+                    <span class="gift-card-badge badge-minimal">✦ Architecture</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="editor-field-group">
+              <label>Interactive Box Prompt</label>
+              <input type="text" class="form-control" name="surprise_prompt" placeholder="Tap the gift box to unlock your secret...">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);" class="editor-field-group">
+              <div>
+                <label>Gift Box Color</label>
+                <input type="color" class="form-control" name="surprise_box_color" value="#b91c1c" style="height: 40px; padding: 2px;">
+              </div>
+              <div>
+                <label>Ribbon Color</label>
+                <input type="color" class="form-control" name="surprise_ribbon_color" value="#f59e0b" style="height: 40px; padding: 2px;">
+              </div>
+            </div>
+            <div class="editor-field-group">
+              <label>Gift Attachment Photo URL (Optional)</label>
+              <input type="text" class="form-control" name="surprise_photo" placeholder="/media/assets/... or image URL">
+            </div>
+            <div class="editor-field-group">
+              <label>Revealed Letter Headline</label>
+              <input type="text" class="form-control" name="surprise_title" placeholder="A Special Note">
+            </div>
+            <div class="editor-field-group">
+              <label>Revealed Letter Content</label>
+              <textarea class="form-control" name="surprise_letter" rows="5" placeholder="Write your deeply personal heartfelt note here..."></textarea>
+            </div>
+            <div class="editor-field-group">
+              <label>Signature / Sign-off</label>
+              <input type="text" class="form-control" name="surprise_signature" placeholder="Your loving sibling / With warmest love">
+            </div>
+          </div>
+
+          <!-- 5. Cosmic Universe Finale Editor -->
+          <div class="scene-editor-panel" data-for-type="cosmic_universe">
+            <div class="editor-field-group">
+              <label>Finale Masterpiece Style</label>
+              <select class="form-select" name="cosmic_finale_style">
+                <option value="grand_celebration">🎉 Grand Celebration Fanfare</option>
+                <option value="heart_of_light">💖 Heart of Radiant Light</option>
+                <option value="living_portrait">🖼️ Living Memory Portrait</option>
+                <option value="universe_made_for_you">🌌 A Universe Made Just For You</option>
+                <option value="letter_writes_itself">✍️ The Letter That Writes Itself</option>
+                <option value="storybook_finale">📖 Enchanted Storybook Epilogue</option>
+                <option value="ethereal_pearl">🦪 Ethereal Pearl Radiance</option>
+                <option value="romantic_dream">🌹 Romantic Twilight Dream</option>
+                <option value="memory_constellation">✨ Memory Constellation Map</option>
+                <option value="editorial_minimal">📰 Editorial Minimalist Monograph</option>
+                <option value="memory_collage">🎞️ Living Keepsake Collage</option>
+                <option value="quiet_emotional">🕊️ Quiet Emotional Keepsake</option>
+              </select>
+            </div>
+            <div class="editor-field-group">
+              <label>Layout Reflow</label>
+              <select class="form-select" name="cosmic_layout_variant">
+                <option value="centered">Centered Portrait &amp; Wishes</option>
+                <option value="editorial">Editorial Side-Bar Monograph</option>
+                <option value="storybook">Storybook Parchment Spread</option>
+              </select>
+            </div>
+            <div class="editor-field-group">
+              <label>Recipient Portrait Photo URL (Optional override)</label>
+              <input type="text" class="form-control" name="cosmic_recipient_photo" placeholder="/media/assets/... or image URL">
+            </div>
+            <div class="editor-field-group">
+              <label>Constellation Name</label>
+              <input type="text" class="form-control" name="cosmic_constellation">
+            </div>
+            <div class="editor-field-group">
+              <label>Finale Headline</label>
+              <input type="text" class="form-control" name="cosmic_headline">
+            </div>
+            <div class="editor-field-group">
+              <label>Main Closing Message</label>
+              <textarea class="form-control" name="cosmic_closing" rows="4"></textarea>
+            </div>
+            <div class="editor-field-group">
+              <label>Closing Signature</label>
+              <input type="text" class="form-control" name="cosmic_signature" placeholder="Always in your corner, David">
+            </div>
+            <div class="editor-field-group">
+              <label>Starlight Wishes (Comma separated)</label>
+              <input type="text" class="form-control" name="cosmic_wishes" placeholder="Boundless Joy, Great Health, Serenity">
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: var(--space-6); display: flex; justify-content: flex-end;">
+          <button type="button" class="btn btn-primary" onclick="saveActiveSceneContent()">
+            Save Scene Changes ✓
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- TAB 3: UNLIMITED PHOTOS & MEMORIES MANAGER                     -->
+      <!-- ============================================================== -->
+      <div id="tab-photos" class="studio-tab-pane">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+          <div>
+            <span class="form-label" style="margin: 0;">Unlimited Photo Deck</span>
+            <span id="photoDeckCount" style="font-size: var(--text-xs); color: var(--text-dim);">Manage photos &amp; quotes</span>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" onclick="addNewMemoryCard()">
+            + Add Memory
+          </button>
+        </div>
+
+        <!-- Hidden File Input for uploading -->
+        <input type="file" id="photoFileInput" accept="image/*" style="display: none;" onchange="handlePhotoUpload(this)">
+
+        <div id="photosDeckList">
+          <!-- Dynamically populated from active memory_lane scene memories JSON -->
+        </div>
+
+        <div style="margin-top: var(--space-6); display: flex; justify-content: flex-end;">
+          <button type="button" class="btn btn-primary" onclick="saveMemoriesDeck()">
+            Save All Memories ✓
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- TAB 4: ATMOSPHERE & PALETTE                                    -->
+      <!-- ============================================================== -->
+      <div id="tab-theme" class="studio-tab-pane">
+        <div style="margin-bottom: var(--space-6);">
+          <label class="form-label">Visual Atmosphere Theme</label>
+          <select id="themeSelect" class="form-select">
+            {% for theme in THEME_PRESETS %}
+              <option value="{{ theme.id }}" {% if celebration.theme_id == theme.id %}selected{% endif %}>
+                {{ theme.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="margin-bottom: var(--space-6);">
+          <label class="form-label">Ambient Soundtrack Preset</label>
+          <select id="soundtrackSelect" class="form-select" onchange="updateSoundtrackPreset(this.value)">
+            <option value="celestial_drift" {% if celebration.soundtrack_preset == 'celestial_drift' %}selected{% endif %}>✨ Celestial Drift (Acoustic Chime & Strings)</option>
+            <option value="warm_nostalgia" {% if celebration.soundtrack_preset == 'warm_nostalgia' %}selected{% endif %}>📻 Warm Nostalgia (Vintage Piano)</option>
+            <option value="romantic_waltz" {% if celebration.soundtrack_preset == 'romantic_waltz' %}selected{% endif %}>🌹 Romantic Waltz (Orchestral Blossom)</option>
+            <option value="upbeat_cheer" {% if celebration.soundtrack_preset == 'upbeat_cheer' %}selected{% endif %}>🎉 Upbeat Cheer (Joyful Celebration)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- TAB: SOUNDTRACK & AUDIO STUDIO                                 -->
+      <!-- ============================================================== -->
+      <div id="tab-audio" class="studio-tab-pane">
+        <div style="margin-bottom: var(--space-4);">
+          <span class="form-label" style="margin: 0;">Celebration Soundtrack &amp; Audio</span>
+          <span style="font-size: var(--text-xs); color: var(--text-dim); display: block;">Upload custom background music or choose an ambient orchestral preset</span>
+        </div>
+
+        <!-- Custom Audio Upload Zone -->
+        <div class="editor-field-group" style="padding: var(--space-4); background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15); border-radius: var(--radius-md); text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: var(--space-2);">🎼</div>
+          <div style="font-weight: 600; font-size: var(--text-sm); margin-bottom: var(--space-1);">Upload Custom Song / Audio</div>
+          <div style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-3);">MP3, WAV, OGG, M4A, or AAC (Max 20MB)</div>
+          
+          <input type="file" id="audioFileInput" accept=".mp3,.wav,.ogg,.m4a,.aac,audio/*" style="display: none;" onchange="handleAudioUpload(this)">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('audioFileInput').click()">
+            Choose Audio File...
+          </button>
+          
+          <div id="audioUploadStatus" style="font-size: var(--text-xs); color: var(--theme-primary); margin-top: var(--space-2); display: none;"></div>
+        </div>
+
+        <!-- Currently Active Track Display -->
+        <div class="editor-field-group" style="margin-top: var(--space-4);">
+          <label>Audio Source Mode</label>
+          <select id="audioSourceType" class="form-select" onchange="updateAudioSourceType(this.value)">
+            <option value="preset" {% if audio_config.source_type != 'custom' %}selected{% endif %}>Atmospheric Synthesizer Preset</option>
+            <option value="custom" {% if audio_config.source_type == 'custom' %}selected{% endif %}>User Uploaded Custom Song</option>
+          </select>
+        </div>
+
+        <div id="customAudioPreviewBlock" class="editor-field-group" {% if not audio_config.custom_url %}style="display: none;"{% endif %}>
+          <label>Custom Track Preview</label>
+          <audio id="customAudioPreviewPlayer" controls style="width: 100%; height: 36px;" src="{{ audio_config.custom_url|default:'' }}"></audio>
+        </div>
+
+        <!-- Volume & Controls -->
+        <div class="editor-field-group" style="margin-top: var(--space-4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="margin: 0;">Master Volume</label>
+            <span id="audioVolumeVal" style="font-size: var(--text-xs); color: var(--theme-primary); font-family: var(--font-mono);">{{ audio_config.volume|default:0.75 }}</span>
+          </div>
+          <input type="range" id="audioVolumeSlider" class="form-range" min="0" max="1" step="0.05" value="{{ audio_config.volume|default:0.75 }}" oninput="updateAudioVolume(this.value)" style="width: 100%;">
+        </div>
+
+        <div class="editor-field-group" style="display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-4);">
+          <div>
+            <label style="margin: 0;">Loop Soundtrack Continuously</label>
+            <span style="font-size: var(--text-xs); color: var(--text-dim); display: block;">Restart track seamlessly when finished</span>
+          </div>
+          <input type="checkbox" id="audioLoopToggle" {% if audio_config.loop != False %}checked{% endif %} onchange="updateAudioLoop(this.checked)" style="width: 20px; height: 20px; accent-color: var(--theme-primary);">
+        </div>
+
+        <div style="margin-top: var(--space-6); display: flex; justify-content: flex-end;">
+          <button type="button" class="btn btn-primary" onclick="saveAudioSettings()">
+            Save Audio Settings ✓
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- TAB 5: CINEMATIC ANIMATIONS & FX ENGINE                       -->
+      <!-- ============================================================== -->
+      <div id="tab-animation" class="studio-tab-pane">
+        <div style="margin-bottom: var(--space-4);">
+          <span class="form-label" style="margin: 0;">Cinematic Animation Engine</span>
+          <span style="font-size: var(--text-xs); color: var(--text-dim); display: block;">Configure scene transitions, effects, and motion</span>
+        </div>
+
+        <!-- Animation Presets -->
+        <div style="margin-bottom: var(--space-5);">
+          <label class="form-label">Motion Preset</label>
+          <select id="animPresetSelect" class="form-select" onchange="handleAnimPresetChange(this.value)">
+            {% for pid, preset in animation_presets.items %}
+              <option value="{{ pid }}" {% if animation_config.preset_id == pid %}selected{% endif %}>
+                {{ preset.icon }} {{ preset.name }}
+              </option>
+            {% endfor %}
+          </select>
+          <div id="animPresetDesc" style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 6px;">
+            Dramatic golden light sweeps, 3D card shuffle, and champagne dust atmosphere.
+          </div>
+        </div>
+
+        <!-- Screen Transitions -->
+        <div style="margin-bottom: var(--space-5);">
+          <label class="form-label">Full-Screen Scene Transition</label>
+          <select id="animScreenTransition" class="form-select">
+            <option value="screen.light_sweep" {% if animation_config.screen_transition == 'screen.light_sweep' %}selected{% endif %}>✨ Cinematic Light Sweep</option>
+            <option value="screen.liquid_silk" {% if animation_config.screen_transition == 'screen.liquid_silk' %}selected{% endif %}>🌊 Liquid Silk Reveal</option>
+            <option value="screen.universe_warp" {% if animation_config.screen_transition == 'screen.universe_warp' %}selected{% endif %}>🌌 Universe Warp</option>
+            <option value="screen.petal_curtain" {% if animation_config.screen_transition == 'screen.petal_curtain' %}selected{% endif %}>🌸 Petal Curtain</option>
+            <option value="screen.portal_open" {% if animation_config.screen_transition == 'screen.portal_open' %}selected{% endif %}>🌀 Portal Opening</option>
+            <option value="screen.memory_film" {% if animation_config.screen_transition == 'screen.memory_film' %}selected{% endif %}>🎞️ Memory Film Wipe</option>
+          </select>
+        </div>
+
+        <!-- Image Transitions -->
+        <div style="margin-bottom: var(--space-5);">
+          <label class="form-label">Photo &amp; Memory Transition</label>
+          <select id="animImageTransition" class="form-select">
+            <option value="image.floating_memory" {% if animation_config.image_transition == 'image.floating_memory' %}selected{% endif %}>🃏 3D Floating Card Shuffle</option>
+            <option value="image.camera_focus" {% if animation_config.image_transition == 'image.camera_focus' %}selected{% endif %}>🔍 Camera Lens Focus</option>
+            <option value="image.album_page_turn" {% if animation_config.image_transition == 'image.album_page_turn' %}selected{% endif %}>📖 Album Page Turn</option>
+            <option value="image.particle_formation" {% if animation_config.image_transition == 'image.particle_formation' %}selected{% endif %}>✨ Particle Stardust Assembly</option>
+            <option value="image.cinematic_wipe" {% if animation_config.image_transition == 'image.cinematic_wipe' %}selected{% endif %}>📐 Cinematic Angle Wipe</option>
+            <option value="image.memory_universe" {% if animation_config.image_transition == 'image.memory_universe' %}selected{% endif %}>🪐 Memory Universe Orbit</option>
+          </select>
+        </div>
+
+        <!-- Atmospheric Background -->
+        <div style="margin-bottom: var(--space-5);">
+          <label class="form-label">Atmospheric Canvas Background</label>
+          <select id="animBackgroundEffect" class="form-select">
+            <option value="background.golden_dust" {% if animation_config.background_effect == 'background.golden_dust' %}selected{% endif %}>✨ Golden Champagne Dust</option>
+            <option value="background.starfield" {% if animation_config.background_effect == 'background.starfield' %}selected{% endif %}>🌌 Living Cosmic Starfield</option>
+            <option value="background.dream_clouds" {% if animation_config.background_effect == 'background.dream_clouds' %}selected{% endif %}>☁️ Ethereal Dream Clouds</option>
+            <option value="background.candlelight" {% if animation_config.background_effect == 'background.candlelight' %}selected{% endif %}>🕯️ Warm Candlelight Breathing</option>
+            <option value="background.aurora" {% if animation_config.background_effect == 'background.aurora' %}selected{% endif %}>🌠 Emerald &amp; Violet Aurora</option>
+            <option value="background.liquid_glass" {% if animation_config.background_effect == 'background.liquid_glass' %}selected{% endif %}>🔮 Liquid Glass Waves</option>
+          </select>
+        </div>
+
+        <!-- Gift Box Reveal Effect -->
+        <div style="margin-bottom: var(--space-5);">
+          <label class="form-label">Gift Box Opening Reveal</label>
+          <select id="animGiftEffect" class="form-select">
+            <option value="gift.cosmic_relic" {% if animation_config.gift_effect == 'gift.cosmic_relic' %}selected{% endif %}>🌟 Cosmic Starlight Relic (Fabergé Celestial Egg - Image #1)</option>
+            <option value="gift.champagne_gold" {% if animation_config.gift_effect == 'gift.champagne_gold' %}selected{% endif %}>👑 Champagne Royal Gold (Metallic Satin &amp; Bow - Image #2)</option>
+            <option value="gift.dream_prism" {% if animation_config.gift_effect == 'gift.dream_prism' %}selected{% endif %}>🔮 Cyber Dream Prism (Refractive Crystal Neon - Image #3)</option>
+            <option value="gift.luxury_sculpted" {% if animation_config.gift_effect == 'gift.luxury_sculpted' %}selected{% endif %}>👑 Luxury Sculpted Presentation Box</option>
+            <option value="gift.liquid_glass" {% if animation_config.gift_effect == 'gift.liquid_glass' %}selected{% endif %}>💎 Liquid Glass &amp; Crystal Casket</option>
+            <option value="gift.velvet_jewelry" {% if animation_config.gift_effect == 'gift.velvet_jewelry' %}selected{% endif %}>💍 Velvet Heritage Jewelry Box</option>
+            <option value="gift.cosmic_artifact" {% if animation_config.gift_effect == 'gift.cosmic_artifact' %}selected{% endif %}>🪐 Cosmic Starlight Artifact (Gyro Rings)</option>
+            <option value="gift.enchanted_floral" {% if animation_config.gift_effect == 'gift.enchanted_floral' %}selected{% endif %}>🌺 Enchanted Floral Keepsake (Petal Shell)</option>
+            <option value="gift.paper_sculpture" {% if animation_config.gift_effect == 'gift.paper_sculpture' %}selected{% endif %}>📄 Origami Paper Sculpture</option>
+            <option value="gift.holographic_future" {% if animation_config.gift_effect == 'gift.holographic_future' %}selected{% endif %}>💠 Holographic Future Display</option>
+            <option value="gift.minimal_art" {% if animation_config.gift_effect == 'gift.minimal_art' %}selected{% endif %}>🏛️ Minimalist Architectural Monolith</option>
+            <option value="gift.magical_light" {% if animation_config.gift_effect == 'gift.magical_light' %}selected{% endif %}>🌟 Magical Light Beam Burst</option>
+            <option value="gift.ribbon_unwrap" {% if animation_config.gift_effect == 'gift.ribbon_unwrap' %}selected{% endif %}>🎀 Silk Ribbon Untie &amp; Float</option>
+            <option value="gift.enchanted_chest" {% if animation_config.gift_effect == 'gift.enchanted_chest' %}selected{% endif %}>🗝️ Enchanted Treasure Chest</option>
+          </select>
+        </div>
+
+        <!-- Finale Climax Effect -->
+        <div style="margin-bottom: var(--space-5);">
+          <label class="form-label">Grand Finale Climax</label>
+          <select id="animFinaleEffect" class="form-select">
+            <option value="finale.grand_celebration" {% if animation_config.finale_effect == 'finale.grand_celebration' %}selected{% endif %}>🎉 Grand Celebration Fanfare</option>
+            <option value="finale.heart_of_light" {% if animation_config.finale_effect == 'finale.heart_of_light' %}selected{% endif %}>💖 Heart of Radiant Light</option>
+            <option value="finale.living_portrait" {% if animation_config.finale_effect == 'finale.living_portrait' %}selected{% endif %}>🖼️ Living Memory Portrait</option>
+            <option value="finale.universe_made_for_you" {% if animation_config.finale_effect == 'finale.universe_made_for_you' %}selected{% endif %}>🌌 A Universe Made Just For You</option>
+            <option value="finale.letter_writes_itself" {% if animation_config.finale_effect == 'finale.letter_writes_itself' %}selected{% endif %}>✍️ The Letter That Writes Itself</option>
+            <option value="finale.storybook_finale" {% if animation_config.finale_effect == 'finale.storybook_finale' %}selected{% endif %}>📖 Enchanted Storybook Epilogue</option>
+            <option value="finale.ethereal_pearl" {% if animation_config.finale_effect == 'finale.ethereal_pearl' %}selected{% endif %}>🦪 Ethereal Pearl Radiance</option>
+            <option value="finale.romantic_dream" {% if animation_config.finale_effect == 'finale.romantic_dream' %}selected{% endif %}>🌹 Romantic Twilight Dream</option>
+            <option value="finale.memory_constellation" {% if animation_config.finale_effect == 'finale.memory_constellation' %}selected{% endif %}>✨ Memory Constellation Map</option>
+            <option value="finale.editorial_minimal" {% if animation_config.finale_effect == 'finale.editorial_minimal' %}selected{% endif %}>📰 Editorial Minimalist Monograph</option>
+            <option value="finale.memory_collage" {% if animation_config.finale_effect == 'finale.memory_collage' %}selected{% endif %}>🎞️ Living Keepsake Collage</option>
+            <option value="finale.quiet_emotional" {% if animation_config.finale_effect == 'finale.quiet_emotional' %}selected{% endif %}>🕊️ Quiet Emotional Keepsake</option>
+          </select>
+        </div>
+
+        <!-- Intensity & Speed -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-5);">
+          <div>
+            <label class="form-label">Motion Intensity</label>
+            <select id="animIntensity" class="form-select">
+              <option value="subtle" {% if animation_config.intensity == 'subtle' %}selected{% endif %}>Subtle (Restrained)</option>
+              <option value="balanced" {% if animation_config.intensity == 'balanced' %}selected{% endif %}>Balanced (Natural)</option>
+              <option value="cinematic" {% if animation_config.intensity == 'cinematic' %}selected{% endif %}>Cinematic (Max FX)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Animation Speed</label>
+            <select id="animSpeed" class="form-select">
+              <option value="0.8" {% if animation_config.speed == 0.8 %}selected{% endif %}>0.8x (Dreamy)</option>
+              <option value="1.0" {% if animation_config.speed == 1.0 %}selected{% endif %}>1.0x (Standard)</option>
+              <option value="1.2" {% if animation_config.speed == 1.2 %}selected{% endif %}>1.2x (Energetic)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Test & Action Buttons -->
+        <div style="display: flex; gap: var(--space-2); margin-top: var(--space-6);">
+          <button type="button" class="btn btn-secondary btn-sm" style="flex: 1;" onclick="testScreenTransition()">
+            ⚡ Test Transition
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" style="flex: 1;" onclick="saveAnimationSettings()">
+            Save Effects ✓
+          </button>
+        </div>
+      </div>
+
+
+    </div>
+  </aside>
+
+  <!-- Right Column: Interactive Live Preview Viewport -->
+  <section class="studio-viewport">
+    
+    <!-- Viewport Toolbar -->
+    <div class="viewport-toolbar">
+      <div class="device-switcher">
+        <button class="device-btn active" data-device="desktop">🖥️ Desktop</button>
+        <button class="device-btn" data-device="tablet">📱 Tablet</button>
+        <button class="device-btn" data-device="mobile">📱 Mobile</button>
+      </div>
+
+      <div style="display: flex; gap: var(--space-3); align-items: center;">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('previewFrame').contentWindow.location.reload();">
+          🔄 Reload Preview
+        </button>
+        <a href="{{ celebration.get_absolute_url }}" target="_blank" class="btn btn-secondary btn-sm">
+          Open Fullscreen ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- Frame Container -->
+    <div class="viewport-frame-container">
+      <iframe id="previewFrame" class="preview-iframe" src="{% url 'celebration_preview' celebration.id %}"></iframe>
+    </div>
+
+  </section>
+</div>
+
+<!-- Dialog: Add New Scene -->
+<dialog id="addSceneDialog" class="studio-dialog">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6);">
+    <h3 class="font-display" style="font-size: var(--text-xl);">Add New Celebration Scene</h3>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('addSceneDialog').close()">✕</button>
+  </div>
+  <div class="form-group" style="margin-bottom: var(--space-4);">
+    <label class="form-label">Scene Type</label>
+    <select id="newSceneTypeSelect" class="form-select">
+      <option value="cinematic">🎬 Cinematic Prelude & Countdown</option>
+      <option value="romantic_dream">🌸 Romantic Dream & Petal Reflections</option>
+      <option value="memory_lane" selected>📷 Memory Lane (Photo Story Deck)</option>
+      <option value="secret_surprise">🎁 Secret Surprise Box</option>
+      <option value="cosmic_universe">🌌 Cosmic Universe Starlight Finale</option>
+    </select>
+  </div>
+  <div class="form-group" style="margin-bottom: var(--space-6);">
+    <label class="form-label">Scene Title</label>
+    <input type="text" id="newSceneTitleInput" class="form-control" placeholder="e.g. Chapter IV: The Big Milestone">
+  </div>
+  <div style="display: flex; justify-content: flex-end; gap: var(--space-3);">
+    <button type="button" class="btn btn-ghost" onclick="document.getElementById('addSceneDialog').close()">Cancel</button>
+    <button type="button" class="btn btn-primary" onclick="confirmAddScene()">Add to Celebration</button>
+  </div>
+</dialog>
+
+<!-- Modern Dialog: Publishing & Share Settings -->
+<dialog id="publishDialog" class="studio-dialog">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6);">
+    <h3 class="font-display" style="font-size: var(--text-xl);">Publish &amp; Share Celebration</h3>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('publishDialog').close()">✕</button>
+  </div>
+
+  <div style="margin-bottom: var(--space-6);">
+    <div class="form-group">
+      <label class="form-label">Unique Public URL</label>
+      <div style="display: flex; gap: var(--space-2);">
+        <input type="text" readonly value="{{ share_url }}" class="form-control" style="font-family: var(--font-mono); font-size: var(--text-xs);">
+        <button id="copyShareLinkBtn" type="button" data-url="{{ share_url }}" class="btn btn-secondary btn-sm">
+          Copy Link
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top: var(--space-4);">
+      <label class="form-label">Optional Passcode Shield</label>
+      <input type="password" id="publishPasswordInput" class="form-control" placeholder="Leave empty for public access, or set passcode">
+      <span style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 4px; display: block;">
+        If a passcode is set, visitors must enter it to unlock the celebration.
+      </span>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: flex-end; gap: var(--space-3); border-top: 1px solid var(--bg-surface-glass-border); padding-top: var(--space-4);">
+    <button type="button" class="btn btn-ghost" onclick="document.getElementById('publishDialog').close()">Cancel</button>
+    <button type="button" id="confirmPublishBtn" class="btn btn-primary" onclick="handlePublishToggle(true)">
+      Publish Celebration
+    </button>
+  </div>
+</dialog>
+
+<!-- Raw Scene Data Payload for JavaScript Engine -->
+<script id="scenesInitialData" type="application/json">
+  {{ scenes_json|safe }}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/studio_editor.js' %}"></script>
+{% endblock %}
