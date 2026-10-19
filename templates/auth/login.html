@@ -416,7 +416,7 @@
 
         <!-- Forgot Password Link -->
         <div class="forgot-link-row">
-          <span class="forgot-link" onclick="openForgotModal()">Forgot password?</span>
+          <a href="{% url 'password_reset' %}" class="forgot-link" id="forgotPasswordLink">Forgot password?</a>
         </div>
 
         <!-- Submit Button -->
@@ -436,29 +436,6 @@
 
   </main>
 
-  <!-- Interactive Forgot Password Modal -->
-  <dialog id="forgotPasswordModal" style="background: rgba(20, 10, 30, 0.95); border: 1.5px solid rgba(244, 114, 182, 0.4); border-radius: 20px; padding: 28px; color: #fff; max-width: 400px; width: 90%; margin: auto; backdrop-filter: blur(20px);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-      <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff;">Reset Password</h3>
-      <button type="button" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;" onclick="document.getElementById('forgotPasswordModal').close()">✕</button>
-    </div>
-    <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.45; margin-bottom: 16px;">
-      Enter your account username or email address and we'll generate a reset access token for you.
-    </p>
-    <div class="pill-input-wrap" style="margin-bottom: 16px;">
-      <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-        <polyline points="22,6 12,13 2,6"></polyline>
-      </svg>
-      <input type="text" id="forgotInput" class="pill-input" placeholder="Your username or email">
-    </div>
-    <div id="forgotStatusMsg" style="font-size: 0.82rem; color: #34d399; margin-bottom: 12px; display: none;"></div>
-    <div style="display: flex; justify-content: flex-end; gap: 10px;">
-      <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('forgotPasswordModal').close()">Cancel</button>
-      <button type="button" class="btn-garden-bloom" style="height: 38px; padding: 0 16px; font-size: 0.85rem; margin-top: 0; width: auto;" onclick="handleForgotSubmit()">Send Instructions</button>
-    </div>
-  </dialog>
-
   <!-- Three.js r128 & GSAP 3.12 (Vendored, Zero-Node Dependency) -->
   <script src="{% static 'vendor/three.min.js' %}"></script>
   <script src="{% static 'vendor/gsap.min.js' %}"></script>
@@ -477,23 +454,6 @@
       }
     }
 
-    function openForgotModal() {
-      document.getElementById('forgotPasswordModal').showModal();
-    }
-
-    function handleForgotSubmit() {
-      const val = document.getElementById('forgotInput').value.trim();
-      const msg = document.getElementById('forgotStatusMsg');
-      if (!val) {
-        alert('Please enter your username or email address.');
-        return;
-      }
-      msg.textContent = `Password reset link sent to registered email for "${val}".`;
-      msg.style.display = 'block';
-      setTimeout(() => {
-        document.getElementById('forgotPasswordModal').close();
-      }, 2500);
-    }
 
     // =========================================================================
     // 1. Three.js True 3D Rose / Sakura Petal Garden Simulation

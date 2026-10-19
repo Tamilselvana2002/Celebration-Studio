@@ -7,6 +7,16 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load local environment variables from .env if present
+env_file = BASE_DIR / '.env'
+if env_file.is_file():
+    with open(env_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, val = line.split('=', 1)
+                os.environ.setdefault(key.strip(), val.strip().strip('"').strip("'"))
+
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-ipfj2by#kz!u^^*5#!&(qaxif5j7-%%jq@v80p6tc@biw7zo)-')
 
 DEBUG = True
@@ -107,4 +117,18 @@ try:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 except ImportError:
     pass
+
+# Email & Password Reset Infrastructure (Gmail SMTP)
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "celebrationstudio2002@gmail.com")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "celebrationstudio2002@gmail.com")
+EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "20"))
+
+# Password Reset Token Expiry (1800 seconds = 30 minutes)
+PASSWORD_RESET_TIMEOUT = 1800
+
 

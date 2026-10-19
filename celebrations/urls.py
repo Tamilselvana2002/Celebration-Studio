@@ -13,6 +13,12 @@ urlpatterns = [
     path('register/', views.CreatorRegisterView.as_view(), name='register'),
     path('logout/', views.CreatorLogoutView.as_view(), name='logout'),
 
+    # Password Reset & Recovery (Gmail SMTP Flow)
+    path('password-reset/', views.CustomPasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/done/', views.CustomPasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset-password/<uidb64>/<token>/', views.CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset-password/complete/', views.CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
     # Experience Studio & Viewports
     path('celebrations/<uuid:celebration_id>/edit/', views.ExperienceStudioView.as_view(), name='experience_studio'),
     path('celebrations/<uuid:celebration_id>/preview/', views.CelebrationPreviewView.as_view(), name='celebration_preview'),

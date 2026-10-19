@@ -1,11 +1,16 @@
 import json
 import uuid
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.views.generic import TemplateView, ListView, CreateView
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import (
+    PasswordResetView, PasswordResetDoneView,
+    PasswordResetConfirmView, PasswordResetCompleteView
+)
 from django.http import JsonResponse, HttpResponseForbidden, Http404
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
@@ -13,6 +18,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.http import HttpResponse
+
+logger = logging.getLogger(__name__)
 
 from .models import (
     Celebration, RecipientProfile, CelebrationParticipant,
@@ -163,6 +170,58 @@ class CreatorRegisterView(View):
         )
         login(request, user)
         return redirect('dashboard')
+
+
+class CustomPasswordResetView(PasswordResetView):
+    """
+    Initiates the secure password reset flow.
+    Submits user's registered email address, checks active users,
+    generates a secure 30-minute HMAC token, and dispatches the reset email via Gmail SMTP.
+    Catches SMTP exceptions gracefully to avoid unhandled 500 errors.
+    """
+    template_name = 'registration/password_reset_form.html'
+    email_template_name = 'registration/password_reset_email.html'
+    subject_template_name = 'registration/password_reset_subject.txt'
+    html_email_template_name = 'registration/password_reset_email.html'
+    success_url = reverse_lazy('password_reset_done')
+
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except Exception as exc:
+            logger.error("Failed to send password reset email via SMTP: %s", exc)
+            form.add_error(
+                None,
+                "Unable to dispatch reset email right now. Please verify SMTP server settings or try again shortly."
+            )
+            return self.form_invalid(form)
+
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    """
+    Confirmation screen displayed after submitting password reset request.
+    Prevents user enumeration by showing identical friendly message regardless of whether
+    email exists in the database.
+    """
+    template_name = 'registration/password_reset_done.html'
+
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    """
+    Token validation and password replacement screen.
+    Validates uidb64 and one-time token against PASSWORD_RESET_TIMEOUT (1800s).
+    If valid, allows user to set and confirm new password with standard validators.
+    """
+    template_name = 'registration/password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
+
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    """
+    Final success screen confirming password has been reset.
+    Provides direct link to sign in with new credentials.
+    """
+    template_name = 'registration/password_reset_complete.html'
 
 
 

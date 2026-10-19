@@ -656,6 +656,130 @@ class CelebrationStudioTestCase(TestCase):
         self.assertFalse(MediaAsset.objects.filter(id=asset.id).exists())
 
 
+class PasswordResetFlowTestCase(TestCase):
+    """
+    Independent test suite verifying the secure Gmail SMTP password reset flow:
+    - URL routing & template rendering
+    - Email dispatch via mail.outbox
+    - Account enumeration prevention
+    - Token generation and verification
+    - Secure password update & hashing
+    - Token invalidation after usage
+    """
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='resetcreator',
+            email='creator@celebrationstudio.test',
+            password='OriginalPassword123!'
+        )
+
+    def test_login_page_contains_forgot_password_link(self):
+        res = self.client.get(reverse('login'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, reverse('password_reset'))
+        self.assertContains(res, 'Forgot password?')
+
+    def test_password_reset_form_renders(self):
+        res = self.client.get(reverse('password_reset'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Reset Password')
+        self.assertContains(res, 'name="email"')
+
+    def test_password_reset_email_dispatch_for_valid_user(self):
+        from django.core import mail
+        mail.outbox = []
+
+        res = self.client.post(reverse('password_reset'), {
+            'email': 'creator@celebrationstudio.test'
+        })
+        self.assertEqual(res.status_code, 302)
+        self.assertRedirects(res, reverse('password_reset_done'))
+
+        # Verify email dispatched to mail.outbox
+        self.assertEqual(len(mail.outbox), 1)
+        dispatched = mail.outbox[0]
+        self.assertIn('creator@celebrationstudio.test', dispatched.to)
+        self.assertIn('Password Reset Request', dispatched.subject)
+        self.assertIn('reset-password/', dispatched.body)
+
+    def test_password_reset_unregistered_email_does_not_leak_enumeration(self):
+        from django.core import mail
+        mail.outbox = []
+
+        res = self.client.post(reverse('password_reset'), {
+            'email': 'unregistered@unknowndomain.test'
+        })
+        self.assertEqual(res.status_code, 302)
+        self.assertRedirects(res, reverse('password_reset_done'))
+        # No email sent, but user sees standard success message
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_password_reset_done_page_renders(self):
+        res = self.client.get(reverse('password_reset_done'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Check Your Inbox')
+
+    def test_password_reset_confirm_and_complete_success(self):
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.contrib.auth.tokens import default_token_generator
+        from django.contrib.auth import authenticate
+
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = default_token_generator.make_token(self.user)
+
+        confirm_url = reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+
+        # GET confirm view with valid token (Django securely redirects to set-password to strip token from referer)
+        get_res = self.client.get(confirm_url, follow=True)
+        self.assertEqual(get_res.status_code, 200)
+        self.assertTrue(get_res.context['validlink'])
+        self.assertContains(get_res, 'New Password')
+
+        # POST new password to the active session URL
+        set_password_url = get_res.redirect_chain[0][0]
+        post_res = self.client.post(set_password_url, {
+            'new_password1': 'UpdatedNewPassword999!',
+            'new_password2': 'UpdatedNewPassword999!'
+        })
+        self.assertEqual(post_res.status_code, 302)
+        self.assertRedirects(post_res, reverse('password_reset_complete'))
+
+        # Verify password updated and can authenticate
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('UpdatedNewPassword999!'))
+        self.assertFalse(self.user.check_password('OriginalPassword123!'))
+
+        auth_user = authenticate(username=self.user.username, password='UpdatedNewPassword999!')
+        self.assertIsNotNone(auth_user)
+
+        # Verify old token is now invalidated
+        reused_res = self.client.get(confirm_url)
+        self.assertEqual(reused_res.status_code, 200)
+        self.assertFalse(reused_res.context['validlink'])
+        self.assertContains(reused_res, 'Reset Link Invalid')
+
+    def test_password_reset_confirm_invalid_token(self):
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        invalid_url = reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': 'fake-tampered-token'})
+
+        res = self.client.get(invalid_url)
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(res.context['validlink'])
+        self.assertContains(res, 'Reset Link Invalid')
+
+    def test_password_reset_complete_page_renders(self):
+        res = self.client.get(reverse('password_reset_complete'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Password Reset Complete')
+        self.assertContains(res, reverse('login'))
+
+
+
 
 
 
