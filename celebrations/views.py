@@ -102,7 +102,12 @@ class LandingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['featured_celebrations'] = Celebration.objects.filter(status='published').order_by('-created_at')[:3]
+        # Strictly show only official sample demo showcases on the public landing page.
+        # Personal user celebrations are private and NEVER displayed on the public homepage.
+        ctx['featured_celebrations'] = Celebration.objects.filter(
+            slug__in=['marcus-chen-graduation', 'elena-starlight-birthday'],
+            status='published'
+        )
         return ctx
 
 
