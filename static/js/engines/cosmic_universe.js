@@ -174,31 +174,46 @@ export class CosmicUniverseEngine {
   fireGrandCelebration() {
     if (!window.confetti) return;
 
-    // Cannon 1 & 2: Left and Right bursts
+    // Wave 1: Dual angled gold, rose, and cyan cannons
     window.confetti({
-      particleCount: 80,
+      particleCount: 90,
       angle: 60,
-      spread: 55,
+      spread: 60,
       origin: { x: 0, y: 0.8 },
-      colors: ['#E6C065', '#FFD700', '#FF6584']
+      colors: ['#E6C065', '#FFD700', '#FF6584', '#38E1FF']
     });
     window.confetti({
-      particleCount: 80,
+      particleCount: 90,
       angle: 120,
-      spread: 55,
+      spread: 60,
       origin: { x: 1, y: 0.8 },
-      colors: ['#38E1FF', '#B588FF', '#FFD700']
+      colors: ['#38E1FF', '#B588FF', '#FFD700', '#F472B6']
     });
 
-    // Cannon 3: High altitude center explosion
+    // Wave 2: High-altitude center firework shell explosion
     setTimeout(() => {
       window.confetti({
-        particleCount: 110,
-        spread: 100,
-        origin: { x: 0.5, y: 0.4 },
-        colors: ['#FFFFFF', '#FFD700', '#FF6584', '#B588FF', '#38E1FF']
+        particleCount: 140,
+        spread: 120,
+        origin: { x: 0.5, y: 0.35 },
+        colors: ['#FFFFFF', '#FFD700', '#FF6584', '#B588FF', '#38E1FF', '#FDE047']
       });
-    }, 600);
+      if (window.CelebrationAudio && typeof window.CelebrationAudio.playChime === 'function') {
+        window.CelebrationAudio.playChime();
+      }
+    }, 550);
+
+    // Wave 3: Cascade shimmer rain with gentle float
+    setTimeout(() => {
+      window.confetti({
+        particleCount: 75,
+        spread: 160,
+        startVelocity: 25,
+        gravity: 0.6,
+        origin: { x: 0.5, y: 0.1 },
+        colors: ['#FFD700', '#FFF', '#E0F2FE', '#F472B6']
+      });
+    }, 1200);
   }
 
   initThree() {

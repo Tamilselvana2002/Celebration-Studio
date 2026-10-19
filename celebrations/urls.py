@@ -24,6 +24,14 @@ urlpatterns = [
     path('recipients/', views.RecipientDirectoryView.as_view(), name='recipient_directory'),
     path('media-vault/', views.MediaVaultView.as_view(), name='media_vault'),
 
+    # Phase 9: Android Companion & Cross-Device Sync
+    path('mobile/', views.MobileCompanionView.as_view(), name='mobile_companion'),
+    path('mobile-sync/', views.MobileSyncView.as_view(), name='mobile_sync'),
+    path('api/sync/', views.MobileSyncAPI.as_view(), name='api_mobile_sync'),
+    path('api/mobile/celebrations/', views.MobileCelebrationsAPI.as_view(), name='api_mobile_celebrations'),
+    path('manifest.json', views.PwaManifestView.as_view(), name='pwa_manifest'),
+    path('sw.js', views.ServiceWorkerJSView.as_view(), name='service_worker_js'),
+
     # API Endpoints
     path('celebrations/<uuid:celebration_id>/update-theme/', views.UpdateThemeAPI.as_view(), name='api_update_theme'),
     path('celebrations/<uuid:celebration_id>/publish-toggle/', views.PublishToggleAPI.as_view(), name='api_publish_toggle'),

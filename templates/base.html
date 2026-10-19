@@ -28,6 +28,7 @@
           <li><a href="{% url 'template_gallery' %}" class="nav-link {% if request.resolver_match.url_name == 'template_gallery' %}active{% endif %}">🏛️ Templates</a></li>
           <li><a href="{% url 'recipient_directory' %}" class="nav-link {% if request.resolver_match.url_name == 'recipient_directory' %}active{% endif %}">VIP Recipients</a></li>
           <li><a href="{% url 'media_vault' %}" class="nav-link {% if request.resolver_match.url_name == 'media_vault' %}active{% endif %}">Media Vault</a></li>
+          <li><a href="{% url 'mobile_companion' %}" class="nav-link {% if request.resolver_match.url_name == 'mobile_companion' or request.resolver_match.url_name == 'mobile_sync' %}active{% endif %}">📱 Android Sync</a></li>
           {% if request.user.is_superuser %}
           <li><a href="{% url 'master_admin_dashboard' %}" class="nav-link {% if 'master_admin' in request.resolver_match.url_name %}active{% endif %}" style="color: #ffd700; font-weight: 700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);">👑 Master Admin</a></li>
           {% endif %}

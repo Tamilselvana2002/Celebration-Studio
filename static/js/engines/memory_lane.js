@@ -36,6 +36,7 @@ export class MemoryLaneEngine {
     this.handlePointerUp = this.onPointerUp.bind(this);
     this.handlePointerCancel = this.onPointerCancel.bind(this);
     this.handleKeyDown = this.onKeyDown.bind(this);
+    this.handlePointerMove = this.onPointerMove.bind(this);
   }
 
   mount() {
@@ -48,6 +49,7 @@ export class MemoryLaneEngine {
     // Bind pointer and touch interactions directly on stage
     if (this.stage) {
       this.stage.addEventListener('pointerdown', this.handlePointerDown);
+      this.stage.addEventListener('pointermove', this.handlePointerMove);
       window.addEventListener('pointerup', this.handlePointerUp);
       window.addEventListener('pointercancel', this.handlePointerCancel);
     }
@@ -327,12 +329,55 @@ export class MemoryLaneEngine {
     this.showSlide(0, false);
   }
 
+  onPointerMove(e) {
+    if (this.isAnimating || !this.slides[this.currentIndex]) return;
+    const activeCard = this.slides[this.currentIndex];
+    const rect = this.stage.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+    const rotX = -y * 14;
+    const rotY = x * 14;
+    const naturalRot = (this.currentIndex % 2 === 0 ? -2.5 : 2.5);
+
+    if (window.gsap) {
+      gsap.to(activeCard, {
+        rotateX: rotX,
+        rotateY: rotY,
+        rotateZ: naturalRot + (x * 3),
+        duration: 0.35,
+        ease: 'power1.out'
+      });
+
+      const img = activeCard.querySelector('.polaroid-img');
+      if (img) {
+        gsap.to(img, {
+          x: x * 18,
+          y: y * 18,
+          duration: 0.4,
+          ease: 'power1.out'
+        });
+      }
+
+      const caption = activeCard.querySelector('.polaroid-caption');
+      if (caption) {
+        gsap.to(caption, {
+          x: -x * 12,
+          y: -y * 12,
+          duration: 0.45,
+          ease: 'power1.out'
+        });
+      }
+    }
+  }
+
   destroy() {
     this.clearTimer();
     if (this.holdTimer) clearTimeout(this.holdTimer);
 
     if (this.stage) {
       this.stage.removeEventListener('pointerdown', this.handlePointerDown);
+      this.stage.removeEventListener('pointermove', this.handlePointerMove);
     }
     window.removeEventListener('pointerup', this.handlePointerUp);
     window.removeEventListener('pointercancel', this.handlePointerCancel);

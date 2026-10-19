@@ -624,6 +624,67 @@ class CelebrationStudioTestCase(TestCase):
         self.assertIsNotNone(gift_scene)
         self.assertEqual(gift_scene.content.get('style'), 'champagne_gold')
 
+    def test_media_vault_view_and_storage_stats(self):
+        self.client.force_login(self.user)
+        res = self.client.get(reverse('media_vault'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Media Vault')
+        self.assertContains(res, 'Cloud Storage')
+        self.assertContains(res, 'Photo Parallax')
+
+    def test_media_vault_upload_and_delete(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        self.client.force_login(self.user)
+        dummy_file = SimpleUploadedFile("memory_photo.jpg", b"fake-jpeg-binary-data", content_type="image/jpeg")
+        res = self.client.post(reverse('media_vault'), {
+            'file': dummy_file,
+            'caption': 'Our Summer Beach Trip',
+            'alt_text': 'Friends at the beach sunset'
+        })
+        self.assertEqual(res.status_code, 302)
+        from celebrations.models import MediaAsset
+        asset = MediaAsset.objects.filter(caption='Our Summer Beach Trip').first()
+        self.assertIsNotNone(asset)
+        self.assertEqual(asset.asset_type, 'image')
+
+        # Test delete
+        del_res = self.client.post(reverse('media_vault'), {
+            'action': 'delete',
+            'asset_id': str(asset.id)
+        })
+        self.assertEqual(del_res.status_code, 302)
+        self.assertFalse(MediaAsset.objects.filter(id=asset.id).exists())
+
+    def test_mobile_companion_view(self):
+        self.client.force_login(self.user)
+        res = self.client.get(reverse('mobile_companion'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Android Companion')
+        self.assertContains(res, 'My Celebrations')
+        self.assertContains(res, 'Device Pair PIN')
+        self.assertContains(res, 'Google Play')
+
+    def test_mobile_sync_view_and_api(self):
+        self.client.force_login(self.user)
+        res = self.client.get(reverse('mobile_sync'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Syncing Your Celebrations')
+        self.assertContains(res, 'sync-progress-track')
+
+        # Sync API
+        api_res = self.client.get(reverse('api_mobile_sync'))
+        self.assertEqual(api_res.status_code, 200)
+        data = api_res.json()
+        self.assertEqual(data.get('status'), 'synchronized')
+
+        # Mobile celebrations API
+        celeb_api_res = self.client.get(reverse('api_mobile_celebrations'))
+        self.assertEqual(celeb_api_res.status_code, 200)
+        celeb_data = celeb_api_res.json()
+        self.assertEqual(celeb_data.get('status'), 'ok')
+        self.assertTrue(len(celeb_data.get('celebrations', [])) >= 1)
+
+
 
 
 

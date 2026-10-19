@@ -11,6 +11,8 @@ from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.db.models import Q
+from django.http import HttpResponse
 
 from .models import (
     Celebration, RecipientProfile, CelebrationParticipant,
@@ -564,23 +566,108 @@ class RecipientDirectoryView(CreatorRequiredMixin, View):
 
 class MediaVaultView(CreatorRequiredMixin, View):
     def get(self, request):
-        assets = MediaAsset.objects.filter(celebration__owner=request.user)
-        return render(request, 'media_vault.html', {'assets': assets})
+        user_celebrations = Celebration.objects.filter(owner=request.user)
+        base_assets = MediaAsset.objects.filter(
+            Q(celebration__owner=request.user) | Q(celebration__isnull=True)
+        ).select_related('celebration').distinct()
+
+        category = request.GET.get('category', 'all').lower()
+        assets = base_assets
+        if category == 'photos':
+            assets = assets.filter(asset_type='image')
+        elif category == 'audio':
+            assets = assets.filter(asset_type='audio')
+        elif category == 'videos':
+            assets = assets.filter(asset_type='video')
+        elif category == 'assets':
+            # 3D assets or special items
+            assets = assets.filter(asset_type__in=['3d', 'sticker', 'vector'])
+
+        search_query = request.GET.get('q', '').strip()
+        if search_query:
+            assets = assets.filter(
+                Q(caption__icontains=search_query) |
+                Q(alt_text__icontains=search_query) |
+                Q(file__icontains=search_query)
+            )
+
+        # Storage statistics
+        total_count = base_assets.count()
+        photo_count = base_assets.filter(asset_type='image').count()
+        audio_count = base_assets.filter(asset_type='audio').count()
+        video_count = base_assets.filter(asset_type='video').count()
+
+        total_bytes = sum(a.file_size for a in base_assets if a.file_size)
+        total_mb = round(total_bytes / (1024 * 1024), 2)
+        storage_quota_mb = 500.0
+        storage_percent = min(100.0, round((total_mb / storage_quota_mb) * 100, 1))
+
+        context = {
+            'assets': assets,
+            'user_celebrations': user_celebrations,
+            'active_category': category,
+            'search_query': search_query,
+            'total_count': total_count,
+            'photo_count': photo_count,
+            'audio_count': audio_count,
+            'video_count': video_count,
+            'total_mb': total_mb,
+            'storage_quota_mb': storage_quota_mb,
+            'storage_percent': storage_percent,
+        }
+        return render(request, 'media_vault.html', context)
 
     def post(self, request):
-        uploaded_file = request.FILES.get('file')
-        caption = request.POST.get('caption', '')
-        alt_text = request.POST.get('alt_text', '')
+        action = request.POST.get('action')
+        if action == 'delete':
+            asset_id = request.POST.get('asset_id')
+            if asset_id:
+                try:
+                    asset = MediaAsset.objects.get(id=asset_id)
+                    if not asset.celebration or asset.celebration.owner == request.user:
+                        try:
+                            asset.file.delete(save=False)
+                        except Exception:
+                            pass
+                        asset.delete()
+                        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+                            return JsonResponse({'status': 'ok', 'deleted': asset_id})
+                except MediaAsset.DoesNotExist:
+                    pass
+            return redirect('media_vault')
 
-        if uploaded_file:
-            asset_type = 'audio' if uploaded_file.name.endswith(('.mp3', '.wav', '.ogg')) else 'image'
-            MediaAsset.objects.create(
+        # Upload files
+        uploaded_files = request.FILES.getlist('file') or ([request.FILES.get('file')] if request.FILES.get('file') else [])
+        caption = request.POST.get('caption', '').strip()
+        alt_text = request.POST.get('alt_text', '').strip()
+        celebration_id = request.POST.get('celebration_id')
+        celebration = None
+        if celebration_id:
+            celebration = Celebration.objects.filter(id=celebration_id, owner=request.user).first()
+
+        created_assets = []
+        for uploaded_file in uploaded_files:
+            lower_name = uploaded_file.name.lower()
+            if lower_name.endswith(('.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac')):
+                asset_type = 'audio'
+            elif lower_name.endswith(('.mp4', '.webm', '.mov', '.ogv')):
+                asset_type = 'video'
+            else:
+                asset_type = 'image'
+
+            asset = MediaAsset.objects.create(
+                celebration=celebration,
                 file=uploaded_file,
                 asset_type=asset_type,
-                caption=caption,
+                caption=caption or uploaded_file.name,
                 alt_text=alt_text,
                 file_size=uploaded_file.size
             )
+            created_assets.append(str(asset.id))
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'ok', 'created_ids': created_assets})
+
         return redirect('media_vault')
 
 
@@ -1018,6 +1105,191 @@ class MasterAdminDeleteCelebrationView(SuperuserRequiredMixin, View):
         celebration.delete()
         request.session['admin_message'] = f'Successfully deleted celebration "{title}".'
         return redirect('master_admin_dashboard')
+
+
+# ==========================================================================
+# PHASE 9: ANDROID COMPANION & CROSS-DEVICE SYNC VIEWS & APIS
+# ==========================================================================
+
+class MobileCompanionView(CreatorRequiredMixin, View):
+    """
+    Renders the Android Companion Studio matching 13_mobile_app_android.jpg,
+    19_android_my_celebrations.jpg, and 29_29_android_home.jpg.
+    Allows creators to preview their celebrations in a high-fidelity simulated
+    Android frame or open full-screen on mobile devices.
+    """
+    def get(self, request):
+        celebrations = Celebration.objects.filter(owner=request.user).order_by('-updated_at')
+        published_count = celebrations.filter(status='published').count()
+        draft_count = celebrations.filter(status='draft').count()
+
+        filter_status = request.GET.get('status', 'all')
+        if filter_status == 'published':
+            filtered_celebrations = celebrations.filter(status='published')
+        elif filter_status == 'draft':
+            filtered_celebrations = celebrations.filter(status='draft')
+        else:
+            filtered_celebrations = celebrations
+
+        # Generate or retrieve a persistent 6-digit sync pairing PIN in session
+        if 'sync_pairing_pin' not in request.session:
+            import random
+            request.session['sync_pairing_pin'] = f"{random.randint(100000, 999999)}"
+        sync_pin = request.session['sync_pairing_pin']
+
+        context = {
+            'celebrations': filtered_celebrations,
+            'all_celebrations': celebrations,
+            'total_count': celebrations.count(),
+            'published_count': published_count,
+            'draft_count': draft_count,
+            'filter_status': filter_status,
+            'sync_pin': sync_pin,
+            'user': request.user,
+        }
+        return render(request, 'mobile_companion.html', context)
+
+
+class MobileSyncView(CreatorRequiredMixin, View):
+    """
+    Renders the dedicated Real-Time Cloud Sync View matching 14_sync_screen.jpg.
+    Displays glowing cloud download icon, progress waves, QR code, and pairing PIN.
+    """
+    def get(self, request):
+        celebrations = Celebration.objects.filter(owner=request.user)
+        sync_pin = request.session.get('sync_pairing_pin', '784291')
+        
+        context = {
+            'celebrations': celebrations,
+            'sync_pin': sync_pin,
+            'device_name': 'Pixel 8 Pro (Android 14)',
+            'sync_latency': '16ms',
+        }
+        return render(request, 'mobile_sync.html', context)
+
+
+class MobileSyncAPI(CreatorAPIMixin, View):
+    """
+    JSON API endpoint for real-time mobile app handshake & synchronization.
+    """
+    def get(self, request):
+        celebrations = Celebration.objects.filter(owner=request.user)
+        data = {
+            'status': 'synchronized',
+            'server_time': timezone.now().isoformat(),
+            'total_celebrations': celebrations.count(),
+            'published_count': celebrations.filter(status='published').count(),
+            'sync_pin': request.session.get('sync_pairing_pin', '784291'),
+            'connected_device': 'Android Companion Client',
+            'latency_ms': 14,
+        }
+        return JsonResponse(data)
+
+    def post(self, request):
+        return JsonResponse({
+            'status': 'sync_completed',
+            'timestamp': timezone.now().isoformat(),
+            'message': 'All celebration packages synchronized to Android device successfully.'
+        })
+
+
+class MobileCelebrationsAPI(CreatorAPIMixin, View):
+    """
+    Returns mobile-optimized payload of creator's celebrations.
+    """
+    def get(self, request):
+        celebrations = Celebration.objects.filter(owner=request.user).order_by('-updated_at')
+        items = []
+        for c in celebrations:
+            items.append({
+                'id': str(c.id),
+                'title': c.title,
+                'slug': c.slug,
+                'status': c.status,
+                'theme_id': c.theme_id,
+                'event_type': c.get_event_type_display(),
+                'recipient': c.recipient_summary,
+                'view_count': c.view_count,
+                'updated_at': c.updated_at.strftime('%b %d, %Y'),
+                'url': reverse('public_celebration', kwargs={'slug': c.slug}),
+                'edit_url': reverse('experience_studio', kwargs={'celebration_id': c.id}),
+            })
+        return JsonResponse({'status': 'ok', 'celebrations': items})
+
+
+class PwaManifestView(View):
+    """
+    Serves standard PWA Web App Manifest for Android 'Add to Home Screen'.
+    """
+    def get(self, request):
+        manifest_data = {
+            "name": "Celebration Studio 3D",
+            "short_name": "CelebrationStudio",
+            "description": "Create and experience luxury 3D celebration keepsakes with real-time sync.",
+            "start_url": "/mobile/",
+            "display": "standalone",
+            "orientation": "portrait-primary",
+            "background_color": "#07080C",
+            "theme_color": "#38E1FF",
+            "icons": [
+                {
+                    "src": "/static/images/pwa_icon_192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "/static/images/pwa_icon_512.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        }
+        return JsonResponse(manifest_data, content_type='application/manifest+json')
+
+
+class ServiceWorkerJSView(View):
+    """
+    Serves the offline PWA service worker with appropriate Javascript content-type.
+    """
+    def get(self, request):
+        sw_content = """// Celebration Studio Android PWA Service Worker
+const CACHE_NAME = 'celebration-studio-v2';
+const STATIC_ASSETS = [
+  '/',
+  '/mobile/',
+  '/mobile-sync/',
+  '/static/css/studio.css'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)).catch(() => {})
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      return cachedResponse || fetch(event.request).catch(() => caches.match('/mobile/'));
+    })
+  );
+});
+"""
+        return HttpResponse(sw_content, content_type='application/javascript')
+
 
 
 

@@ -390,6 +390,85 @@ export class SecretSurpriseEngine {
         break;
       }
     }
+
+    // Crystalline Blooming Lotus Flower (Matching 15_3d_gift_reveal.jpg & 25_3d_gift_reveal.jpg)
+    this.lotusGroup = new THREE.Group();
+    this.lotusPetals = [];
+
+    const lotusPedestalGeo = new THREE.CylinderGeometry(7, 9, 3.5, 16);
+    const crystalPedestalMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.1,
+      metalness: 0.2,
+      transparent: true,
+      opacity: 0.75
+    });
+    const pedestalMesh = new THREE.Mesh(lotusPedestalGeo, crystalPedestalMat);
+    pedestalMesh.position.y = -4;
+    this.lotusGroup.add(pedestalMesh);
+
+    // Two tiers of crystalline lotus petals
+    const petalMatInner = new THREE.MeshStandardMaterial({
+      color: 0xff69b4,
+      emissive: 0xf43f5e,
+      emissiveIntensity: 0.6,
+      roughness: 0.2,
+      metalness: 0.1,
+      side: THREE.DoubleSide
+    });
+    const petalMatOuter = new THREE.MeshStandardMaterial({
+      color: 0xf472b6,
+      emissive: 0xec4899,
+      emissiveIntensity: 0.45,
+      roughness: 0.2,
+      metalness: 0.1,
+      side: THREE.DoubleSide
+    });
+
+    // 8 Inner Petals
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const petalGeo = new THREE.ConeGeometry(3.2, 11, 4);
+      petalGeo.rotateX(Math.PI / 2);
+      const petal = new THREE.Mesh(petalGeo, petalMatInner);
+      petal.position.set(Math.cos(angle) * 3, 2, Math.sin(angle) * 3);
+      petal.rotation.y = -angle;
+      petal.rotation.x = 0.2; // initially closed upright
+      petal.scale.set(0.7, 0.2, 1);
+      petal.userData = { initialRotX: 0.2, openRotX: 1.15, baseAngle: angle };
+      this.lotusGroup.add(petal);
+      this.lotusPetals.push(petal);
+    }
+
+    // 10 Outer Petals
+    for (let i = 0; i < 10; i++) {
+      const angle = (i / 10) * Math.PI * 2;
+      const petalGeo = new THREE.ConeGeometry(4.2, 14, 4);
+      petalGeo.rotateX(Math.PI / 2);
+      const petal = new THREE.Mesh(petalGeo, petalMatOuter);
+      petal.position.set(Math.cos(angle) * 5, 0, Math.sin(angle) * 5);
+      petal.rotation.y = -angle;
+      petal.rotation.x = 0.3; // initially closed upright
+      petal.scale.set(0.8, 0.2, 1);
+      petal.userData = { initialRotX: 0.3, openRotX: 1.5, baseAngle: angle };
+      this.lotusGroup.add(petal);
+      this.lotusPetals.push(petal);
+    }
+
+    // Volumetric upward light beam inside lotus
+    const beamGeo = new THREE.CylinderGeometry(2, 22, 140, 24, 1, true);
+    const beamMat = new THREE.MeshBasicMaterial({
+      color: 0xffea79,
+      transparent: true,
+      opacity: 0,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending
+    });
+    this.lightBeam = new THREE.Mesh(beamGeo, beamMat);
+    this.lightBeam.position.y = 60;
+    this.lotusGroup.add(this.lightBeam);
+
+    this.relicCoreGroup.add(this.lotusGroup);
   }
 
   /* ==========================================================================
@@ -572,7 +651,7 @@ export class SecretSurpriseEngine {
       });
     }
 
-    // 5. Expand glowing core relic
+    // 5. Expand glowing core relic & Bloom Crystal Lotus (Matches 15_3d_gift_reveal.jpg)
     if (this.relicCoreGroup) {
       tl.to(this.relicCoreGroup.scale, {
         x: 2.6,
@@ -581,6 +660,30 @@ export class SecretSurpriseEngine {
         duration: 0.8,
         ease: 'back.out(2)'
       }, 0.3);
+    }
+
+    if (this.lotusPetals && this.lotusPetals.length > 0) {
+      this.lotusPetals.forEach((petal, idx) => {
+        tl.to(petal.rotation, {
+          x: petal.userData.openRotX,
+          duration: 0.85,
+          ease: 'back.out(1.8)'
+        }, 0.28 + (idx * 0.02));
+      });
+    }
+
+    if (this.lightBeam) {
+      tl.to(this.lightBeam.material, {
+        opacity: 0.75,
+        duration: 0.45,
+        ease: 'power2.in'
+      }, 0.22);
+      tl.to(this.lightBeam.scale, {
+        x: 1.6,
+        z: 1.6,
+        duration: 0.75,
+        ease: 'power2.out'
+      }, 0.25);
     }
 
     // 6. Fade out 3D canvas and smoothly reveal letter
@@ -656,6 +759,15 @@ export class SecretSurpriseEngine {
       }
       if (this.relicCoreGroup) {
         this.relicCoreGroup.scale.set(1, 1, 1);
+      }
+      if (this.lotusPetals && this.lotusPetals.length > 0) {
+        this.lotusPetals.forEach(petal => {
+          petal.rotation.x = petal.userData.initialRotX;
+        });
+      }
+      if (this.lightBeam) {
+        this.lightBeam.material.opacity = 0;
+        this.lightBeam.scale.set(1, 1, 1);
       }
       this.orbitalRings.forEach(ring => ring.scale.set(1, 1, 1));
     }
