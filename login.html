@@ -85,8 +85,10 @@
     function handleAuthLogin(e) {
       e.preventDefault();
       const user = document.getElementById('loginUser').value.trim() || 'Atelier Creator';
-      window.CelebrationDB.setUser({ username: user, is_authenticated: true, is_superuser: true });
-      window.location.href = 'dashboard.html';
+      window.CelebrationDB.login(user);
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get('next') || 'dashboard.html';
+      window.location.href = next;
     }
   </script>
 </body>

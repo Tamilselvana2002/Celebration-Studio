@@ -279,6 +279,24 @@
       this._save(KEY_USER, user);
     },
 
+    login(username, email = '') {
+      const user = {
+        username: username || 'Atelier Creator',
+        email: email || 'creator@celebrationstudio.com',
+        is_authenticated: true,
+        is_superuser: true
+      };
+      this.setUser(user);
+      return user;
+    },
+
+    logout() {
+      const user = this.getUser();
+      user.is_authenticated = false;
+      this.setUser(user);
+      window.location.href = 'login.html';
+    },
+
     getSettings() {
       return this._load(KEY_SETTINGS, {
         theme: 'midnight_gold',

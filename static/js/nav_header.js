@@ -16,12 +16,79 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // 2. Synchronize logged in user name
+  // 2. Synchronize logged in user and authentication state
   if (window.CelebrationDB) {
     const user = window.CelebrationDB.getUser();
-    document.querySelectorAll('#headerUserDisplay, .user-name-display').forEach(el => {
-      el.textContent = user.username || 'Atelier Creator';
-    });
+    const protectedPages = ['dashboard.html', 'create.html', 'editor.html', 'profile.html', 'media-vault.html', 'recipients.html'];
+    const isProtected = protectedPages.includes(currentPath);
+
+    if (user && user.is_authenticated === false) {
+      if (isProtected) {
+        window.location.href = 'login.html?next=' + encodeURIComponent(currentPath + window.location.search);
+        return;
+      }
+      // On public pages, show Sign In / Register buttons in header
+      const navActions = document.querySelector('.nav-actions');
+      if (navActions) {
+        navActions.innerHTML = `
+          <a href="login.html" class="btn btn-ghost btn-sm" style="color: #fdf2f8; border-radius: 999px; padding: 5px 14px;">Sign In</a>
+          <a href="register.html" class="btn btn-primary btn-sm" style="border-radius: 999px;">Register Free</a>
+        `;
+      }
+
+      const drawerList = document.querySelector('#mobileNavDrawer ul');
+      if (drawerList) {
+        drawerList.innerHTML = `
+          <li><a href="index.html" class="nav-link">✨ Home</a></li>
+          <li><a href="templates.html" class="nav-link">🏛️ Templates</a></li>
+          <li><a href="login.html" class="nav-link">🔑 Sign In</a></li>
+          <li><a href="register.html" class="nav-link" style="color: var(--theme-primary);">✦ Register Free</a></li>
+        `;
+      }
+    } else {
+      // Authenticated: display user name
+      document.querySelectorAll('#headerUserDisplay, .user-name-display').forEach(el => {
+        el.textContent = user.username || 'Atelier Creator';
+      });
+
+      // Add one-click quick Sign Out button next to profile badge if not already present
+      const navActions = document.querySelector('.nav-actions');
+      if (navActions && !document.getElementById('headerLogoutBtn')) {
+        const logoutBtn = document.createElement('a');
+        logoutBtn.id = 'headerLogoutBtn';
+        logoutBtn.href = '#';
+        logoutBtn.title = 'Sign Out of Atelier';
+        logoutBtn.innerHTML = '🚪 Sign Out';
+        logoutBtn.className = 'btn btn-ghost btn-sm';
+        logoutBtn.style.cssText = 'color: #fca5a5; font-size: 0.78rem; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(239, 68, 68, 0.25); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;';
+        logoutBtn.onclick = function (e) {
+          e.preventDefault();
+          if (confirm('Are you sure you want to sign out of Celebration Studio?')) {
+            window.CelebrationDB.logout();
+          }
+        };
+        const targetBtn = navActions.querySelector('.btn-primary') || null;
+        if (targetBtn) {
+          navActions.insertBefore(logoutBtn, targetBtn);
+        } else {
+          navActions.appendChild(logoutBtn);
+        }
+      }
+
+      const drawerList = document.querySelector('#mobileNavDrawer ul');
+      if (drawerList && !document.getElementById('mobileNavLogout')) {
+        const li = document.createElement('li');
+        li.id = 'mobileNavLogout';
+        li.innerHTML = '<a href="#" class="nav-link" style="color: #fca5a5;">🚪 Sign Out</a>';
+        li.querySelector('a').onclick = function (e) {
+          e.preventDefault();
+          if (confirm('Are you sure you want to sign out of Celebration Studio?')) {
+            window.CelebrationDB.logout();
+          }
+        };
+        drawerList.appendChild(li);
+      }
+    }
   }
 
   // 3. Mobile Navigation Drawer Toggle

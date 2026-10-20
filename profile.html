@@ -109,8 +109,13 @@
             </select>
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: var(--space-4);">
-            <span id="saveProfileMsg" style="font-size: 0.85rem; color: #34d399; font-weight: 600;"></span>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: var(--space-4); flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <button type="button" onclick="handleLogout()" class="btn btn-secondary btn-sm" style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">
+                🚪 Sign Out / Switch Account
+              </button>
+              <span id="saveProfileMsg" style="font-size: 0.85rem; color: #34d399; font-weight: 600;"></span>
+            </div>
             <button type="submit" class="btn btn-primary">Save Atelier Preferences ✓</button>
           </div>
         </form>
@@ -127,6 +132,11 @@
   <script src="static/js/modern_3d_ui.js"></script>
 
   <script>
+    function handleLogout() {
+      if (confirm('Are you sure you want to sign out of Celebration Studio?')) {
+        window.CelebrationDB.logout();
+      }
+    }
     document.addEventListener('DOMContentLoaded', () => {
       const user = window.CelebrationDB.getUser();
       document.getElementById('profileUsername').textContent = user.username || 'Atelier Creator';

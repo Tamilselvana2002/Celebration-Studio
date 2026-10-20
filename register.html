@@ -92,7 +92,9 @@
       const user = document.getElementById('regUser').value.trim() || 'Atelier Creator';
       const email = document.getElementById('regEmail').value.trim();
       window.CelebrationDB.setUser({ username: user, email: email, is_authenticated: true, is_superuser: true });
-      window.location.href = 'dashboard.html';
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get('next') || 'dashboard.html';
+      window.location.href = next;
     }
   </script>
 </body>
