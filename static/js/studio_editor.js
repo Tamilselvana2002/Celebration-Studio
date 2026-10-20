@@ -22,6 +22,8 @@ window.StudioEditor = {
   timelineLastTimestamp: null,
   isScrubbing: false,
   debouncedSaveAudioTimer: null,
+  autoSaveTimer: null,
+  autoSaveMemoriesTimer: null,
 
   init() {
     const root = document.querySelector('.studio-workbench');
@@ -46,6 +48,7 @@ window.StudioEditor = {
     this.bindPublishModal();
     this.initTimeline();
     this.initSceneSettings();
+    this.bindAutoSave();
 
     if (this.scenes.length > 0) {
       this.selectScene(this.scenes[0].id);
@@ -63,6 +66,17 @@ window.StudioEditor = {
   },
 
   switchTab(tabId) {
+    if (this.autoSaveTimer) {
+      clearTimeout(this.autoSaveTimer);
+      this.autoSaveTimer = null;
+      this.saveActiveSceneContent(true);
+    }
+    if (this.autoSaveMemoriesTimer) {
+      clearTimeout(this.autoSaveMemoriesTimer);
+      this.autoSaveMemoriesTimer = null;
+      this.saveMemoriesDeck(true);
+    }
+
     document.querySelectorAll('.studio-tab-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.tab === tabId);
     });
@@ -157,6 +171,12 @@ window.StudioEditor = {
   },
 
   selectScene(sceneId, notifyPreview = true) {
+    if (this.autoSaveTimer) {
+      clearTimeout(this.autoSaveTimer);
+      this.autoSaveTimer = null;
+      this.saveActiveSceneContent(true);
+    }
+
     this.activeSceneId = sceneId;
     const sceneIdx = this.scenes.findIndex(s => s.id === sceneId);
     if (sceneIdx === -1) return;
@@ -243,7 +263,7 @@ window.StudioEditor = {
     return el ? el.value.trim() : '';
   },
 
-  async saveActiveSceneContent() {
+  async saveActiveSceneContent(skipReload = false) {
     const scene = this.scenes.find(s => s.id === this.activeSceneId);
     if (!scene) return;
 
@@ -318,7 +338,9 @@ window.StudioEditor = {
         if (cardTitle) cardTitle.textContent = newTitle;
 
         this.setSaveStatus(true, 'Saved ✓');
-        this.reloadPreview();
+        if (!skipReload) {
+          this.reloadPreview();
+        }
       }
     } catch (e) {
       console.error('Error saving scene content:', e);
@@ -488,7 +510,7 @@ window.StudioEditor = {
     }
   },
 
-  async saveMemoriesDeck() {
+  async saveMemoriesDeck(skipReload = false) {
     const memoryScene = this.getMemoryLaneScene();
     if (!memoryScene) return;
 
@@ -521,7 +543,9 @@ window.StudioEditor = {
       const data = await res.json();
       if (data.status === 'ok') {
         this.setSaveStatus(true, 'Saved ✓');
-        this.reloadPreview();
+        if (!skipReload) {
+          this.reloadPreview();
+        }
       }
     } catch (e) {
       console.error('Error saving memories:', e);
@@ -651,6 +675,47 @@ window.StudioEditor = {
         }
       });
     }
+  },
+
+  bindAutoSave() {
+    const contentForms = document.getElementById('sceneContentForms');
+    if (contentForms) {
+      const handleContentInput = (e) => {
+        if (e.target && e.target.type === 'file') return;
+        this.setSaveStatus(false, 'Unsaved changes...');
+        clearTimeout(this.autoSaveTimer);
+        this.autoSaveTimer = setTimeout(() => {
+          this.saveActiveSceneContent(true);
+        }, 1000);
+      };
+      contentForms.addEventListener('input', handleContentInput);
+      contentForms.addEventListener('change', handleContentInput);
+    }
+
+    const photosDeck = document.getElementById('photosDeckList');
+    if (photosDeck) {
+      const handlePhotosInput = (e) => {
+        if (e.target && e.target.type === 'file') return;
+        this.setSaveStatus(false, 'Unsaved changes...');
+        clearTimeout(this.autoSaveMemoriesTimer);
+        this.autoSaveMemoriesTimer = setTimeout(() => {
+          this.saveMemoriesDeck(true);
+        }, 1200);
+      };
+      photosDeck.addEventListener('input', handlePhotosInput);
+      photosDeck.addEventListener('change', handlePhotosInput);
+    }
+
+    window.addEventListener('beforeunload', () => {
+      if (this.autoSaveTimer) {
+        clearTimeout(this.autoSaveTimer);
+        this.saveActiveSceneContent(true);
+      }
+      if (this.autoSaveMemoriesTimer) {
+        clearTimeout(this.autoSaveMemoriesTimer);
+        this.saveMemoriesDeck(true);
+      }
+    });
   },
 
   escapeHtml(str) {
