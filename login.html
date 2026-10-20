@@ -3,64 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Creator Atelier Sign In & Portal — Celebration Studio</title>
+  <title>Creator Atelier Sign In & Authentication — Celebration Studio</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="static/css/tokens.css">
   <link rel="stylesheet" href="static/css/auth_3d.css">
 </head>
-<body class="auth-body">
+<body class="auth-body" data-auth-theme="cosmic_portal">
 
-  <!-- 3D WebGL Canvas for Cosmic Portal & Whimsical Dreamscape -->
+  <!-- 3D WebGL Multi-Theme Background Canvas -->
   <canvas id="authPortalCanvas"></canvas>
 
-  <!-- Ambient Cinematic Lighting Overlays -->
+  <!-- Vignette & Glow Overlay -->
   <div class="auth-ambient-overlay"></div>
-  <div class="auth-dream-overlay"></div>
 
-  <!-- Top Navigation Bar -->
+  <!-- Top Navigation Header -->
   <header class="auth-top-bar">
     <a href="index.html" class="auth-brand">
       <div class="auth-brand-emblem">✨</div>
       <span class="auth-brand-text">Celebration Studio</span>
     </a>
-    <a href="index.html" class="auth-back-link">
-      <span>← Return to Atelier Showcase</span>
-    </a>
+
+    <div class="auth-top-controls">
+      <button type="button" class="auth-theme-dice-btn" id="authThemeDiceBtn" onclick="window.Auth3D.cycleRandomTheme()" title="Switch 3D Visual Atmosphere">
+        🎲 Random Theme
+      </button>
+      <a href="index.html" class="auth-back-link">
+        <span>← Home</span>
+      </a>
+    </div>
   </header>
 
-  <!-- Main 3D Stage -->
+  <!-- Main 3D Centered Stage -->
   <main class="auth-stage-container">
-    <div class="auth-flipper-perspective" id="authFlipperWrap">
-      <div class="auth-flipper-card" id="authFlipper">
+    <div class="auth-card-perspective-box">
+      <div class="auth-glass-card">
+
+        <!-- Universal Hexagonal Star Emblem (Screens 1, 3, 5) -->
+        <div class="auth-card-header">
+          <div class="auth-hex-emblem">
+            <svg viewBox="0 0 24 24">
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+            </svg>
+          </div>
+          <h1 class="auth-title-primary" id="authCardTitle">Welcome Back</h1>
+          <p class="auth-subtitle" id="authCardSubtitle">Sign in to continue</p>
+        </div>
 
         <!-- ============================================================= -->
-        <!-- FACE A: COSMIC 3D PORTAL SIGN IN (01_login_3d_portal.jpg)     -->
+        <!-- VIEW 1: SIGN IN (Screen 3)                                    -->
         <!-- ============================================================= -->
-        <div class="auth-card-face auth-card-login">
-          <!-- 3D Mode Switcher -->
-          <div class="auth-switch-tabs">
-            <div class="auth-tab-slider"></div>
-            <button type="button" class="auth-tab-btn active" id="tabLogin" onclick="window.Auth3D.transitionTo('login')">
-              <span>🔑 Sign In</span>
-            </button>
-            <button type="button" class="auth-tab-btn" id="tabRegister" onclick="window.Auth3D.transitionTo('register')">
-              <span>✦ Create Account</span>
-            </button>
-          </div>
-
-          <div class="auth-emblem-wrap">
-            <div class="auth-portal-emblem">✨</div>
-          </div>
-
-          <h1 class="auth-card-title">Celebration Studio</h1>
-          <p class="auth-card-subtitle">Create Magical Moments</p>
-
-          <form onsubmit="handleAuthLogin(event)">
+        <div class="auth-view active" id="view-login">
+          <form onsubmit="handleLoginSubmit(event)">
             <div class="auth-input-group">
               <label class="auth-input-label">Email or Username</label>
               <div class="auth-input-wrap">
@@ -68,7 +66,7 @@
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <input type="text" id="loginUser" required class="auth-input-field" placeholder="Enter creator username" value="Atelier Creator">
+                <input type="text" id="loginUsername" required class="auth-input-field" placeholder="Email or Username" value="Atelier Creator">
               </div>
             </div>
 
@@ -79,8 +77,8 @@
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <input type="password" id="loginPass" required class="auth-input-field" placeholder="••••••••" value="creator2026">
-                <button type="button" class="auth-pw-toggle" onclick="togglePasswordVisibility('loginPass', this)" title="Show/Hide Password">
+                <input type="password" id="loginPassword" required class="auth-input-field" placeholder="Password" value="creator2026">
+                <button type="button" class="auth-pw-toggle" onclick="togglePasswordVisibility('loginPassword', this)">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                     <circle cx="12" cy="12" r="3"></circle>
@@ -89,45 +87,49 @@
               </div>
             </div>
 
-            <button type="submit" class="auth-submit-btn">
-              <span>Enter Creator Studio →</span>
+            <div class="auth-helper-row">
+              <label class="auth-checkbox-label">
+                <input type="checkbox" id="rememberMe" checked>
+                <span>Remember me</span>
+              </label>
+              <span class="auth-forgot-link" onclick="window.Auth3D.showView('forgot')">Forgot password?</span>
+            </div>
+
+            <button type="submit" class="auth-primary-btn">
+              <span>Sign In</span>
             </button>
-
-            <div class="auth-switch-prompt">
-              Don't have an account yet? 
-              <span class="auth-switch-link" onclick="window.Auth3D.transitionTo('register')">Register Free</span>
-            </div>
-
-            <div class="auth-hologram-indicator">
-              <span class="dot"></span>
-              <span>Hardware-Accelerated 3D Atelier Active</span>
-            </div>
           </form>
+
+          <div class="auth-divider">or continue with</div>
+
+          <div class="auth-social-row">
+            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Google')" title="Continue with Google">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"></path>
+              </svg>
+            </button>
+            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Facebook')" title="Continue with Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+              </svg>
+            </button>
+            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Apple')" title="Continue with Apple">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.85-.92.04-2.02.62-2.66 1.37-.56.65-1.06 1.71-.93 2.73 1.03.08 2.06-.5 2.67-1.25z"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="auth-switch-prompt">
+            Don't have an account? <span class="action" onclick="window.Auth3D.showView('register')">Create one</span>
+          </div>
         </div>
 
         <!-- ============================================================= -->
-        <!-- FACE B: WHIMSICAL DREAMSCAPE REGISTER (02_registration_3d.jpg)-->
+        <!-- VIEW 2: REGISTRATION (Screen 5)                               -->
         <!-- ============================================================= -->
-        <div class="auth-card-face auth-card-register">
-          <!-- 3D Mode Switcher -->
-          <div class="auth-switch-tabs">
-            <div class="auth-tab-slider"></div>
-            <button type="button" class="auth-tab-btn" onclick="window.Auth3D.transitionTo('login')">
-              <span>🔑 Sign In</span>
-            </button>
-            <button type="button" class="auth-tab-btn active" onclick="window.Auth3D.transitionTo('register')">
-              <span>✦ Create Account</span>
-            </button>
-          </div>
-
-          <div class="auth-emblem-wrap">
-            <div class="auth-dream-emblem">🌸</div>
-          </div>
-
-          <h2 class="auth-card-title" style="color: #ffffff;">Create Your Account</h2>
-          <p class="auth-card-subtitle" style="color: rgba(255, 255, 255, 0.85);">Start creating beautiful celebrations</p>
-
-          <form onsubmit="handleAuthRegister(event)">
+        <div class="auth-view" id="view-register">
+          <form onsubmit="handleRegisterSubmit(event)">
             <div class="auth-input-group">
               <label class="auth-input-label">Full Name</label>
               <div class="auth-input-wrap">
@@ -135,7 +137,7 @@
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <input type="text" id="regUser" required class="auth-input-field" placeholder="e.g. Elena Rostova" value="Elena Rostova">
+                <input type="text" id="regFullName" required class="auth-input-field" placeholder="Full Name" value="Elena Rostova">
               </div>
             </div>
 
@@ -146,7 +148,7 @@
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                   <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
-                <input type="email" id="regEmail" required class="auth-input-field" placeholder="elena@example.com" value="elena@celebrationstudio.com">
+                <input type="email" id="regEmailAddr" required class="auth-input-field" placeholder="Email Address" value="elena@celebrationstudio.com">
               </div>
             </div>
 
@@ -157,8 +159,8 @@
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <input type="password" id="regPass" required class="auth-input-field" placeholder="Choose a password" value="dream2026">
-                <button type="button" class="auth-pw-toggle" onclick="togglePasswordVisibility('regPass', this)" title="Show/Hide Password">
+                <input type="password" id="regPassword" required class="auth-input-field" placeholder="Password" value="dream2026">
+                <button type="button" class="auth-pw-toggle" onclick="togglePasswordVisibility('regPassword', this)">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                     <circle cx="12" cy="12" r="3"></circle>
@@ -167,29 +169,124 @@
               </div>
             </div>
 
-            <button type="submit" class="auth-submit-btn">
-              <span>✦ Create Atelier Account</span>
+            <div class="auth-input-group">
+              <label class="auth-input-label">Confirm Password</label>
+              <div class="auth-input-wrap">
+                <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input type="password" id="regConfirmPassword" required class="auth-input-field" placeholder="Confirm Password" value="dream2026" oninput="checkPasswordMatch()">
+              </div>
+              <div class="auth-pw-match-text" id="pwMatchMsg">Passwords do not match</div>
+            </div>
+
+            <button type="submit" class="auth-primary-btn" style="margin-top: 10px;">
+              <span>Create Account</span>
+            </button>
+          </form>
+
+          <div class="auth-divider">or continue with</div>
+
+          <div class="auth-social-row">
+            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Google')" title="Register with Google">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"></path>
+              </svg>
+            </button>
+            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Facebook')" title="Register with Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+              </svg>
+            </button>
+            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Apple')" title="Register with Apple">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.85-.92.04-2.02.62-2.66 1.37-.56.65-1.06 1.71-.93 2.73 1.03.08 2.06-.5 2.67-1.25z"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="auth-switch-prompt">
+            Already have an account? <span class="action" onclick="window.Auth3D.showView('login')">Sign in</span>
+          </div>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- VIEW 3: FORGOT PASSWORD (Screens 8, 23)                       -->
+        <!-- ============================================================= -->
+        <div class="auth-view" id="view-forgot">
+          <form onsubmit="handleForgotSubmit(event)">
+            <div class="auth-input-group">
+              <label class="auth-input-label">Email Address</label>
+              <div class="auth-input-wrap">
+                <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                <input type="email" id="forgotEmail" required class="auth-input-field" placeholder="Enter your account email">
+              </div>
+            </div>
+
+            <button type="submit" class="auth-primary-btn" style="margin-top: 14px;">
+              <span>Send Reset Link</span>
             </button>
 
-            <div class="auth-switch-prompt">
-              Already have an account? 
-              <span class="auth-switch-link" onclick="window.Auth3D.transitionTo('login')">Sign In</span>
-            </div>
-
-            <div class="auth-hologram-indicator">
-              <span class="dot" style="background: #f472b6; box-shadow: 0 0 8px #f472b6;"></span>
-              <span>Whimsical Dreamscape Engine Ready</span>
+            <div class="auth-switch-prompt" style="margin-top: 22px;">
+              Remembered password? <span class="action" onclick="window.Auth3D.showView('login')">Back to Login</span>
             </div>
           </form>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- VIEW 4: VERIFY EMAIL (Screen 7)                               -->
+        <!-- ============================================================= -->
+        <div class="auth-view" id="view-verify">
+          <div style="text-align: center; padding: 10px 0 20px;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(56, 225, 255, 0.15); border: 1px solid var(--auth-accent-primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--auth-accent-primary)" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--auth-muted-color); line-height: 1.5; margin-bottom: 20px;">
+              We've dispatched a secure verification link to <strong id="verifyEmailDisplay" style="color: #fff;">you@example.com</strong>.
+            </p>
+            <button type="button" class="auth-primary-btn" onclick="alert('Verification link resent!')">
+              <span>Resend Email</span>
+            </button>
+            <div class="auth-switch-prompt" style="margin-top: 20px;">
+              <span class="action" onclick="window.Auth3D.showView('login')">Back to Login</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- VIEW 5: SUCCESS WITH CONFETTI (Screens 9, 20)                 -->
+        <!-- ============================================================= -->
+        <div class="auth-view" id="view-success">
+          <div class="auth-success-box">
+            <div class="auth-success-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--auth-muted-color); margin-bottom: 24px;">
+              Welcome to Celebration Studio! Your 3D atelier profile is active and ready.
+            </p>
+            <button type="button" class="auth-primary-btn" onclick="navigateToDashboard()">
+              <span>Go to Dashboard →</span>
+            </button>
+          </div>
         </div>
 
       </div>
     </div>
   </main>
 
-  <!-- 3D Engines & Storage -->
+  <!-- Vendor Libraries & Scripts -->
   <script src="static/vendor/three.min.js"></script>
   <script src="static/vendor/gsap.min.js"></script>
+  <script src="static/vendor/canvas-confetti.min.js"></script>
   <script src="static/js/templates_catalog.js"></script>
   <script src="static/js/animation_themes.js"></script>
   <script src="static/js/backend_storage.js"></script>
@@ -220,20 +317,59 @@
       }
     }
 
-    function handleAuthLogin(e) {
-      e.preventDefault();
-      const user = document.getElementById('loginUser').value.trim() || 'Atelier Creator';
-      window.CelebrationDB.login(user);
-      const params = new URLSearchParams(window.location.search);
-      const next = params.get('next') || 'dashboard.html';
-      window.location.href = next;
+    function checkPasswordMatch() {
+      const pw = document.getElementById('regPassword').value;
+      const cpw = document.getElementById('regConfirmPassword').value;
+      const msg = document.getElementById('pwMatchMsg');
+      if (cpw.length > 0 && pw !== cpw) {
+        msg.classList.add('mismatch');
+      } else {
+        msg.classList.remove('mismatch');
+      }
     }
 
-    function handleAuthRegister(e) {
+    function handleLoginSubmit(e) {
       e.preventDefault();
-      const user = document.getElementById('regUser').value.trim() || 'Atelier Creator';
-      const email = document.getElementById('regEmail').value.trim();
-      window.CelebrationDB.setUser({ username: user, email: email, is_authenticated: true, is_superuser: true });
+      const username = document.getElementById('loginUsername').value.trim() || 'Atelier Creator';
+      window.CelebrationDB.login(username);
+      window.Auth3D.showView('success');
+    }
+
+    function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('regFullName').value.trim() || 'Atelier Creator';
+      const email = document.getElementById('regEmailAddr').value.trim() || 'creator@celebrationstudio.com';
+      const pw = document.getElementById('regPassword').value;
+      const cpw = document.getElementById('regConfirmPassword').value;
+
+      if (pw !== cpw) {
+        alert('Passwords do not match. Please verify.');
+        return;
+      }
+
+      window.CelebrationDB.setUser({
+        username: fullName,
+        email: email,
+        is_authenticated: true,
+        is_superuser: true
+      });
+
+      window.Auth3D.showView('success');
+    }
+
+    function handleSocialAuth(provider) {
+      window.CelebrationDB.login(`${provider} Creator`);
+      window.Auth3D.showView('success');
+    }
+
+    function handleForgotSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value.trim();
+      document.getElementById('verifyEmailDisplay').textContent = email || 'you@example.com';
+      window.Auth3D.showView('verify');
+    }
+
+    function navigateToDashboard() {
       const params = new URLSearchParams(window.location.search);
       const next = params.get('next') || 'dashboard.html';
       window.location.href = next;
