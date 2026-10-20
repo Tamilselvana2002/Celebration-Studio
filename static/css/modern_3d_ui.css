@@ -1,0 +1,163 @@
+/* ==========================================================================
+   CELEBRATION STUDIO — MODERN 3D UI & UX STYLESHEET
+   Immersive 3D perspective transforms, holographic specular glares,
+   magnetic buttons, glassmorphism depth, and volumetric glowing effects.
+   ========================================================================== */
+
+:root {
+  --3d-perspective: 1200px;
+  --glow-gold: rgba(255, 215, 0, 0.45);
+  --glow-cyan: rgba(56, 225, 255, 0.45);
+  --glow-rose: rgba(244, 114, 182, 0.45);
+  --glow-purple: rgba(168, 85, 247, 0.45);
+}
+
+/* 3D Perspective Canvas Container */
+body {
+  perspective: var(--3d-perspective);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 3D Interactive Card Tilt with Specular Glare */
+.tilt-card-3d,
+.studio-project-card,
+.template-card-item,
+.engine-interactive-card,
+.metric-glass-tile,
+.recipient-card,
+.media-card {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.25s ease, border-color 0.25s ease;
+  will-change: transform;
+}
+
+/* Holographic Specular Glare Overlay */
+.specular-glare-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+  mix-blend-mode: overlay;
+}
+
+.studio-project-card:hover .specular-glare-overlay,
+.template-card-item:hover .specular-glare-overlay,
+.engine-interactive-card:hover .specular-glare-overlay {
+  opacity: 1;
+}
+
+/* Floating 3D Depth Elements inside Cards */
+.card-artwork-banner,
+.theme-selection-grid .theme-card,
+.metric-glass-tile {
+  transform: translateZ(10px);
+}
+
+.card-stat-pill,
+.card-theme-badge,
+.card-status-pill {
+  transform: translateZ(24px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* 3D Magnetic Luxury Buttons */
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.aura-btn,
+.template-cat-pill,
+.filter-chip-item {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.02) translateZ(12px);
+  box-shadow: 0 10px 25px var(--glow-cyan), 0 0 15px rgba(56, 225, 255, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(1px) scale(0.98) translateZ(0);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px) scale(1.02) translateZ(8px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 12px var(--glow-gold);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Starlight Glow Cursor Follower */
+.ambient-glow-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 320px;
+  margin-top: -160px;
+  margin-left: -160px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(56, 225, 255, 0.12) 0%, rgba(168, 85, 247, 0.06) 45%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(25px);
+  z-index: 1;
+  transition: opacity 0.5s ease;
+  will-change: transform;
+}
+
+/* Floating 3D Atmospheric Orbs */
+.floating-orb-accent {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(40px);
+  opacity: 0.45;
+  animation: floatOrb 12s infinite alternate ease-in-out;
+}
+
+@keyframes floatOrb {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  50% { transform: translateY(-30px) rotate(180deg) scale(1.15); }
+  100% { transform: translateY(20px) rotate(360deg) scale(0.95); }
+}
+
+/* 3D Glass Modal Entrance */
+dialog.studio-dialog[open] {
+  animation: modal3DEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modal3DEnter {
+  0% {
+    opacity: 0;
+    transform: perspective(600px) rotateX(15deg) translateY(30px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(600px) rotateX(0deg) translateY(0) scale(1);
+  }
+}
+
+/* Pulsing 3D Status Badges */
+.save-status-indicator.saved .status-dot {
+  display: inline-block;
+  animation: statusPulse 2s infinite ease-in-out;
+}
+
+@keyframes statusPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; text-shadow: 0 0 6px #34d399; }
+  50% { transform: scale(1.3); opacity: 1; text-shadow: 0 0 14px #34d399, 0 0 20px #34d399; }
+}
+
+/* 3D Timeline Dock Elevated Glass Layer */
+.studio-timeline-dock {
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+}
