@@ -51,16 +51,27 @@ Celebrations are composed of reusable modular scenes that combine seamlessly:
 
 ## 🚀 Running the Project
 
-### Option A: Direct File Open
-Double-click [`index.html`](index.html) in your browser.
+### Option A: Local Web Server (Recommended — Full Clean URL Support)
+Run the included zero-dependency server:
+```bash
+python server.py 8000
+```
+Then visit:
+- Landing Page: `http://localhost:8000/`
+- Dashboard: `http://localhost:8000/dashboard/`
+- Templates: `http://localhost:8000/templates/`
+- Create Celebration: `http://localhost:8000/create/?template=golden_cinema`
 
-### Option B: Local Web Server
+### Option B: Built-in Python Server or NPM Serve
 ```bash
 python -m http.server 8000
 # or
 npx serve .
 ```
-Then visit `http://localhost:8000/`.
+Clean routes (`/create/`, `/dashboard/`, `/templates/`, etc.) automatically forward to their respective pages.
+
+### Option C: Direct File Open
+Double-click [`index.html`](index.html) in any modern web browser.
 
 ---
 
