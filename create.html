@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight_gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create New Celebration — Celebration Studio</title>
+
+  <link rel="stylesheet" href="static/css/tokens.css">
+  <link rel="stylesheet" href="static/css/studio.css">
+  <link rel="stylesheet" href="static/css/animation-engine.css">
+
+  <style>
+    .wizard-container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 30px 20px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .wizard-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--bg-surface-glass-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(20px);
+    }
+  </style>
+</head>
+<body data-intensity="high">
+
+  <!-- Master Atmospheric Animated Backdrop Engine -->
+  <div class="celebration-ambient-backdrop" id="masterAmbientBackdrop">
+    <div class="ambient-layer-artwork"></div>
+    <div class="ambient-layer-glow"></div>
+    <canvas id="ambientParticleCanvas"></canvas>
+    <div class="ambient-layer-vignette"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="studio-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">✨</div>
+        <span>Celebration Studio</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+          <li><a href="templates.html" class="nav-link">🏛️ Templates</a></li>
+          <li><a href="recipients.html" class="nav-link">VIP Recipients</a></li>
+          <li><a href="media-vault.html" class="nav-link">Media Vault</a></li>
+          <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="profile.html" class="btn btn-ghost btn-sm" style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(244, 114, 182, 0.3); border-radius: 999px; padding: 5px 14px; background: rgba(244, 114, 182, 0.08);">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
+          <span style="font-weight: 600; color: #fdf2f8;" id="headerUserDisplay">Atelier Creator</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Wizard Form -->
+  <main class="main-content">
+    <div class="wizard-container">
+      
+      <div style="text-align: center; margin-bottom: var(--space-8);">
+        <h1 class="font-display" style="font-size: var(--text-3xl); margin-bottom: var(--space-2); color: #fff;">Experience Creator Wizard</h1>
+        <p style="color: var(--text-muted); font-size: var(--text-sm);">Follow the simple steps to compose an emotionally resonant, animation-rich 3D celebration.</p>
+      </div>
+
+      <div class="wizard-card">
+        
+        <!-- Pre-Choreographed Blueprint Loaded Banner -->
+        <div id="blueprintBanner" style="display: none; background: rgba(56, 225, 255, 0.1); border: 1px solid rgba(56, 225, 255, 0.35); border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-6); align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span id="bpIcon" style="font-size: 2.2rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));">🎬</span>
+            <div>
+              <span style="font-size: 0.72rem; color: #38e1ff; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">✦ Pre-Choreographed Blueprint Loaded</span>
+              <h4 id="bpName" style="color: #fff; margin: 0; font-size: 1.1rem; font-family: var(--font-display);">Golden Cinema Premiere</h4>
+              <span id="bpTagline" style="font-size: 0.78rem; color: var(--text-muted);">Architectural golden stage with film reel countdown</span>
+            </div>
+          </div>
+          <a href="templates.html" class="btn btn-ghost btn-sm" style="color: #94a3b8;">Change Blueprint ➔</a>
+        </div>
+
+        <form id="wizardForm" onsubmit="handleWizardSubmit(event)">
+          
+          <!-- Step 1: Celebration Title & Occasion -->
+          <div style="margin-bottom: var(--space-8);">
+            <h3 class="font-display" style="font-size: var(--text-lg); margin-bottom: var(--space-4); color: var(--theme-primary);">
+              1. Celebration Title &amp; Occasion
+            </h3>
+            
+            <div class="form-group" style="margin-bottom: var(--space-4);">
+              <label class="form-label" style="display: block; margin-bottom: 6px; font-weight: 600;">Celebration Title</label>
+              <input type="text" id="titleInput" required class="form-control" placeholder="e.g. A Starlit Odyssey for Sarah">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="display: block; margin-bottom: 6px; font-weight: 600;">Occasion / Event Type</label>
+              <select id="eventTypeSelect" class="form-select">
+                <option value="birthday">🎂 Birthday Celebration</option>
+                <option value="graduation">🎓 Academic Graduation</option>
+                <option value="anniversary">🥂 Milestone Anniversary</option>
+                <option value="wedding">💍 Wedding Ceremony</option>
+                <option value="valentine">🌹 Valentine's Day Romance</option>
+                <option value="achievement">🏆 Major Achievement & Honor</option>
+                <option value="retirement">🌅 Retirement Journey</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Step 2: Recipient Details -->
+          <div style="margin-bottom: var(--space-8); border-top: 1px solid var(--bg-surface-glass-border); padding-top: var(--space-6);">
+            <h3 class="font-display" style="font-size: var(--text-lg); margin-bottom: var(--space-4); color: var(--theme-primary);">
+              2. Who is this Celebration For?
+            </h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+              <div class="form-group">
+                <label class="form-label" style="display: block; margin-bottom: 6px; font-weight: 600;">Recipient Name</label>
+                <input type="text" id="recipientNameInput" required class="form-control" placeholder="e.g. Aria, Lucas, Maya...">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="display: block; margin-bottom: 6px; font-weight: 600;">Relationship</label>
+                <select id="recipientRelationshipSelect" class="form-select">
+                  <option value="sister">🌸 Sister</option>
+                  <option value="partner">❤️ Partner / Soulmate</option>
+                  <option value="friend">✨ Best Friend</option>
+                  <option value="brother">⚡ Brother</option>
+                  <option value="mother">👑 Mother</option>
+                  <option value="father">🛡️ Father</option>
+                  <option value="daughter">🌟 Daughter</option>
+                  <option value="son">🚀 Son</option>
+                  <option value="mentor">🧭 Mentor</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div style="display: flex; justify-content: flex-end; gap: var(--space-3); border-top: 1px solid var(--bg-surface-glass-border); padding-top: var(--space-6);">
+            <a href="dashboard.html" class="btn btn-secondary">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary btn-lg" style="box-shadow: 0 8px 24px var(--theme-glow);">
+              <span>Enter Story Studio &amp; Edit Journey →</span>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Client Database & Storage -->
+  <script src="static/js/templates_catalog.js"></script>
+  <script src="static/js/animation_themes.js"></script>
+  <script src="static/js/backend_storage.js"></script>
+  <script src="static/js/nav_header.js"></script>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedTemplate = urlParams.get('template') || 'golden_cinema';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const template = (window.MASTER_TEMPLATES || {})[requestedTemplate];
+      if (template) {
+        const banner = document.getElementById('blueprintBanner');
+        banner.style.display = 'flex';
+        document.getElementById('bpIcon').textContent = template.icon || '🎬';
+        document.getElementById('bpName').textContent = template.name;
+        document.getElementById('bpTagline').textContent = template.tagline;
+
+        const titleInput = document.getElementById('titleInput');
+        if (!titleInput.value) {
+          titleInput.value = `${template.name} Journey`;
+        }
+      }
+    });
+
+    function handleWizardSubmit(e) {
+      e.preventDefault();
+
+      const title = document.getElementById('titleInput').value.trim();
+      const eventType = document.getElementById('eventTypeSelect').value;
+      const recipientName = document.getElementById('recipientNameInput').value.trim();
+      const recipientRel = document.getElementById('recipientRelationshipSelect').value;
+
+      const celebration = window.CelebrationDB.createFromTemplate(requestedTemplate, {
+        title: title || 'A Starlit Celebration',
+        event_type: eventType,
+        recipient_name: recipientName || 'Honored Guest',
+        recipient_relationship: recipientRel
+      });
+
+      // Redirect directly to the interactive Story Studio Workbench
+      window.location.href = `editor.html?id=${celebration.id}`;
+    }
+  </script>
+</body>
+</html>

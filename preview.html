@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Celebration Experience Preview</title>
+
+  <link rel="stylesheet" href="static/css/tokens.css">
+  <link rel="stylesheet" href="static/css/studio.css">
+  <link rel="stylesheet" href="static/css/engines.css">
+</head>
+<body style="background: transparent; margin: 0; padding: 0; overflow: hidden;">
+
+  <!-- Dynamic Mount for Stage Viewport -->
+  <div id="stageMount"></div>
+
+  <!-- Vendor Animation Libraries -->
+  <script src="static/vendor/gsap.min.js"></script>
+  <script src="static/vendor/three.min.js"></script>
+  <script src="static/vendor/canvas-confetti.min.js"></script>
+
+  <!-- Client Database & Catalog -->
+  <script src="static/js/templates_catalog.js"></script>
+  <script src="static/js/animation_themes.js"></script>
+  <script src="static/js/backend_storage.js"></script>
+
+  <!-- Stage Renderer (Builds DOM before Orchestrator initializes) -->
+  <script src="static/js/preview_stage_renderer.js"></script>
+
+  <!-- Audio Controller & Master Scene Orchestrator -->
+  <script src="static/js/audio_controller.js"></script>
+  <script type="module" src="static/js/orchestrator.js"></script>
+</body>
+</html>

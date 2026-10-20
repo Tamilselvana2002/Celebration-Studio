@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight_gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="editorDocTitle">Story Studio — Celebration Studio</title>
+
+  <link rel="stylesheet" href="static/css/tokens.css">
+  <link rel="stylesheet" href="static/css/studio.css">
+  <link rel="stylesheet" href="static/css/animation-engine.css">
+</head>
+<body data-intensity="high">
+
+  <!-- Master Atmospheric Animated Backdrop Engine -->
+  <div class="celebration-ambient-backdrop" id="masterAmbientBackdrop">
+    <div class="ambient-layer-artwork"></div>
+    <div class="ambient-layer-glow"></div>
+    <canvas id="ambientParticleCanvas"></canvas>
+    <div class="ambient-layer-vignette"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="studio-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">✨</div>
+        <span>Celebration Studio</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+          <li><a href="templates.html" class="nav-link">🏛️ Templates</a></li>
+          <li><a href="recipients.html" class="nav-link">VIP Recipients</a></li>
+          <li><a href="media-vault.html" class="nav-link">Media Vault</a></li>
+          <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">
+          <span>← Back to Dashboard</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Story Studio Workbench Mount -->
+  <div class="studio-workbench" id="studioWorkbench" data-celebration-id="">
+    
+    <!-- Left Column: Story Studio Creative Suite -->
+    <aside class="studio-sidebar">
+      <div class="sidebar-header">
+        <div>
+          <div id="sidebarMetaLine" style="font-size: var(--text-xs); color: var(--theme-primary); font-weight: 700; text-transform: uppercase;">
+            BIRTHDAY • VIP CELEBRATION STAR
+          </div>
+          <h2 id="sidebarTitle" style="font-size: var(--text-base); margin-top: 2px;">Golden Cinema Premiere</h2>
+        </div>
+
+        <div style="display: flex; gap: var(--space-2); align-items: center;">
+          <span id="saveStatusIndicator" class="save-status-indicator saved">
+            <span class="status-dot">●</span> <span>Saved</span>
+          </span>
+          <button id="publishModalBtn" class="btn btn-primary btn-sm" onclick="document.getElementById('publishDialog').showModal()">
+            Publish ↗
+          </button>
+        </div>
+      </div>
+
+      <!-- Multi-Tab Creative Navigation -->
+      <div class="studio-tabs">
+        <button type="button" class="studio-tab-btn active" data-tab="tab-flow">Story Flow</button>
+        <button type="button" class="studio-tab-btn" data-tab="tab-content">Scene Content</button>
+        <button type="button" class="studio-tab-btn" data-tab="tab-photos">Photos &amp; Memories</button>
+        <button type="button" class="studio-tab-btn" data-tab="tab-theme">Atmosphere</button>
+        <button type="button" class="studio-tab-btn" data-tab="tab-audio">🎵 Audio &amp; Music</button>
+        <button type="button" class="studio-tab-btn" data-tab="tab-animation">⚡ Animations &amp; FX</button>
+      </div>
+
+      <div class="sidebar-scroll-area">
+        
+        <!-- ============================================================== -->
+        <!-- TAB 1: STORY FLOW & SCENE REORDERING                           -->
+        <!-- ============================================================== -->
+        <div id="tab-flow" class="studio-tab-pane active">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+            <div>
+              <span class="form-label" style="margin: 0;">Celebration Story Flow</span>
+              <span style="font-size: var(--text-xs); color: var(--text-dim); display: block;">Reorder, jump to, or add scenes</span>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="openAddSceneDialog()">+ Add Scene</button>
+          </div>
+
+          <div id="scenesContainer" class="scene-sortable-list">
+            <!-- Dynamically populated from active celebration scenes -->
+          </div>
+
+          <div style="padding: var(--space-4); background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.08); border-radius: var(--radius-md); font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-4);">
+            <strong style="color: var(--theme-primary);">✦ Story Tip:</strong> Reordering changes the live playback and presentation experience immediately upon saving.
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: SCENE CONTENT EDITOR                                    -->
+        <!-- ============================================================== -->
+        <div id="tab-content" class="studio-tab-pane">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+            <div>
+              <span class="form-label" style="margin: 0;">Selected Scene Content</span>
+              <span id="selectedSceneLabel" style="font-size: var(--text-xs); color: var(--theme-primary); font-weight: 600;">Scene 1</span>
+            </div>
+            <button type="button" class="btn btn-secondary btn-xs" onclick="switchTab('tab-animation')" title="Edit Animations & Transitions">
+              ⚡ Edit Transitions &amp; FX →
+            </button>
+          </div>
+
+          <!-- Dynamic Scene Forms injected / toggled via JS -->
+          <div id="sceneContentForms">
+            
+            <!-- 1. Cinematic Editor -->
+            <div class="scene-editor-panel" data-for-type="cinematic">
+              <div class="editor-field-group">
+                <label>Scene Title</label>
+                <input type="text" class="form-control" name="cinematic_scene_title" placeholder="The Starlit Prelude">
+              </div>
+              <div class="editor-field-group">
+                <label>Opening Prefix</label>
+                <input type="text" class="form-control" name="cinematic_prefix" placeholder="Celebrating My Sister / Celebrating">
+              </div>
+              <div class="editor-field-group">
+                <label>Recipient Name</label>
+                <input type="text" class="form-control" name="cinematic_name" placeholder="Aria">
+              </div>
+              <div class="editor-field-group">
+                <label>Personalized Welcome Message / Subtitle</label>
+                <textarea class="form-control" name="cinematic_subtitle" rows="3" placeholder="A momentous occasion to cherish and remember..."></textarea>
+              </div>
+              <div class="editor-field-group">
+                <label>Countdown Seconds</label>
+                <input type="number" class="form-control" name="cinematic_countdown" min="1" max="10" value="3">
+              </div>
+            </div>
+
+            <!-- 2. Romantic Dream Editor -->
+            <div class="scene-editor-panel" data-for-type="romantic_dream">
+              <div class="editor-field-group">
+                <label>Scene Title</label>
+                <input type="text" class="form-control" name="romantic_scene_title">
+              </div>
+              <div class="editor-field-group">
+                <label>Garden Headline</label>
+                <input type="text" class="form-control" name="romantic_headline">
+              </div>
+              <div class="editor-field-group">
+                <label>Heartfelt Quote / Message</label>
+                <textarea class="form-control" name="romantic_quote" rows="4"></textarea>
+              </div>
+            </div>
+
+            <!-- 3. Memory Lane Header Editor -->
+            <div class="scene-editor-panel" data-for-type="memory_lane">
+              <div class="editor-field-group">
+                <label>Timeline Title</label>
+                <input type="text" class="form-control" name="memory_scene_title">
+              </div>
+              <div class="editor-field-group">
+                <label>Timeline Headline / Tagline</label>
+                <input type="text" class="form-control" name="memory_headline">
+              </div>
+              <div style="margin-top: var(--space-4);">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="switchTab('tab-photos')">
+                  📷 Manage Photos &amp; Memory Cards (Tab 3) →
+                </button>
+              </div>
+            </div>
+
+            <!-- 4. Secret Surprise Gift Editor -->
+            <div class="scene-editor-panel" data-for-type="secret_surprise">
+              <div class="editor-field-group">
+                <label>Scene Title</label>
+                <input type="text" class="form-control" name="surprise_scene_title">
+              </div>
+              <div class="editor-field-group">
+                <label>Sculptural Gift Box Style</label>
+                <select class="form-select" name="surprise_gift_style">
+                  <option value="champagne_gold">✨ Champagne Gold (Luxury Ribbon & Bow)</option>
+                  <option value="cosmic_relic">💎 Cosmic Relic (Gold Filigree & Starlight)</option>
+                  <option value="velvet_heritage">👑 Velvet Heritage (Baroque Gilded)</option>
+                  <option value="dream_prism">🌈 Dream Prism (Cyan & Neon Bevels)</option>
+                </select>
+              </div>
+              <div class="editor-field-group">
+                <label>Interaction Prompt</label>
+                <input type="text" class="form-control" name="surprise_prompt" placeholder="Tap the sculptural artifact to unlock your secret...">
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);" class="editor-field-group">
+                <div>
+                  <label>Box Color</label>
+                  <input type="color" class="form-control form-control-color" name="surprise_box_color" value="#8B1E2D" style="width: 100%; height: 38px;">
+                </div>
+                <div>
+                  <label>Ribbon Color</label>
+                  <input type="color" class="form-control form-control-color" name="surprise_ribbon_color" value="#E6C065" style="width: 100%; height: 38px;">
+                </div>
+              </div>
+              <div class="editor-field-group">
+                <label>Gift Attachment Photo (URL or Upload)</label>
+                <input type="text" class="form-control" name="surprise_photo" placeholder="static/img/memory_kyoto.jpg">
+              </div>
+              <div class="editor-field-group">
+                <label>Surprise Note Headline</label>
+                <input type="text" class="form-control" name="surprise_title" placeholder="A Special Note">
+              </div>
+              <div class="editor-field-group">
+                <label>Letter Body (Unfolds after tap)</label>
+                <textarea class="form-control" name="surprise_letter" rows="5" placeholder="Write your heartfelt letter here..."></textarea>
+              </div>
+              <div class="editor-field-group">
+                <label>Signature Signoff</label>
+                <input type="text" class="form-control" name="surprise_signature" placeholder="Always with love, David">
+              </div>
+            </div>
+
+            <!-- 5. Cosmic Universe Finale Editor -->
+            <div class="scene-editor-panel" data-for-type="cosmic_universe">
+              <div class="editor-field-group">
+                <label>Finale Grand Style</label>
+                <select class="form-select" name="cosmic_finale_style">
+                  <option value="grand_celebration">🎉 Grand Celebration Fanfare</option>
+                  <option value="celestial_drift">🌌 Celestial Drift & Volumetric Cone</option>
+                  <option value="supernova_burst">✨ Supernova Jubilee Burst</option>
+                </select>
+              </div>
+              <div class="editor-field-group">
+                <label>Layout Variant</label>
+                <select class="form-select" name="cosmic_layout_variant">
+                  <option value="centered">Centered Regal Portrait</option>
+                  <option value="split_portrait">Split Horizon Starlight</option>
+                </select>
+              </div>
+              <div class="editor-field-group">
+                <label>Celebrant Portrait Photo (URL or Upload)</label>
+                <input type="text" class="form-control" name="cosmic_recipient_photo" placeholder="static/img/memory_bakery.jpg">
+              </div>
+              <div class="editor-field-group">
+                <label>Constellation Name</label>
+                <input type="text" class="form-control" name="cosmic_constellation" placeholder="LEO GLORIA">
+              </div>
+              <div class="editor-field-group">
+                <label>Finale Headline</label>
+                <input type="text" class="form-control" name="cosmic_headline" placeholder="Your Starlight Shines Forever">
+              </div>
+              <div class="editor-field-group">
+                <label>Main Closing Message</label>
+                <textarea class="form-control" name="cosmic_closing" rows="4" placeholder="May this year be your finest chapter yet!"></textarea>
+              </div>
+              <div class="editor-field-group">
+                <label>Closing Signature</label>
+                <input type="text" class="form-control" name="cosmic_signature" placeholder="Always in your corner, David">
+              </div>
+              <div class="editor-field-group">
+                <label>Starlight Wishes (Comma separated)</label>
+                <input type="text" class="form-control" name="cosmic_wishes" placeholder="Boundless Joy, Great Health, Serenity">
+              </div>
+            </div>
+
+          </div>
+
+          <div style="margin-top: var(--space-6); display: flex; justify-content: flex-end;">
+            <button type="button" class="btn btn-primary" onclick="saveActiveSceneContent()">
+              Save Scene Changes ✓
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: UNLIMITED PHOTOS & MEMORIES MANAGER                     -->
+        <!-- ============================================================== -->
+        <div id="tab-photos" class="studio-tab-pane">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+            <div>
+              <span class="form-label" style="margin: 0;">Unlimited Photo Deck</span>
+              <span id="photoDeckCount" style="font-size: var(--text-xs); color: var(--text-dim);">Manage photos &amp; quotes</span>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="addNewMemoryCard()">
+              + Add Memory
+            </button>
+          </div>
+
+          <input type="file" id="photoFileInput" accept="image/*" style="display: none;" onchange="handlePhotoUpload(this)">
+
+          <div id="photosDeckList">
+            <!-- Dynamically populated from active memory_lane scene memories -->
+          </div>
+
+          <div style="margin-top: var(--space-6); display: flex; justify-content: flex-end;">
+            <button type="button" class="btn btn-primary" onclick="saveMemoriesDeck()">
+              Save All Memories ✓
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 4: ATMOSPHERE & PALETTE                                   -->
+        <!-- ============================================================== -->
+        <div id="tab-theme" class="studio-tab-pane">
+          <div style="margin-bottom: var(--space-6);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+              <label class="form-label" style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff;">Choose a Theme</label>
+              <span id="themeSaveStatus" style="font-size: var(--text-xs); color: var(--theme-primary); font-weight: 600;"></span>
+            </div>
+            <p style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-4);">Select a signature 3D visual atmosphere to bathe scenes in custom volumetric lighting and particles.</p>
+
+            <input type="hidden" id="themeSelect" value="sculptural_gold">
+
+            <div class="theme-selection-grid" id="themesGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;">
+              <!-- Dynamically populated from window.ANIMATION_THEMES -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 5: SOUNDTRACK & AUDIO STUDIO                               -->
+        <!-- ============================================================== -->
+        <div id="tab-audio" class="studio-tab-pane">
+          <div style="margin-bottom: var(--space-4);">
+            <span class="form-label" style="margin: 0;">Celebration Soundtrack &amp; Audio</span>
+            <span style="font-size: var(--text-xs); color: var(--text-dim); display: block;">Upload custom background music or choose an ambient orchestral preset</span>
+          </div>
+
+          <div class="editor-field-group" style="padding: var(--space-4); background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15); border-radius: var(--radius-md); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: var(--space-2);">🎼</div>
+            <div style="font-weight: 600; font-size: var(--text-sm); margin-bottom: var(--space-1);">Upload Custom Song / Audio</div>
+            <div style="font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-3);">MP3, WAV, OGG, M4A, or AAC</div>
+            
+            <input type="file" id="audioFileInput" accept=".mp3,.wav,.ogg,.m4a,.aac,audio/*" style="display: none;" onchange="handleAudioUpload(this)">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('audioFileInput').click()">
+              Choose Audio File...
+            </button>
+            <div id="audioUploadStatus" style="font-size: var(--text-xs); color: var(--theme-primary); margin-top: var(--space-2); display: none;"></div>
+          </div>
+
+          <div class="editor-field-group" style="margin-top: var(--space-4);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="margin: 0;">Master Volume</label>
+              <span id="audioVolumeVal" style="font-size: var(--text-xs); color: var(--theme-primary); font-family: var(--font-mono);">0.75</span>
+            </div>
+            <input type="range" id="audioVolumeSlider" class="form-range" min="0" max="1" step="0.05" value="0.75" oninput="updateAudioVolume(this.value)" style="width: 100%;">
+          </div>
+
+          <div class="editor-field-group" style="display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-4);">
+            <div>
+              <label style="margin: 0;">Loop Soundtrack Continuously</label>
+              <span style="font-size: var(--text-xs); color: var(--text-dim); display: block;">Restart track seamlessly when finished</span>
+            </div>
+            <input type="checkbox" id="audioLoopToggle" checked onchange="updateAudioLoop(this.checked)" style="width: 20px; height: 20px; accent-color: var(--theme-primary);">
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 6: CINEMATIC ANIMATIONS & FX ENGINE                       -->
+        <!-- ============================================================== -->
+        <div id="tab-animation" class="studio-tab-pane">
+          <div style="margin-bottom: var(--space-4);">
+            <span class="form-label" style="margin: 0;">Cinematic Animation Engine</span>
+            <span style="font-size: var(--text-xs); color: var(--text-dim); display: block;">Configure scene transitions, effects, and motion</span>
+          </div>
+
+          <div style="margin-bottom: var(--space-5);">
+            <label class="form-label">Scene Screen Transition</label>
+            <select id="animScreenTransition" class="form-select" onchange="StudioEditor.quickUpdateTransition(this.value)">
+              <option value="screen.light_sweep">✨ Cinematic Light Sweep</option>
+              <option value="screen.liquid_silk">🌊 Liquid Silk Reveal</option>
+              <option value="screen.universe_warp">🌌 Universe Warp</option>
+              <option value="screen.petal_curtain">🌸 Petal Curtain</option>
+              <option value="screen.portal_open">🌀 Portal Opening</option>
+              <option value="screen.memory_film">🎞️ Memory Film Wipe</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: var(--space-2); margin-top: var(--space-6);">
+            <button type="button" class="btn btn-secondary btn-sm" style="flex: 1;" onclick="testScreenTransition()">
+              ⚡ Test Transition
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" style="flex: 1;" onclick="saveAnimationSettings()">
+              Save Effects ✓
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- Right Column: Interactive Live Preview Viewport -->
+    <section class="studio-viewport">
+      
+      <div class="viewport-toolbar">
+        <div class="device-switcher">
+          <button class="device-btn active" data-device="desktop">🖥️ Desktop</button>
+          <button class="device-btn" data-device="tablet">📱 Tablet</button>
+          <button class="device-btn" data-device="mobile">📱 Mobile</button>
+        </div>
+
+        <div style="display: flex; gap: var(--space-3); align-items: center;">
+          <button type="button" id="btnOpenSceneSettings" class="btn btn-secondary btn-sm" onclick="StudioEditor.toggleSceneSettings()" title="Configure scene audio, volume, transitions">
+            <span style="color: var(--theme-primary); font-size: 1rem;">⚙️</span> Scene Settings
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('previewFrame').contentWindow.location.reload();">
+            🔄 Reload Preview
+          </button>
+          <a id="btnFullscreenPreview" href="#" target="_blank" class="btn btn-secondary btn-sm">
+            Open Fullscreen ↗
+          </a>
+        </div>
+      </div>
+
+      <!-- Floating Scene Settings Inspector -->
+      <div id="sceneSettingsModal" class="scene-settings-card" style="display: none;">
+        <div class="scene-settings-header">
+          <div class="scene-settings-title">
+            <span class="settings-icon">⚙️</span>
+            <span>Scene Settings</span>
+          </div>
+          <button type="button" class="btn-close-settings" onclick="StudioEditor.toggleSceneSettings()" aria-label="Close Scene Settings">✕</button>
+        </div>
+
+        <div class="scene-settings-body">
+          <div class="scene-settings-row">
+            <div class="setting-label-col">
+              <label class="setting-label">Background Music</label>
+              <span class="setting-hint">Enable ambient celebration score</span>
+            </div>
+            <div class="setting-control-col">
+              <label class="modern-toggle-switch">
+                <input type="checkbox" id="quickMusicToggle" checked onchange="StudioEditor.quickToggleMusic(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="scene-settings-row">
+            <div class="setting-label-col" style="width: 100%;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label class="setting-label">Volume</label>
+                <span id="quickVolumePercent" class="setting-val-badge">75%</span>
+              </div>
+              <div class="modern-slider-wrap" style="margin-top: 8px;">
+                <input type="range" id="quickVolumeSlider" class="modern-range-slider" min="0" max="100" value="75" oninput="StudioEditor.quickUpdateVolume(this.value)">
+              </div>
+            </div>
+          </div>
+
+          <div class="scene-settings-row">
+            <div class="setting-label-col" style="width: 100%;">
+              <label class="setting-label">Scene Transitions</label>
+              <div class="custom-select-wrap">
+                <select id="quickSceneTransition" class="form-select modern-settings-select" onchange="StudioEditor.quickUpdateTransition(this.value)">
+                  <option value="screen.light_sweep">✨ Cinematic Light Sweep</option>
+                  <option value="screen.liquid_silk">🌊 Liquid Silk Reveal</option>
+                  <option value="screen.universe_warp">🌌 Universe Warp</option>
+                  <option value="screen.petal_curtain">🌸 Petal Curtain</option>
+                  <option value="screen.portal_open">🌀 Portal Opening</option>
+                  <option value="screen.memory_film">🎞️ Memory Film Wipe</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="scene-settings-row" style="border-bottom: none; margin-bottom: 0;">
+            <div class="setting-label-col" style="width: 100%;">
+              <label class="setting-label">Animation Style</label>
+              <div class="custom-select-wrap">
+                <select id="quickAnimationStyle" class="form-select modern-settings-select" onchange="StudioEditor.quickUpdateStyle(this.value)">
+                  <option value="cinematic">🎬 Cinematic Gold &amp; Grand Reveal</option>
+                  <option value="romantic">🌹 Romantic Dream &amp; Gentle Floating</option>
+                  <option value="memory">📷 Memory Lane &amp; Soft Parallax</option>
+                  <option value="surprise">🎁 Secret Treasure &amp; Burst Climax</option>
+                  <option value="cosmic">🌌 Cosmic Starlight &amp; Gyro Orbit</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scene-settings-footer">
+          <span id="quickSettingsStatus" class="quick-status-text">✓ Real-time synced</span>
+          <button type="button" class="btn btn-primary btn-sm" onclick="StudioEditor.applySceneSettings()">
+            Done
+          </button>
+        </div>
+      </div>
+
+      <!-- Frame Container -->
+      <div class="viewport-frame-container">
+        <iframe id="previewFrame" class="preview-iframe" allow="autoplay" src=""></iframe>
+      </div>
+
+      <!-- Real-Time Animation Timeline Dock -->
+      <div id="studioTimelineDock" class="studio-timeline-dock">
+        <div class="timeline-ctrl-bar">
+          <div class="timeline-transport">
+            <button type="button" class="tl-btn" id="tlBtnRestart" onclick="StudioEditor.restartTimeline()" title="Jump to Beginning (⏮)">
+              ⏮
+            </button>
+            <button type="button" class="tl-btn tl-btn-play" id="tlBtnPlay" onclick="StudioEditor.togglePlayTimeline()" title="Play / Pause Live Animation (Space)">
+              ▶
+            </button>
+            <button type="button" class="tl-btn" id="tlBtnNext" onclick="StudioEditor.nextSceneTimeline()" title="Next Scene (⏭)">
+              ⏭
+            </button>
+            <button type="button" class="tl-btn tl-btn-loop active" id="tlBtnLoop" onclick="StudioEditor.toggleLoopTimeline()" title="Loop Current Scene">
+              🔁
+            </button>
+          </div>
+
+          <div class="timeline-timecode-box">
+            <span id="tlTimecodeCurrent" class="tl-time-current">00:00.00</span>
+            <span class="tl-time-divider">/</span>
+            <span id="tlTimecodeDuration" class="tl-time-duration">00:08.00</span>
+          </div>
+
+          <div class="timeline-scene-indicator">
+            <span class="tl-rec-dot"></span>
+            <span id="tlCurrentSceneTitle">Scene 1: Prelude &amp; Countdown</span>
+          </div>
+
+          <div class="timeline-dock-tools">
+            <span class="tl-fps-badge">60 FPS</span>
+            <button type="button" class="tl-btn-collapse" onclick="StudioEditor.toggleTimelineDock()" title="Collapse / Expand Timeline">
+              <span id="tlCollapseIcon">▾</span> Timeline
+            </button>
+          </div>
+        </div>
+
+        <div id="timelineScrollArea" class="timeline-scroll-area">
+          <div class="timeline-track-headers">
+            <div class="tl-header-cell tl-corner-header">5 Tracks</div>
+            <div class="tl-header-cell"><span class="tl-tr-icon">📹</span> Camera &amp; Framing</div>
+            <div class="tl-header-cell"><span class="tl-tr-icon">✍️</span> Story &amp; Typography</div>
+            <div class="tl-header-cell"><span class="tl-tr-icon">🖼️</span> Photos &amp; Media</div>
+            <div class="tl-header-cell"><span class="tl-tr-icon">✨</span> 4D Particles &amp; FX</div>
+            <div class="tl-header-cell"><span class="tl-tr-icon">🎵</span> Audio &amp; Soundscape</div>
+          </div>
+
+          <div class="timeline-tracks-stage" id="tlTracksStage">
+            <div class="timeline-ruler" id="tlRuler">
+              <div class="tl-mark" style="left: 0%;"><span>0.0s</span></div>
+              <div class="tl-mark" style="left: 12.5%;"><span>1.0s</span></div>
+              <div class="tl-mark" style="left: 25%;"><span>2.0s</span></div>
+              <div class="tl-mark" style="left: 37.5%;"><span>3.0s</span></div>
+              <div class="tl-mark" style="left: 50%;"><span>4.0s</span></div>
+              <div class="tl-mark" style="left: 62.5%;"><span>5.0s</span></div>
+              <div class="tl-mark" style="left: 75%;"><span>6.0s</span></div>
+              <div class="tl-mark" style="left: 87.5%;"><span>7.0s</span></div>
+              <div class="tl-mark" style="left: 100%;"><span>8.0s</span></div>
+            </div>
+
+            <div id="tlPlayhead" class="timeline-playhead" style="left: 0%;">
+              <div class="tl-playhead-cap"></div>
+              <div class="tl-playhead-line"></div>
+            </div>
+
+            <!-- Track 1: Camera -->
+            <div class="timeline-track-lane">
+              <div class="tl-clip-block tl-clip-camera" style="left: 0%; width: 34%;">
+                <span class="tl-keyframe-diamond" style="left: 0%;"></span>
+                <span class="tl-clip-label">Dolly &amp; Drift</span>
+                <span class="tl-keyframe-diamond" style="right: 0%;"></span>
+              </div>
+              <div class="tl-clip-block tl-clip-camera" style="left: 36%; width: 38%;">
+                <span class="tl-keyframe-diamond" style="left: 0%;"></span>
+                <span class="tl-clip-label">Orbit Focus</span>
+                <span class="tl-keyframe-diamond" style="right: 0%;"></span>
+              </div>
+              <div class="tl-clip-block tl-clip-camera" style="left: 76%; width: 23%;">
+                <span class="tl-keyframe-diamond" style="left: 0%;"></span>
+                <span class="tl-clip-label">Exit Pan</span>
+                <span class="tl-keyframe-diamond" style="right: 0%;"></span>
+              </div>
+            </div>
+
+            <!-- Track 2: Typography -->
+            <div class="timeline-track-lane">
+              <div class="tl-clip-block tl-clip-type" style="left: 8%; width: 30%;">
+                <span class="tl-keyframe-diamond" style="left: 0%;"></span>
+                <span class="tl-clip-label">Title Ease In</span>
+                <span class="tl-keyframe-diamond" style="right: 0%;"></span>
+              </div>
+              <div class="tl-clip-block tl-clip-type" style="left: 42%; width: 48%;">
+                <span class="tl-keyframe-diamond" style="left: 0%;"></span>
+                <span class="tl-clip-label">Subtitle Stagger Reveal</span>
+                <span class="tl-keyframe-diamond" style="right: 0%;"></span>
+              </div>
+            </div>
+
+            <!-- Track 3: Photos -->
+            <div class="timeline-track-lane">
+              <div class="tl-clip-block tl-clip-media" style="left: 12%; width: 75%;">
+                <span class="tl-keyframe-diamond" style="left: 0%;"></span>
+                <span class="tl-clip-label">Polaroid Ken Burns Scale (1.0 ➔ 1.08)</span>
+                <span class="tl-keyframe-diamond" style="right: 0%;"></span>
+              </div>
+            </div>
+
+            <!-- Track 4: Particles -->
+            <div class="timeline-track-lane">
+              <div class="tl-clip-block tl-clip-fx" style="left: 0%; width: 100%;">
+                <span class="tl-keyframe-diamond" style="left: 0%;"></span>
+                <span class="tl-clip-label">Continuous Golden Dust Drift</span>
+                <span class="tl-keyframe-diamond" style="right: 0%;"></span>
+              </div>
+            </div>
+
+            <!-- Track 5: Audio -->
+            <div class="timeline-track-lane tl-track-audio">
+              <div class="tl-clip-block tl-clip-audio" style="left: 0%; width: 100%;">
+                <svg class="tl-audio-svg" viewBox="0 0 800 24" preserveAspectRatio="none">
+                  <path d="M0,12 Q20,3 40,12 T80,12 T120,4 T160,12 T200,2 T240,12 T280,6 T320,12 T360,1 T400,12 T440,3 T480,12 T520,5 T560,12 T600,2 T640,12 T680,6 T720,12 T760,4 T800,12" stroke="rgba(56, 225, 255, 0.75)" stroke-width="2" fill="none" />
+                </svg>
+                <span class="tl-clip-label tl-audio-label">Ambient Audio Envelope (0.75 Gain)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <!-- Dialog: Add New Scene -->
+  <dialog id="addSceneDialog" class="studio-dialog">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6);">
+      <h3 class="font-display" style="font-size: var(--text-xl);">Add New Celebration Scene</h3>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('addSceneDialog').close()">✕</button>
+    </div>
+    <div class="form-group" style="margin-bottom: var(--space-4);">
+      <label class="form-label">Scene Type</label>
+      <select id="newSceneTypeSelect" class="form-select">
+        <option value="cinematic">🎬 Cinematic Prelude &amp; Countdown</option>
+        <option value="romantic_dream">🌸 Romantic Dream &amp; Petal Reflections</option>
+        <option value="memory_lane" selected>📷 Memory Lane (Photo Story Deck)</option>
+        <option value="secret_surprise">🎁 Secret Surprise Box</option>
+        <option value="cosmic_universe">🌌 Cosmic Universe Starlight Finale</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom: var(--space-6);">
+      <label class="form-label">Scene Title</label>
+      <input type="text" id="newSceneTitleInput" class="form-control" placeholder="e.g. Chapter IV: The Big Milestone">
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: var(--space-3);">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('addSceneDialog').close()">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="confirmAddScene()">Add to Celebration</button>
+    </div>
+  </dialog>
+
+  <!-- Modern Dialog: Publishing & Share Settings -->
+  <dialog id="publishDialog" class="studio-dialog">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6);">
+      <h3 class="font-display" style="font-size: var(--text-xl);">Publish &amp; Share Celebration</h3>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('publishDialog').close()">✕</button>
+    </div>
+
+    <div style="margin-bottom: var(--space-6);">
+      <div class="form-group">
+        <label class="form-label">Unique Public URL</label>
+        <div style="display: flex; gap: var(--space-2);">
+          <input type="text" readonly id="shareLinkInput" class="form-control" style="font-family: var(--font-mono); font-size: var(--text-xs);">
+          <button id="copyShareLinkBtn" type="button" class="btn btn-secondary btn-sm">
+            Copy Link
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: var(--space-3); border-top: 1px solid var(--bg-surface-glass-border); padding-top: var(--space-4);">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('publishDialog').close()">Cancel</button>
+      <button type="button" id="confirmPublishBtn" class="btn btn-primary" onclick="handlePublishToggle(true)">
+        Publish Celebration
+      </button>
+    </div>
+  </dialog>
+
+  <!-- Raw Scene Data Payload for JavaScript Engine -->
+  <script id="scenesInitialData" type="application/json">[]</script>
+
+  <!-- Vendor Scripts -->
+  <script src="static/vendor/gsap.min.js"></script>
+
+  <!-- Client Database & Storage -->
+  <script src="static/js/templates_catalog.js"></script>
+  <script src="static/js/animation_themes.js"></script>
+  <script src="static/js/backend_storage.js"></script>
+  <script src="static/js/nav_header.js"></script>
+  <script src="static/js/studio_editor.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      let celebrationId = urlParams.get('id');
+
+      let celebration = celebrationId ? window.CelebrationDB.getCelebration(celebrationId) : null;
+      if (!celebration) {
+        const list = window.CelebrationDB.getCelebrations();
+        if (list.length > 0) {
+          celebration = list[0];
+          celebrationId = celebration.id;
+        } else {
+          celebration = window.CelebrationDB.createFromTemplate('golden_cinema');
+          celebrationId = celebration.id;
+        }
+      }
+
+      // Populate DOM elements
+      document.getElementById('editorDocTitle').textContent = `Story Studio — ${celebration.title}`;
+      const workbench = document.getElementById('studioWorkbench');
+      workbench.dataset.celebrationId = celebrationId;
+
+      document.getElementById('sidebarTitle').textContent = celebration.title;
+      document.getElementById('sidebarMetaLine').textContent = `${(celebration.event_type || 'Birthday').toUpperCase()} • ${celebration.recipient_summary || 'VIP Star'}`;
+
+      const pubBtn = document.getElementById('publishModalBtn');
+      if (celebration.status === 'published') {
+        pubBtn.textContent = 'Published ✓';
+        pubBtn.className = 'btn btn-secondary btn-sm';
+      }
+
+      const shareUrl = `${window.location.origin}${window.location.pathname.replace('editor.html', 'preview.html')}?id=${celebration.id}`;
+      document.getElementById('shareLinkInput').value = shareUrl;
+      document.getElementById('copyShareLinkBtn').dataset.url = shareUrl;
+      document.getElementById('btnFullscreenPreview').href = `preview.html?id=${celebration.id}`;
+
+      // Populate themes in Tab 4
+      const themesContainer = document.getElementById('themesGrid');
+      if (themesContainer && window.ANIMATION_THEMES) {
+        themesContainer.innerHTML = Object.values(window.ANIMATION_THEMES).slice(0, 10).map(t => `
+          <div 
+            class="theme-card ${celebration.theme_id === t.id ? 'active-theme' : ''}" 
+            data-theme-id="${t.id}"
+            onclick="selectStudioTheme('${t.id}')"
+            style="
+              position: relative;
+              border-radius: 14px;
+              padding: 10px;
+              background: rgba(14, 18, 30, 0.7);
+              border: 1.5px solid ${celebration.theme_id === t.id ? 'rgba(56, 225, 255, 0.85)' : 'rgba(255, 255, 255, 0.1)'};
+              cursor: pointer;
+              transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            "
+          >
+            <div style="
+              height: 70px;
+              border-radius: 10px;
+              background: ${t.card_overlay || 'rgba(0,0,0,0.5)'};
+              border: 1px solid rgba(255, 255, 255, 0.12);
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: 8px;
+            ">
+              <span style="font-size: 1.5rem;">✨</span>
+              <div style="display: flex; gap: 4px; margin-top: 4px;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${t.primary_color};"></span>
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${t.secondary_color};"></span>
+              </div>
+            </div>
+            <div style="font-weight: 600; font-size: 0.82rem; color: #fff; text-align: center;">
+              ${t.name}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Set initial scenes json
+      const initialScenesScript = document.getElementById('scenesInitialData');
+      initialScenesScript.textContent = JSON.stringify(celebration.scenes || []);
+
+      // Mount preview iframe
+      const previewIframe = document.getElementById('previewFrame');
+      previewIframe.src = `preview.html?id=${celebration.id}`;
+
+      // Initialize StudioEditor
+      window.StudioEditor.init();
+    });
+  </script>
+</body>
+</html>

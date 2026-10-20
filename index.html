@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight_gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Celebration Studio — Master 3D/4D Celebration Experience Platform</title>
+  
+  <link rel="stylesheet" href="static/css/tokens.css">
+  <link rel="stylesheet" href="static/css/studio.css">
+  <link rel="stylesheet" href="static/css/animation-engine.css">
+  
+  <style>
+    .hero-3d-container {
+      position: relative;
+      width: 100%;
+      min-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-12) var(--space-4) var(--space-8);
+      overflow: hidden;
+    }
+
+    .sculpture-viewport {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      height: 380px;
+      margin: 0 auto;
+      cursor: grab;
+      touch-action: none;
+    }
+    .sculpture-viewport:active {
+      cursor: grabbing;
+    }
+
+    #landingSculptureCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .sculpture-drag-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(16, 20, 36, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 4px 14px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.7);
+      pointer-events: none;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .engine-aura-ribbon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: var(--space-4) auto var(--space-8);
+      z-index: 5;
+    }
+
+    .aura-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .aura-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .aura-btn.active {
+      color: #ffffff;
+      border-color: var(--aura-color, #ffd700);
+      box-shadow: 0 0 16px var(--aura-glow, rgba(255, 215, 0, 0.4));
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+    }
+
+    .privacy-fortress-banner {
+      max-width: 1000px;
+      margin: var(--space-12) auto var(--space-8);
+      background: radial-gradient(120% 100% at 50% 0%, rgba(56, 225, 255, 0.08) 0%, rgba(16, 22, 38, 0.75) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(56, 225, 255, 0.22);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6) var(--space-8);
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .privacy-icon-shield {
+      width: 60px;
+      height: 60px;
+      flex-shrink: 0;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(56, 225, 255, 0.25), rgba(168, 85, 247, 0.2));
+      border: 1px solid rgba(56, 225, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      box-shadow: 0 0 25px rgba(56, 225, 255, 0.25);
+    }
+
+    .engine-interactive-card {
+      position: relative;
+      background: rgba(18, 22, 36, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+
+    .engine-interactive-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+    }
+
+    .engine-aura-trigger-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: var(--space-3);
+      transition: all 0.2s ease;
+    }
+
+    .engine-aura-trigger-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
+
+    @media (max-width: 768px) {
+      .sculpture-viewport {
+        height: 300px;
+      }
+      .privacy-fortress-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--space-6);
+      }
+    }
+  </style>
+</head>
+<body data-intensity="high">
+
+  <!-- Master Atmospheric Animated Backdrop Engine -->
+  <div class="celebration-ambient-backdrop" id="masterAmbientBackdrop">
+    <div class="ambient-layer-artwork"></div>
+    <div class="ambient-layer-glow"></div>
+    <canvas id="ambientParticleCanvas"></canvas>
+    <div class="ambient-layer-vignette"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="studio-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">✨</div>
+        <span>Celebration Studio</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+          <li><a href="templates.html" class="nav-link">🏛️ Templates</a></li>
+          <li><a href="recipients.html" class="nav-link">VIP Recipients</a></li>
+          <li><a href="media-vault.html" class="nav-link">Media Vault</a></li>
+          <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="profile.html" class="btn btn-ghost btn-sm" style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(244, 114, 182, 0.3); border-radius: 999px; padding: 5px 14px; background: rgba(244, 114, 182, 0.08);" title="Creator Atelier Profile">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
+          <span style="font-weight: 600; color: #fdf2f8;" id="headerUserDisplay">Atelier Creator</span>
+        </a>
+        <a href="create.html" class="btn btn-primary btn-sm">
+          <span>+ Create Celebration</span>
+        </a>
+      </div>
+
+      <!-- Mobile Hamburger Toggle -->
+      <button type="button" class="nav-mobile-toggle" id="navMobileToggle" aria-label="Toggle navigation drawer" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #34d399; box-shadow: 0 0 10px #34d399;"></span>
+          <span style="font-weight: 700; color: #fff; font-size: 1rem;" class="user-name-display">Atelier Creator</span>
+        </div>
+        <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #f472b6; background: rgba(244,114,182,0.15); border: 1px solid rgba(244,114,182,0.3); padding: 3px 10px; border-radius: 999px;">Atelier Creator</span>
+      </div>
+
+      <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+        <li><a href="dashboard.html" class="nav-link">🎉 Dashboard</a></li>
+        <li><a href="templates.html" class="nav-link">🏛️ Templates (24 Concepts)</a></li>
+        <li><a href="recipients.html" class="nav-link">👥 VIP Recipients</a></li>
+        <li><a href="media-vault.html" class="nav-link">🖼️ Media Vault</a></li>
+        <li><a href="profile.html" class="nav-link">👤 Profile & Themes</a></li>
+      </ul>
+
+      <div class="mobile-nav-actions">
+        <a href="create.html" class="btn btn-primary" style="width: 100%; text-align: center;">
+          <span>+ Create Celebration</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    
+    <!-- Master Hero with Interactive 3D Celebratory Sculpture -->
+    <section class="hero-3d-container">
+      <div class="hero-glow-orb"></div>
+
+      <div class="hero-content" style="text-align: center; margin-bottom: var(--space-4);">
+        <div class="hero-badge">✦ MASTER 3D/4D EXPERIENCE ECOSYSTEM ✦</div>
+        <h1 class="hero-title" style="margin-bottom: var(--space-4);">
+          Every Story Deserves an <span>Unforgettable Celebration</span>
+        </h1>
+        <p class="hero-description" style="margin-bottom: var(--space-6);">
+          Step beyond static greetings. Craft deeply personal, 3D-first digital celebrations featuring volumetric starfields, drifting petal vortexes, archival photo timelines, and interactive crystal gift unboxings.
+        </p>
+
+        <!-- CTAs -->
+        <div class="hero-cta-group" style="margin-bottom: var(--space-6);">
+          <a href="create.html" class="btn btn-primary btn-lg">
+            <span>✨ Launch Experience Creator</span>
+          </a>
+          <a href="dashboard.html" class="btn btn-secondary btn-lg">
+            <span>View My Studio Dashboard →</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Interactive 3D Celebratory Gemstone Sculpture Stage -->
+      <div class="sculpture-viewport" id="sculptureViewport" title="Drag to rotate celebratory sculpture in 3D">
+        <canvas id="landingSculptureCanvas"></canvas>
+        <div class="sculpture-drag-hint">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 9l-3 3 3 3M19 9l3 3-3 3M9 5l3-3 3 3M9 19l3 3 3 3"></path>
+          </svg>
+          <span>Drag to orbit in 3D perspective</span>
+        </div>
+      </div>
+
+      <!-- Interactive Engine Resonance Aura Selector -->
+      <div class="engine-aura-ribbon" role="toolbar" aria-label="Engine Aura Resonator">
+        <button type="button" class="aura-btn active" data-engine="all" style="--aura-color: #ffd700; --aura-glow: rgba(255, 215, 0, 0.5);">
+          <span>✨ Prismatic Core</span>
+        </button>
+        <button type="button" class="aura-btn" data-engine="cinematic" style="--aura-color: #f59e0b; --aura-glow: rgba(245, 158, 11, 0.5);">
+          <span>🎬 Cinematic Gold</span>
+        </button>
+        <button type="button" class="aura-btn" data-engine="romantic" style="--aura-color: #ec4899; --aura-glow: rgba(236, 72, 153, 0.5);">
+          <span>🌸 Romantic Rose</span>
+        </button>
+        <button type="button" class="aura-btn" data-engine="memory" style="--aura-color: #d97706; --aura-glow: rgba(217, 119, 6, 0.5);">
+          <span>📷 Memory Atelier</span>
+        </button>
+        <button type="button" class="aura-btn" data-engine="surprise" style="--aura-color: #e11d48; --aura-glow: rgba(225, 29, 72, 0.5);">
+          <span>🎁 Secret Treasure</span>
+        </button>
+        <button type="button" class="aura-btn" data-engine="cosmic" style="--aura-color: #38e1ff; --aura-glow: rgba(56, 225, 255, 0.5);">
+          <span>🌌 Cosmic Starlight</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- The Five Experience Engines Showcase Section -->
+    <section class="engine-showcase-section" style="padding-top: var(--space-8); max-width: 1200px; margin: 0 auto; padding-left: 20px; padding-right: 20px;">
+      <div style="text-align: center; margin-bottom: var(--space-8);">
+        <h2 class="font-display" style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">The Five Experience Engines</h2>
+        <p style="color: var(--text-muted); font-size: var(--text-sm);">Mix, match, and reorder modular scene engines to compose a completely unique celebration journey.</p>
+      </div>
+
+      <div class="engine-showcase-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+        <!-- 1. Cinematic Experience -->
+        <div class="engine-interactive-card" data-engine="cinematic">
+          <div class="engine-card-icon" style="color: #f59e0b; font-size: 2rem; margin-bottom: 12px;">🎬</div>
+          <h3 class="engine-card-title" style="font-size: 1.15rem; margin-bottom: 8px;">1. Cinematic Experience</h3>
+          <p class="engine-card-desc" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Dramatic gold typography reveals, atmospheric light flares, crescendo countdown, and triumphant climaxes.</p>
+          <button type="button" class="engine-aura-trigger-btn" onclick="triggerEngineAura('cinematic')">
+            <span>Resonate Aura ✦</span>
+          </button>
+        </div>
+
+        <!-- 2. Romantic Dream World -->
+        <div class="engine-interactive-card" data-engine="romantic">
+          <div class="engine-card-icon" style="color: #ec4899; font-size: 2rem; margin-bottom: 12px;">🌸</div>
+          <h3 class="engine-card-title" style="font-size: 1.15rem; margin-bottom: 8px;">2. Romantic Dream World</h3>
+          <p class="engine-card-desc" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Physics-based sakura and rose petal drifts, glowing love letter reveals, soft environmental bokeh, and heartfelt romance.</p>
+          <button type="button" class="engine-aura-trigger-btn" onclick="triggerEngineAura('romantic')">
+            <span>Resonate Aura ✦</span>
+          </button>
+        </div>
+
+        <!-- 3. Memory Lane -->
+        <div class="engine-interactive-card" data-engine="memory">
+          <div class="engine-card-icon" style="color: #d97706; font-size: 2rem; margin-bottom: 12px;">📷</div>
+          <h3 class="engine-card-title" style="font-size: 1.15rem; margin-bottom: 8px;">3. Memory Lane</h3>
+          <p class="engine-card-desc" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Interactive polaroid timeline cards with realistic 3D tilts, handwritten cursive write-on reveals, and shared milestones.</p>
+          <button type="button" class="engine-aura-trigger-btn" onclick="triggerEngineAura('memory')">
+            <span>Resonate Aura ✦</span>
+          </button>
+        </div>
+
+        <!-- 4. Secret Surprise -->
+        <div class="engine-interactive-card" data-engine="surprise">
+          <div class="engine-card-icon" style="color: #e11d48; font-size: 2rem; margin-bottom: 12px;">🎁</div>
+          <h3 class="engine-card-title" style="font-size: 1.15rem; margin-bottom: 8px;">4. Secret Surprise</h3>
+          <p class="engine-card-desc" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Interactive 3D gift box unboxing, ribbon untie, vintage wax-sealed envelope unfolding, and high-velocity confetti cannons.</p>
+          <button type="button" class="engine-aura-trigger-btn" onclick="triggerEngineAura('surprise')">
+            <span>Resonate Aura ✦</span>
+          </button>
+        </div>
+
+        <!-- 5. Cosmic Universe -->
+        <div class="engine-interactive-card" data-engine="cosmic">
+          <div class="engine-card-icon" style="color: #38e1ff; font-size: 2rem; margin-bottom: 12px;">🌌</div>
+          <h3 class="engine-card-title" style="font-size: 1.15rem; margin-bottom: 8px;">5. Cosmic Universe</h3>
+          <p class="engine-card-desc" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Personal constellation generation, volumetric starlight auroras, custom starlight wishes, and permanent digital archive.</p>
+          <button type="button" class="engine-aura-trigger-btn" onclick="triggerEngineAura('cosmic')">
+            <span>Resonate Aura ✦</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Privacy Fortress Trust Banner -->
+    <div class="privacy-fortress-banner">
+      <div class="privacy-icon-shield">🛡️</div>
+      <div style="flex: 1;">
+        <h4 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Zero Server Footprint &amp; Complete Privacy</h4>
+        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; line-height: 1.5; margin: 0;">
+          All your media, photos, audio tracks, and personal letters are saved directly inside your browser storage. No external servers or third-party databases tracking your moments.
+        </p>
+      </div>
+      <a href="dashboard.html" class="btn btn-secondary btn-sm" style="border-radius: 999px; white-space: nowrap;">
+        Enter Studio ➔
+      </a>
+    </div>
+
+  </main>
+
+  <!-- Vendor Scripts -->
+  <script src="static/vendor/three.min.js"></script>
+  <script src="static/vendor/gsap.min.js"></script>
+  
+  <!-- Client Backend & DB Storage -->
+  <script src="static/js/templates_catalog.js"></script>
+  <script src="static/js/animation_themes.js"></script>
+  <script src="static/js/backend_storage.js"></script>
+  <script src="static/js/nav_header.js"></script>
+
+  <!-- Interactive 3D Celebratory Sculpture Script -->
+  <script>
+    (function () {
+      const container = document.getElementById('sculptureViewport');
+      const canvas = document.getElementById('landingSculptureCanvas');
+      if (!container || !canvas || typeof THREE === 'undefined') return;
+
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let width = container.clientWidth;
+      let height = container.clientHeight;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+      camera.position.set(0, 0, 7.5);
+
+      const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+      scene.add(ambientLight);
+
+      const keyLight = new THREE.DirectionalLight(0xffd700, 2.5);
+      keyLight.position.set(5, 5, 5);
+      scene.add(keyLight);
+
+      const fillLight = new THREE.PointLight(0x38e1ff, 3, 20);
+      fillLight.position.set(-5, -3, 3);
+      scene.add(fillLight);
+
+      const rimLight = new THREE.PointLight(0xf472b6, 2.5, 15);
+      rimLight.position.set(0, 5, -4);
+      scene.add(rimLight);
+
+      // Central Nested 3D Sculpture Group
+      const rootGroup = new THREE.Group();
+      scene.add(rootGroup);
+
+      // 1. Faceted Gemstone Core (Icosahedron)
+      const gemGeo = new THREE.IcosahedronGeometry(1.6, 0);
+      const gemMat = new THREE.MeshPhysicalMaterial({
+        color: 0xffd700,
+        metalness: 0.1,
+        roughness: 0.05,
+        transmission: 0.85,
+        thickness: 1.2,
+        reflectivity: 0.9,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1,
+        transparent: true,
+        opacity: 0.95
+      });
+      const gemstone = new THREE.Mesh(gemGeo, gemMat);
+      rootGroup.add(gemstone);
+
+      // 2. Wireframe Lattice Overlay
+      const wireGeo = new THREE.IcosahedronGeometry(1.62, 0);
+      const wireMat = new THREE.MeshBasicMaterial({ color: 0xfff0aa, wireframe: true, transparent: true, opacity: 0.5 });
+      const wireframe = new THREE.Mesh(wireGeo, wireMat);
+      gemstone.add(wireframe);
+
+      // 3. Inner Pulsing Core Star (Octahedron)
+      const coreGeo = new THREE.OctahedronGeometry(0.7, 0);
+      const coreMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0xffffff,
+        emissiveIntensity: 0.8,
+        metalness: 0.8,
+        roughness: 0.2
+      });
+      const innerCore = new THREE.Mesh(coreGeo, coreMat);
+      gemstone.add(innerCore);
+
+      // 4. Orbital Celestial Rings
+      const ringGeo1 = new THREE.TorusGeometry(2.3, 0.035, 16, 100);
+      const ringMat1 = new THREE.MeshStandardMaterial({ color: 0xe6c065, metalness: 0.9, roughness: 0.2 });
+      const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
+      ring1.rotation.x = Math.PI / 3;
+      rootGroup.add(ring1);
+
+      const ringGeo2 = new THREE.TorusGeometry(2.7, 0.025, 16, 100);
+      const ringMat2 = new THREE.MeshStandardMaterial({ color: 0x38e1ff, metalness: 0.85, roughness: 0.3 });
+      const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
+      ring2.rotation.x = -Math.PI / 4;
+      ring2.rotation.y = Math.PI / 6;
+      rootGroup.add(ring2);
+
+      // 5. Ambient Stardust Halo
+      const pCount = 180;
+      const pGeo = new THREE.BufferGeometry();
+      const pPos = new Float32Array(pCount * 3);
+      for (let i = 0; i < pCount; i++) {
+        const radius = 2.4 + Math.random() * 1.5;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = (Math.random() - 0.5) * Math.PI;
+        pPos[i * 3] = radius * Math.cos(phi) * Math.cos(theta);
+        pPos[i * 3 + 1] = radius * Math.sin(phi);
+        pPos[i * 3 + 2] = radius * Math.cos(phi) * Math.sin(theta);
+      }
+      pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+      const pMat = new THREE.PointsMaterial({ color: 0xffd700, size: 0.08, transparent: true, opacity: 0.85 });
+      const particleHalo = new THREE.Points(pGeo, pMat);
+      rootGroup.add(particleHalo);
+
+      // Aura Resonator Modes
+      const auraPalettes = {
+        all: { gem: 0xffd700, ring1: 0xe6c065, ring2: 0x38e1ff, light: 0xffd700, pColor: 0xffd700 },
+        cinematic: { gem: 0xf59e0b, ring1: 0xd97706, ring2: 0xffffff, light: 0xf59e0b, pColor: 0xfde68a },
+        romantic: { gem: 0xec4899, ring1: 0xf472b6, ring2: 0xffd1dc, light: 0xec4899, pColor: 0xfbcfe8 },
+        memory: { gem: 0xd97706, ring1: 0xb45309, ring2: 0xfef3c7, light: 0xd97706, pColor: 0xfcd34d },
+        surprise: { gem: 0xe11d48, ring1: 0xffd700, ring2: 0xbe123c, light: 0xe11d48, pColor: 0xffd700 },
+        cosmic: { gem: 0x38e1ff, ring1: 0xa855f7, ring2: 0x06b6d4, light: 0x38e1ff, pColor: 0x67e8f9 }
+      };
+
+      window.triggerEngineAura = function (engineKey) {
+        const pal = auraPalettes[engineKey] || auraPalettes.all;
+        if (typeof gsap !== 'undefined') {
+          gsap.to(gemMat.color, { r: ((pal.gem >> 16) & 255) / 255, g: ((pal.gem >> 8) & 255) / 255, b: (pal.gem & 255) / 255, duration: 0.7 });
+          gsap.to(ringMat1.color, { r: ((pal.ring1 >> 16) & 255) / 255, g: ((pal.ring1 >> 8) & 255) / 255, b: (pal.ring1 & 255) / 255, duration: 0.7 });
+          gsap.to(ringMat2.color, { r: ((pal.ring2 >> 16) & 255) / 255, g: ((pal.ring2 >> 8) & 255) / 255, b: (pal.ring2 & 255) / 255, duration: 0.7 });
+          gsap.to(pMat.color, { r: ((pal.pColor >> 16) & 255) / 255, g: ((pal.pColor >> 8) & 255) / 255, b: (pal.pColor & 255) / 255, duration: 0.7 });
+          gsap.to(keyLight.color, { r: ((pal.light >> 16) & 255) / 255, g: ((pal.light >> 8) & 255) / 255, b: (pal.light & 255) / 255, duration: 0.7 });
+          gsap.fromTo(rootGroup.scale, { x: 0.95, y: 0.95, z: 0.95 }, { x: 1, y: 1, z: 1, ease: 'elastic.out(1, 0.4)', duration: 0.8 });
+        }
+
+        document.querySelectorAll('.aura-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.engine === engineKey);
+        });
+      };
+
+      document.querySelectorAll('.aura-btn').forEach(btn => {
+        btn.addEventListener('click', () => window.triggerEngineAura(btn.dataset.engine));
+      });
+
+      // Mouse & Touch Drag Interaction
+      let isDragging = false;
+      let prevMouseX = 0, prevMouseY = 0;
+
+      container.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.clientX - prevMouseX;
+        const deltaY = e.clientY - prevMouseY;
+        rootGroup.rotation.y += deltaX * 0.006;
+        rootGroup.rotation.x += deltaY * 0.006;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      });
+
+      window.addEventListener('mouseup', () => { isDragging = false; });
+
+      container.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) {
+          isDragging = true;
+          prevMouseX = e.touches[0].clientX;
+          prevMouseY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!isDragging || e.touches.length === 0) return;
+        const deltaX = e.touches[0].clientX - prevMouseX;
+        const deltaY = e.touches[0].clientY - prevMouseY;
+        rootGroup.rotation.y += deltaX * 0.006;
+        rootGroup.rotation.x += deltaY * 0.006;
+        prevMouseX = e.touches[0].clientX;
+        prevMouseY = e.touches[0].clientY;
+      }, { passive: true });
+
+      window.addEventListener('touchend', () => { isDragging = false; });
+
+      window.addEventListener('resize', () => {
+        width = container.clientWidth;
+        height = container.clientHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+      });
+
+      let clock = new THREE.Clock();
+      function renderLoop() {
+        if (prefersReducedMotion) return;
+        requestAnimationFrame(renderLoop);
+        const elapsedTime = clock.getElapsedTime();
+
+        if (!isDragging) {
+          rootGroup.rotation.y += 0.005;
+          rootGroup.rotation.x += Math.sin(elapsedTime * 0.5) * 0.001;
+        }
+
+        gemstone.rotation.y = elapsedTime * 0.3;
+        gemstone.rotation.z = Math.sin(elapsedTime * 0.4) * 0.2;
+        innerCore.rotation.x = -elapsedTime * 0.4;
+        innerCore.rotation.y = elapsedTime * 0.5;
+        ring1.rotation.z = elapsedTime * 0.2;
+        ring2.rotation.z = -elapsedTime * 0.15;
+        particleHalo.rotation.y = -elapsedTime * 0.08;
+
+        renderer.render(scene, camera);
+      }
+      renderLoop();
+    })();
+  </script>
+</body>
+</html>

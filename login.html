@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight_gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creator Sign In — Celebration Studio</title>
+
+  <link rel="stylesheet" href="static/css/tokens.css">
+  <link rel="stylesheet" href="static/css/studio.css">
+  <link rel="stylesheet" href="static/css/animation-engine.css">
+
+  <style>
+    .auth-page-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .auth-glass-box {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(16, 23, 38, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      backdrop-filter: blur(24px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body data-intensity="high">
+
+  <div class="celebration-ambient-backdrop" id="masterAmbientBackdrop">
+    <div class="ambient-layer-artwork"></div>
+    <div class="ambient-layer-glow"></div>
+    <canvas id="ambientParticleCanvas"></canvas>
+    <div class="ambient-layer-vignette"></div>
+  </div>
+
+  <div class="auth-page-container">
+    <div class="auth-glass-box">
+      <div style="text-align: center; margin-bottom: var(--space-6);">
+        <a href="index.html" class="brand-logo" style="display: inline-flex; justify-content: center; margin-bottom: 12px;">
+          <div class="brand-icon">✨</div>
+          <span>Celebration Studio</span>
+        </a>
+        <h2 class="font-display" style="font-size: 1.6rem; color: #fff; margin-bottom: 4px;">Creator Atelier Sign In</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Enter your creator credentials to open your atelier workspace.</p>
+      </div>
+
+      <form onsubmit="handleAuthLogin(event)">
+        <div class="form-group" style="margin-bottom: var(--space-4);">
+          <label class="form-label">Username or Email</label>
+          <input type="text" id="loginUser" required class="form-control" value="Atelier Creator">
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-6);">
+          <label class="form-label">Password</label>
+          <input type="password" id="loginPass" required class="form-control" value="••••••••">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; border-radius: 999px; height: 44px; margin-bottom: var(--space-4);">
+          Enter Creator Studio →
+        </button>
+
+        <div style="text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+          Don't have an account yet? <a href="register.html" style="color: var(--theme-primary); text-decoration: none; font-weight: 600;">Register Free</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="static/js/templates_catalog.js"></script>
+  <script src="static/js/animation_themes.js"></script>
+  <script src="static/js/backend_storage.js"></script>
+  <script src="static/js/nav_header.js"></script>
+
+  <script>
+    function handleAuthLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('loginUser').value.trim() || 'Atelier Creator';
+      window.CelebrationDB.setUser({ username: user, is_authenticated: true, is_superuser: true });
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>

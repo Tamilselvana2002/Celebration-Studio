@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight_gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choose a Template — 24 Luxury 3D Celebration Blueprints — Celebration Studio</title>
+
+  <link rel="stylesheet" href="static/css/tokens.css">
+  <link rel="stylesheet" href="static/css/studio.css">
+  <link rel="stylesheet" href="static/css/animation-engine.css">
+
+  <style>
+    .templates-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .template-category-filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: var(--space-8);
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .template-cat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 18px;
+      border-radius: 24px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.6);
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    .template-cat-pill:hover {
+      border-color: rgba(56, 225, 255, 0.4);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .template-cat-pill.active {
+      border-color: rgba(56, 225, 255, 0.7);
+      background: linear-gradient(135deg, rgba(56, 225, 255, 0.2), rgba(99, 102, 241, 0.2));
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(56, 225, 255, 0.25);
+    }
+
+    .templates-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: var(--space-6);
+    }
+
+    .template-card-item {
+      background: rgba(14, 20, 34, 0.8);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .template-card-item:hover {
+      transform: translateY(-6px);
+      border-color: rgba(56, 225, 255, 0.6);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.7), 0 0 25px rgba(56, 225, 255, 0.2);
+    }
+  </style>
+</head>
+<body data-intensity="high">
+
+  <!-- Master Atmospheric Animated Backdrop Engine -->
+  <div class="celebration-ambient-backdrop" id="masterAmbientBackdrop">
+    <div class="ambient-layer-artwork"></div>
+    <div class="ambient-layer-glow"></div>
+    <canvas id="ambientParticleCanvas"></canvas>
+    <div class="ambient-layer-vignette"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="studio-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">✨</div>
+        <span>Celebration Studio</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+          <li><a href="templates.html" class="nav-link active">🏛️ Templates</a></li>
+          <li><a href="recipients.html" class="nav-link">VIP Recipients</a></li>
+          <li><a href="media-vault.html" class="nav-link">Media Vault</a></li>
+          <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="profile.html" class="btn btn-ghost btn-sm" style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(244, 114, 182, 0.3); border-radius: 999px; padding: 5px 14px; background: rgba(244, 114, 182, 0.08);" title="Creator Atelier Profile">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
+          <span style="font-weight: 600; color: #fdf2f8;" id="headerUserDisplay">Atelier Creator</span>
+        </a>
+        <a href="create.html" class="btn btn-primary btn-sm">
+          <span>+ Create Celebration</span>
+        </a>
+      </div>
+
+      <!-- Mobile Hamburger Toggle -->
+      <button type="button" class="nav-mobile-toggle" id="navMobileToggle" aria-label="Toggle navigation drawer" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #34d399; box-shadow: 0 0 10px #34d399;"></span>
+          <span style="font-weight: 700; color: #fff; font-size: 1rem;" class="user-name-display">Atelier Creator</span>
+        </div>
+        <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #f472b6; background: rgba(244,114,182,0.15); border: 1px solid rgba(244,114,182,0.3); padding: 3px 10px; border-radius: 999px;">Atelier Creator</span>
+      </div>
+
+      <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+        <li><a href="dashboard.html" class="nav-link">🎉 Dashboard</a></li>
+        <li><a href="templates.html" class="nav-link active">🏛️ Templates (24 Concepts)</a></li>
+        <li><a href="recipients.html" class="nav-link">👥 VIP Recipients</a></li>
+        <li><a href="media-vault.html" class="nav-link">🖼️ Media Vault</a></li>
+        <li><a href="profile.html" class="nav-link">👤 Profile & Themes</a></li>
+      </ul>
+
+      <div class="mobile-nav-actions">
+        <a href="create.html" class="btn btn-primary" style="width: 100%; text-align: center;">
+          <span>+ Create Celebration</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <div class="templates-container">
+
+      <!-- Gallery Header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--space-8); flex-wrap: wrap; gap: var(--space-4);">
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(56, 225, 255, 0.1); border: 1px solid rgba(56, 225, 255, 0.25); border-radius: 20px; font-size: var(--text-xs); color: var(--theme-primary); font-weight: 600; margin-bottom: 8px;">
+            <span>✦</span> 24 CURATED LUXURY 3D CELEBRATION BLUEPRINTS
+          </div>
+          <h1 class="font-display" style="font-size: var(--text-3xl); margin-bottom: var(--space-1); color: #fff;">Choose a Template</h1>
+          <p style="color: var(--text-muted); font-size: var(--text-sm); max-width: 680px;">
+            Select an emotionally resonant, pre-choreographed celebration journey with custom 3D environments, synchronized lighting, memory timelines, and grand finales.
+          </p>
+        </div>
+
+        <!-- Quick Search & Actions -->
+        <div style="display: flex; gap: var(--space-3); align-items: center;">
+          <div style="position: relative; width: 260px;">
+            <input type="text" id="templateSearchInput" class="form-control" placeholder="Search 24 templates..." oninput="renderTemplates()" style="padding-left: 32px; font-size: var(--text-xs); height: 38px; border-radius: 20px; background: rgba(15, 23, 42, 0.8);">
+            <span style="position: absolute; left: 12px; top: 10px; color: var(--text-muted); font-size: 0.85rem;">🔍</span>
+          </div>
+          <a href="create.html" class="btn btn-ghost btn-sm">
+            Start From Scratch ➔
+          </a>
+        </div>
+      </div>
+
+      <!-- Category Filter Pill Bar -->
+      <div class="template-category-filter-bar" id="categoryPillBar">
+        <!-- Rendered dynamically from window.TEMPLATE_CATEGORIES -->
+      </div>
+
+      <!-- Templates Grid -->
+      <div id="templatesGalleryGrid" class="templates-gallery-grid">
+        <!-- Rendered dynamically from window.MASTER_TEMPLATES -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Vendor Scripts -->
+  <script src="static/vendor/gsap.min.js"></script>
+
+  <!-- Client Database & Storage -->
+  <script src="static/js/templates_catalog.js"></script>
+  <script src="static/js/animation_themes.js"></script>
+  <script src="static/js/backend_storage.js"></script>
+  <script src="static/js/nav_header.js"></script>
+
+  <!-- Template Gallery Controller -->
+  <script>
+    let currentCategory = 'all';
+
+    function setCategory(catId) {
+      currentCategory = catId;
+      document.querySelectorAll('.template-cat-pill').forEach(b => {
+        b.classList.toggle('active', b.dataset.category === catId);
+      });
+      renderTemplates();
+    }
+
+    function renderCategoryPills() {
+      const container = document.getElementById('categoryPillBar');
+      if (!container || !window.TEMPLATE_CATEGORIES) return;
+
+      container.innerHTML = window.TEMPLATE_CATEGORIES.map(cat => `
+        <button 
+          type="button"
+          class="template-cat-pill ${cat.id === currentCategory ? 'active' : ''}"
+          data-category="${cat.id}"
+          onclick="setCategory('${cat.id}')"
+        >
+          <span>${cat.icon}</span>
+          <span>${cat.name}</span>
+        </button>
+      `).join('');
+    }
+
+    function renderTemplates() {
+      const grid = document.getElementById('templatesGalleryGrid');
+      const templates = window.MASTER_TEMPLATES || {};
+      const query = (document.getElementById('templateSearchInput')?.value || '').toLowerCase().trim();
+
+      const items = Object.values(templates).filter(t => {
+        const matchesCategory = currentCategory === 'all' || t.category === currentCategory;
+        const matchesQuery = !query || 
+          (t.name || '').toLowerCase().includes(query) ||
+          (t.tagline || '').toLowerCase().includes(query) ||
+          (t.category || '').toLowerCase().includes(query);
+        return matchesCategory && matchesQuery;
+      });
+
+      grid.innerHTML = items.map(t => `
+        <div class="template-card-item" data-template-id="${t.id}" data-category="${t.category}">
+          <!-- Visual Thumbnail Header -->
+          <div style="
+            height: 165px;
+            background: ${t.preview_gradient || 'linear-gradient(135deg, #1e1302 0%, #d97706 100%)'};
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          ">
+            <span style="font-size: 3.5rem; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.6));">
+              ${t.icon || '✨'}
+            </span>
+            <span style="
+              position: absolute;
+              top: 10px;
+              right: 12px;
+              font-size: 0.72rem;
+              font-weight: 700;
+              letter-spacing: 0.05em;
+              text-transform: uppercase;
+              background: rgba(0, 0, 0, 0.5);
+              backdrop-filter: blur(8px);
+              padding: 4px 10px;
+              border-radius: 999px;
+              border: 1px solid rgba(255, 255, 255, 0.15);
+              color: #f1f5f9;
+            ">
+              ${(t.category || 'Luxury').toUpperCase()}
+            </span>
+          </div>
+
+          <!-- Body Description -->
+          <div style="padding: var(--space-5); display: flex; flex-direction: column; flex: 1;">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #ffffff; margin-bottom: 6px; font-family: var(--font-display);">
+              ${t.name}
+            </h3>
+            <p style="font-size: 0.82rem; color: #38e1ff; font-weight: 600; margin-bottom: 10px;">
+              ${t.tagline}
+            </p>
+            <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: var(--space-4); flex: 1;">
+              ${t.description}
+            </p>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: var(--space-4);">
+              <a href="create.html?template=${t.id}" class="btn btn-primary btn-sm" style="flex: 1; text-align: center; border-radius: 999px;">
+                ⚡ Use Template
+              </a>
+              <a href="preview.html?template=${t.id}" target="_blank" class="btn btn-secondary btn-sm" style="flex: 1; text-align: center; border-radius: 999px;">
+                Preview ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      if (typeof gsap !== 'undefined') {
+        gsap.fromTo('.template-card-item', 
+          { opacity: 0, y: 15 }, 
+          { opacity: 1, y: 0, stagger: 0.04, duration: 0.35, ease: 'power2.out' }
+        );
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCategoryPills();
+      renderTemplates();
+    });
+  </script>
+</body>
+</html>

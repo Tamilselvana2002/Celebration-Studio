@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight_gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creator Atelier Profile — Celebration Studio</title>
+
+  <link rel="stylesheet" href="static/css/tokens.css">
+  <link rel="stylesheet" href="static/css/studio.css">
+  <link rel="stylesheet" href="static/css/animation-engine.css">
+
+  <style>
+    .profile-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 20px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .profile-card {
+      background: rgba(16, 23, 38, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+      margin-bottom: var(--space-6);
+    }
+  </style>
+</head>
+<body data-intensity="high">
+
+  <!-- Master Atmospheric Animated Backdrop Engine -->
+  <div class="celebration-ambient-backdrop" id="masterAmbientBackdrop">
+    <div class="ambient-layer-artwork"></div>
+    <div class="ambient-layer-glow"></div>
+    <canvas id="ambientParticleCanvas"></canvas>
+    <div class="ambient-layer-vignette"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="studio-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">✨</div>
+        <span>Celebration Studio</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+          <li><a href="templates.html" class="nav-link">🏛️ Templates</a></li>
+          <li><a href="recipients.html" class="nav-link">VIP Recipients</a></li>
+          <li><a href="media-vault.html" class="nav-link">Media Vault</a></li>
+          <li><a href="profile.html" class="nav-link active">👤 Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">
+          <span>← Back to Dashboard</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="profile-wrapper">
+      
+      <div style="margin-bottom: var(--space-6);">
+        <h1 class="font-display" style="font-size: 2.2rem; color: #fff; margin-bottom: 6px;">Creator Atelier Profile</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Manage your studio creator identity, default theme palettes, and animation motion intensity.</p>
+      </div>
+
+      <!-- Identity Card -->
+      <div class="profile-card">
+        <div style="display: flex; align-items: center; gap: 18px; margin-bottom: var(--space-6);">
+          <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #38e1ff, #a855f7); display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 0 25px rgba(56, 225, 255, 0.4);">
+            ✨
+          </div>
+          <div>
+            <h2 id="profileUsername" style="font-size: 1.4rem; color: #fff; margin-bottom: 4px;">Atelier Creator</h2>
+            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #34d399; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); padding: 3px 12px; border-radius: 999px;">
+              Master Atelier License • Unlimited 3D/4D Access
+            </span>
+          </div>
+        </div>
+
+        <form id="profileForm" onsubmit="saveProfile(event)">
+          <div class="form-group" style="margin-bottom: var(--space-4);">
+            <label class="form-label">Creator Display Name</label>
+            <input type="text" id="inputUsername" class="form-control" value="Atelier Creator" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: var(--space-4);">
+            <label class="form-label">Creator Email Address</label>
+            <input type="email" id="inputEmail" class="form-control" value="creator@celebrationstudio.com">
+          </div>
+
+          <div class="form-group" style="margin-bottom: var(--space-6);">
+            <label class="form-label">Motion &amp; GPU Intensity</label>
+            <select id="selectIntensity" class="form-select">
+              <option value="high" selected>🚀 Maximum 60 FPS (Full volumetric lighting, live particles, 3D orbits)</option>
+              <option value="balanced">⚡ Balanced (Smooth motion, reduced shadow passes)</option>
+              <option value="reduced">🌿 Reduced Motion (Static backgrounds, low GPU footprint)</option>
+            </select>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: var(--space-4);">
+            <span id="saveProfileMsg" style="font-size: 0.85rem; color: #34d399; font-weight: 600;"></span>
+            <button type="submit" class="btn btn-primary">Save Atelier Preferences ✓</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Client Database & Storage -->
+  <script src="static/js/templates_catalog.js"></script>
+  <script src="static/js/animation_themes.js"></script>
+  <script src="static/js/backend_storage.js"></script>
+  <script src="static/js/nav_header.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = window.CelebrationDB.getUser();
+      document.getElementById('profileUsername').textContent = user.username || 'Atelier Creator';
+      document.getElementById('inputUsername').value = user.username || 'Atelier Creator';
+      document.getElementById('inputEmail').value = user.email || 'creator@celebrationstudio.com';
+
+      const settings = window.CelebrationDB.getSettings();
+      if (settings.intensity) {
+        document.getElementById('selectIntensity').value = settings.intensity;
+      }
+    });
+
+    function saveProfile(e) {
+      e.preventDefault();
+      const username = document.getElementById('inputUsername').value.trim();
+      const email = document.getElementById('inputEmail').value.trim();
+      const intensity = document.getElementById('selectIntensity').value;
+
+      window.CelebrationDB.setUser({ username, email, is_authenticated: true, is_superuser: true });
+      window.CelebrationDB.updateSettings({ intensity });
+
+      document.body.dataset.intensity = intensity;
+      document.getElementById('profileUsername').textContent = username;
+      document.querySelectorAll('#headerUserDisplay, .user-name-display').forEach(el => el.textContent = username);
+
+      const msg = document.getElementById('saveProfileMsg');
+      msg.textContent = '✓ Preferences Saved Successfully!';
+      setTimeout(() => { msg.textContent = ''; }, 2500);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight_gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Vault Atelier — Celebration Studio</title>
+
+  <link rel="stylesheet" href="static/css/tokens.css">
+  <link rel="stylesheet" href="static/css/studio.css">
+  <link rel="stylesheet" href="static/css/animation-engine.css">
+
+  <style>
+    .vault-wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .media-card {
+      background: rgba(16, 23, 38, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s ease;
+    }
+
+    .media-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 225, 255, 0.4);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .media-thumb-frame {
+      height: 180px;
+      position: relative;
+      overflow: hidden;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .media-thumb-blur {
+      position: absolute;
+      inset: -10px;
+      background-size: cover;
+      background-position: center;
+      filter: blur(12px) brightness(0.6);
+      opacity: 0.8;
+    }
+
+    .media-thumb-img {
+      position: relative;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body data-intensity="high">
+
+  <!-- Master Atmospheric Animated Backdrop Engine -->
+  <div class="celebration-ambient-backdrop" id="masterAmbientBackdrop">
+    <div class="ambient-layer-artwork"></div>
+    <div class="ambient-layer-glow"></div>
+    <canvas id="ambientParticleCanvas"></canvas>
+    <div class="ambient-layer-vignette"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="studio-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">✨</div>
+        <span>Celebration Studio</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+          <li><a href="templates.html" class="nav-link">🏛️ Templates</a></li>
+          <li><a href="recipients.html" class="nav-link">VIP Recipients</a></li>
+          <li><a href="media-vault.html" class="nav-link active">Media Vault</a></li>
+          <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <input type="file" id="uploadInput" accept="image/*" style="display: none;" onchange="handleVaultUpload(this)">
+        <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('uploadInput').click()">
+          <span>+ Upload Image</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="vault-wrapper">
+      
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--space-8); flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1 class="font-display" style="font-size: 2.2rem; color: #fff; margin-bottom: 6px;">Atelier Media Vault</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Archival photo collection and portrait assets used across your 3D scenes.</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('uploadInput').click()" style="border-radius: 999px;">
+          ✦ Upload Photo to Vault
+        </button>
+      </div>
+
+      <!-- Media Grid -->
+      <div id="mediaGrid" class="media-grid">
+        <!-- Rendered dynamically via JS -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Client Database & Storage -->
+  <script src="static/js/templates_catalog.js"></script>
+  <script src="static/js/animation_themes.js"></script>
+  <script src="static/js/backend_storage.js"></script>
+  <script src="static/js/nav_header.js"></script>
+
+  <script>
+    const DEFAULT_MEDIA = [
+      { id: 'm1', title: 'Stargazing Odyssey', url: 'static/img/memory_stargazing.jpg', tag: 'Memory' },
+      { id: 'm2', title: 'Celebration Toast', url: 'static/img/memory_toast.jpg', tag: 'Event' },
+      { id: 'm3', title: 'Graduation Ceremony', url: 'static/img/memory_graduation.jpg', tag: 'Achievement' },
+      { id: 'm4', title: 'Kyoto Memories', url: 'static/img/memory_kyoto.jpg', tag: 'Travel' },
+      { id: 'm5', title: 'Celebrant Portrait', url: 'static/img/memory_bakery.jpg', tag: 'Portrait' },
+      { id: 'm6', title: 'Robotics Workshop', url: 'static/img/memory_robotics.jpg', tag: 'Milestone' }
+    ];
+
+    function getVaultMedia() {
+      try {
+        const stored = localStorage.getItem('celebration_studio_media');
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+      localStorage.setItem('celebration_studio_media', JSON.stringify(DEFAULT_MEDIA));
+      return DEFAULT_MEDIA;
+    }
+
+    function renderMedia() {
+      const grid = document.getElementById('mediaGrid');
+      const list = getVaultMedia();
+
+      grid.innerHTML = list.map(m => `
+        <div class="media-card">
+          <div class="media-thumb-frame">
+            <div class="media-thumb-blur" style="background-image: url('${m.url}');"></div>
+            <img src="${m.url}" alt="${m.title}" class="media-thumb-img" loading="lazy">
+          </div>
+          <div style="padding: 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #38e1ff; margin-bottom: 4px;">
+                ${m.tag || 'Image'}
+              </div>
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 8px;">${m.title}</h4>
+            </div>
+            <button type="button" class="btn btn-secondary btn-xs" onclick="navigator.clipboard.writeText('${m.url}'); alert('Image path copied!');" style="width: 100%; text-align: center; border-radius: 999px;">
+              Copy Path 📋
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function handleVaultUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const dataUrl = await window.CelebrationDB.fileToDataUrl(file);
+      const list = getVaultMedia();
+      list.unshift({
+        id: `upload-${Date.now()}`,
+        title: file.name.replace(/\.[^/.]+$/, ''),
+        url: dataUrl,
+        tag: 'Upload'
+      });
+      localStorage.setItem('celebration_studio_media', JSON.stringify(list));
+      input.value = '';
+      renderMedia();
+    }
+
+    document.addEventListener('DOMContentLoaded', renderMedia);
+  </script>
+</body>
+</html>

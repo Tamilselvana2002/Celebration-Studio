@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight_gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIP Recipients Atelier — Celebration Studio</title>
+
+  <link rel="stylesheet" href="static/css/tokens.css">
+  <link rel="stylesheet" href="static/css/studio.css">
+  <link rel="stylesheet" href="static/css/animation-engine.css">
+
+  <style>
+    .recipients-wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .recipients-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-6);
+      flex-wrap: wrap;
+      gap: var(--space-4);
+    }
+
+    .recipients-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .recipient-card {
+      background: rgba(16, 23, 38, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      backdrop-filter: blur(16px);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .recipient-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 225, 255, 0.4);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+  </style>
+</head>
+<body data-intensity="high">
+
+  <!-- Master Atmospheric Animated Backdrop Engine -->
+  <div class="celebration-ambient-backdrop" id="masterAmbientBackdrop">
+    <div class="ambient-layer-artwork"></div>
+    <div class="ambient-layer-glow"></div>
+    <canvas id="ambientParticleCanvas"></canvas>
+    <div class="ambient-layer-vignette"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="studio-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon">✨</div>
+        <span>Celebration Studio</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+          <li><a href="templates.html" class="nav-link">🏛️ Templates</a></li>
+          <li><a href="recipients.html" class="nav-link active">VIP Recipients</a></li>
+          <li><a href="media-vault.html" class="nav-link">Media Vault</a></li>
+          <li><a href="profile.html" class="nav-link">👤 Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button type="button" class="btn btn-primary btn-sm" onclick="openAddRecipientModal()">
+          <span>+ Add Recipient</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="recipients-wrapper">
+      
+      <div class="recipients-header">
+        <div>
+          <h1 class="font-display" style="font-size: 2.2rem; color: #fff; margin-bottom: 6px;">VIP Recipients Directory</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Curate your inner circle and launch personalized 3D celebrations in seconds.</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openAddRecipientModal()" style="border-radius: 999px;">
+          ✦ Add New Recipient
+        </button>
+      </div>
+
+      <!-- Recipients Grid -->
+      <div id="recipientsGrid" class="recipients-grid">
+        <!-- Rendered dynamically via JS -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Add Recipient Dialog -->
+  <dialog id="recipientDialog" class="studio-dialog">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6);">
+      <h3 class="font-display" style="font-size: var(--text-xl);">Add VIP Recipient</h3>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('recipientDialog').close()">✕</button>
+    </div>
+
+    <form id="addRecipientForm" onsubmit="saveRecipient(event)">
+      <div class="form-group" style="margin-bottom: var(--space-4);">
+        <label class="form-label">Full Name</label>
+        <input type="text" id="recipName" required class="form-control" placeholder="e.g. Aria Montgomery">
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-4);">
+        <label class="form-label">Relationship</label>
+        <select id="recipRel" class="form-select">
+          <option value="sister">🌸 Sister</option>
+          <option value="partner">❤️ Partner / Soulmate</option>
+          <option value="friend">✨ Best Friend</option>
+          <option value="brother">⚡ Brother</option>
+          <option value="mother">👑 Mother</option>
+          <option value="father">🛡️ Father</option>
+          <option value="daughter">🌟 Daughter</option>
+          <option value="son">🚀 Son</option>
+          <option value="mentor">🧭 Mentor</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-6);">
+        <label class="form-label">Personal Note / Milestone</label>
+        <textarea id="recipNote" class="form-control" rows="3" placeholder="Special memory or upcoming date..."></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: var(--space-3);">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('recipientDialog').close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Recipient</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Client Database & Storage -->
+  <script src="static/js/templates_catalog.js"></script>
+  <script src="static/js/animation_themes.js"></script>
+  <script src="static/js/backend_storage.js"></script>
+  <script src="static/js/nav_header.js"></script>
+
+  <script>
+    const DEFAULT_RECIPIENTS = [
+      { id: 'recip-1', name: 'Aria Montgomery', relationship: 'sister', note: 'Upcoming Milestone Birthday • Loves Golden Cinema' },
+      { id: 'recip-2', name: 'Lucas Vance', relationship: 'partner', note: 'Anniversary Celebration • Passionate about Astronomy' },
+      { id: 'recip-3', name: 'Maya Lin', relationship: 'friend', note: 'Master of Architecture Graduation' }
+    ];
+
+    function getRecipients() {
+      try {
+        const stored = localStorage.getItem('celebration_studio_recipients');
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+      localStorage.setItem('celebration_studio_recipients', JSON.stringify(DEFAULT_RECIPIENTS));
+      return DEFAULT_RECIPIENTS;
+    }
+
+    function renderRecipients() {
+      const grid = document.getElementById('recipientsGrid');
+      const list = getRecipients();
+
+      grid.innerHTML = list.map(r => `
+        <div class="recipient-card">
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-size: 1.8rem;">👤</span>
+              <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #f472b6; background: rgba(244,114,182,0.15); border: 1px solid rgba(244,114,182,0.3); padding: 3px 10px; border-radius: 999px;">
+                ${(r.relationship || 'VIP').toUpperCase()}
+              </span>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 6px;">${r.name}</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">
+              ${r.note || 'Cherished VIP member.'}
+            </p>
+          </div>
+
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; display: flex; gap: 8px;">
+            <a href="create.html?template=golden_cinema" class="btn btn-primary btn-sm" style="flex: 1; text-align: center; border-radius: 999px;">
+              ✦ Create Story
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openAddRecipientModal() {
+      document.getElementById('recipientDialog').showModal();
+    }
+
+    function saveRecipient(e) {
+      e.preventDefault();
+      const name = document.getElementById('recipName').value.trim();
+      const rel = document.getElementById('recipRel').value;
+      const note = document.getElementById('recipNote').value.trim();
+
+      const list = getRecipients();
+      list.push({ id: `recip-${Date.now()}`, name, relationship: rel, note });
+      localStorage.setItem('celebration_studio_recipients', JSON.stringify(list));
+
+      document.getElementById('recipientDialog').close();
+      renderRecipients();
+    }
+
+    document.addEventListener('DOMContentLoaded', renderRecipients);
+  </script>
+</body>
+</html>
