@@ -1,0 +1,513 @@
+/**
+ * CELEBRATION STUDIO — 3D AUTHENTICATION & PORTAL STYLING
+ * Directly grounded in 01_login_3d_portal.jpg and 02_registration_3d.jpg
+ * Pure CSS3, hardware accelerated 3D perspective, glassmorphism, and neon auras.
+ */
+
+:root {
+  --portal-cyan: #38e1ff;
+  --portal-purple: #a855f7;
+  --portal-pink: #f472b6;
+  --portal-gold: #fbbf24;
+  --portal-bg-dark: #060814;
+}
+
+body.auth-body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--portal-bg-dark);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: #fdf2f8;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Fullscreen WebGL Canvas */
+#authPortalCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Atmospheric vignette & light bloom overlays */
+.auth-ambient-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(6, 8, 20, 0.85) 100%);
+  transition: opacity 0.8s ease;
+}
+
+.auth-dream-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 60% 40%, rgba(254, 205, 211, 0.15) 0%, transparent 60%);
+  transition: opacity 0.8s ease;
+}
+
+/* Header bar with Atelier logo and back button */
+.auth-top-bar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 36px;
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.auth-brand-emblem {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(56, 225, 255, 0.3), rgba(168, 85, 247, 0.3));
+  border: 1px solid rgba(56, 225, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  box-shadow: 0 0 16px rgba(56, 225, 255, 0.4);
+}
+
+.auth-brand-text {
+  font-family: 'Cinzel', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #ffffff 40%, #e0e7ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.auth-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 18px;
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
+  transition: all 0.25s ease;
+}
+
+.auth-back-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(56, 225, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(56, 225, 255, 0.2);
+}
+
+/* Main 3D Centered Stage */
+.auth-stage-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+  padding: 20px;
+}
+
+/* 3D Perspective Wrapper */
+.auth-flipper-perspective {
+  perspective: 1600px;
+  width: 100%;
+  max-width: 460px;
+  min-height: 590px;
+  position: relative;
+}
+
+/* 3D Rotating Flipper */
+.auth-flipper-card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.auth-flipper-perspective.is-register .auth-flipper-card {
+  transform: rotateY(180deg);
+}
+
+/* Dual Faces */
+.auth-card-face {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 28px;
+  padding: 38px 34px;
+  box-sizing: border-box;
+}
+
+/* Face A: Cosmic Portal Login Face */
+.auth-card-login {
+  background: rgba(10, 16, 32, 0.72);
+  border: 1px solid rgba(56, 225, 255, 0.35);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.7),
+    0 0 40px rgba(56, 225, 255, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  transform: rotateY(0deg);
+}
+
+/* Face B: Whimsical Dreamscape Register Face */
+.auth-card-register {
+  background: rgba(255, 245, 248, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  box-shadow: 
+    0 24px 60px rgba(255, 117, 140, 0.25),
+    0 0 50px rgba(244, 114, 182, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.6);
+  transform: rotateY(180deg);
+}
+
+/* 3D Mode Switcher Pill */
+.auth-switch-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 26px;
+  position: relative;
+  backdrop-filter: blur(16px);
+}
+
+.auth-tab-btn {
+  flex: 1;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.auth-tab-btn.active {
+  color: #ffffff;
+}
+
+.auth-tab-slider {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background: linear-gradient(135deg, #38e1ff, #a855f7);
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(56, 225, 255, 0.4);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
+  z-index: 1;
+}
+
+.auth-flipper-perspective.is-register .auth-tab-slider {
+  transform: translateX(100%);
+  background: linear-gradient(135deg, #f472b6, #fb7185);
+  box-shadow: 0 4px 16px rgba(244, 114, 182, 0.5);
+}
+
+/* Card Header Emblem & Typography */
+.auth-emblem-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.auth-portal-emblem {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(56, 225, 255, 0.25), rgba(168, 85, 247, 0.35));
+  border: 1.5px solid rgba(56, 225, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.9rem;
+  box-shadow: 0 0 28px rgba(56, 225, 255, 0.45);
+  animation: emblemPulse 3s infinite alternate ease-in-out;
+}
+
+@keyframes emblemPulse {
+  0% { transform: scale(1); box-shadow: 0 0 20px rgba(56, 225, 255, 0.3); }
+  100% { transform: scale(1.05); box-shadow: 0 0 35px rgba(168, 85, 247, 0.6); }
+}
+
+.auth-dream-emblem {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.3), rgba(251, 191, 36, 0.3));
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.9rem;
+  box-shadow: 0 0 28px rgba(244, 114, 182, 0.5);
+  animation: dreamFloat 4s infinite ease-in-out;
+}
+
+@keyframes dreamFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.auth-card-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.65rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 6px;
+  letter-spacing: 0.02em;
+}
+
+.auth-card-subtitle {
+  text-align: center;
+  font-size: 0.86rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 24px;
+}
+
+/* Input Fields with Integrated SVG Icons */
+.auth-input-group {
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.auth-input-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 7px;
+}
+
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 16px;
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  transition: color 0.25s ease;
+}
+
+.auth-input-field {
+  width: 100%;
+  height: 48px;
+  padding: 0 46px 0 46px;
+  background: rgba(14, 21, 40, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.92rem;
+  outline: none;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.auth-card-register .auth-input-field {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.auth-input-field:focus {
+  border-color: var(--portal-cyan);
+  background: rgba(14, 21, 40, 0.85);
+  box-shadow: 0 0 20px rgba(56, 225, 255, 0.35);
+}
+
+.auth-card-register .auth-input-field:focus {
+  border-color: #f472b6;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 20px rgba(244, 114, 182, 0.4);
+}
+
+.auth-input-field:focus + .auth-input-icon,
+.auth-input-wrap:focus-within .auth-input-icon {
+  color: var(--portal-cyan);
+}
+
+.auth-card-register .auth-input-wrap:focus-within .auth-input-icon {
+  color: #f472b6;
+}
+
+.auth-pw-toggle {
+  position: absolute;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.25s ease;
+}
+
+.auth-pw-toggle:hover {
+  color: #ffffff;
+}
+
+/* 3D Glowing Action Buttons */
+.auth-submit-btn {
+  width: 100%;
+  height: 50px;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  margin-top: 10px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(56, 225, 255, 0.35);
+  background: linear-gradient(135deg, #38e1ff, #a855f7 60%, #ec4899);
+  background-size: 200% 200%;
+  animation: btnGlowSweep 6s infinite ease-in-out;
+  transition: all 0.3s ease;
+}
+
+.auth-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(56, 225, 255, 0.55);
+}
+
+.auth-submit-btn:active {
+  transform: translateY(0);
+}
+
+.auth-card-register .auth-submit-btn {
+  background: linear-gradient(135deg, #f472b6, #fb7185 50%, #f59e0b);
+  box-shadow: 0 10px 30px rgba(244, 114, 182, 0.4);
+}
+
+.auth-card-register .auth-submit-btn:hover {
+  box-shadow: 0 16px 40px rgba(244, 114, 182, 0.6);
+}
+
+@keyframes btnGlowSweep {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Bottom Switch Anchor */
+.auth-switch-prompt {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.auth-switch-link {
+  color: var(--portal-cyan);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-switch-link:hover {
+  text-decoration: underline;
+  color: #ffffff;
+  text-shadow: 0 0 10px var(--portal-cyan);
+}
+
+.auth-card-register .auth-switch-link {
+  color: #fbcfe8;
+}
+
+.auth-card-register .auth-switch-link:hover {
+  color: #ffffff;
+  text-shadow: 0 0 10px #f472b6;
+}
+
+/* Floating Helper Hologram */
+.auth-hologram-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.auth-hologram-indicator span.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+}
+
+/* Responsive adjustments */
+@media (max-width: 520px) {
+  .auth-top-bar {
+    padding: 16px 20px;
+  }
+  .auth-flipper-perspective {
+    min-height: 560px;
+  }
+  .auth-card-face {
+    padding: 28px 22px;
+  }
+}
