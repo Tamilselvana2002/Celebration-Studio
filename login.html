@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Creator Atelier Sign In & Authentication — Celebration Studio</title>
+  <title>Celebration Studio — 3D Authentication Experience</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,13 +13,16 @@
   <link rel="stylesheet" href="static/css/tokens.css">
   <link rel="stylesheet" href="static/css/auth_3d.css">
 </head>
-<body class="auth-body" data-auth-theme="cosmic_portal">
+<body class="auth-body">
 
-  <!-- 3D WebGL Multi-Theme Background Canvas -->
+  <!-- Multi-Planar Layer 1: High-Res Original Artwork Backdrop -->
+  <div class="auth-bg-artwork-layer" id="authBgArtworkLayer"></div>
+
+  <!-- Multi-Planar Layer 2: WebGL 3D Canvas -->
   <canvas id="authPortalCanvas"></canvas>
 
-  <!-- Vignette & Glow Overlay -->
-  <div class="auth-ambient-overlay"></div>
+  <!-- Multi-Planar Layer 3: Atmospheric Vignette -->
+  <div class="auth-vignette-overlay"></div>
 
   <!-- Top Navigation Header -->
   <header class="auth-top-bar">
@@ -28,20 +31,23 @@
       <span class="auth-brand-text">Celebration Studio</span>
     </a>
 
-    <div class="auth-top-controls">
-      <button type="button" class="auth-theme-dice-btn" id="authThemeDiceBtn" onclick="window.Auth3D.cycleRandomTheme()" title="Switch 3D Visual Atmosphere">
+    <div class="auth-top-actions">
+      <button type="button" class="auth-pill-btn" id="authThemeDiceBtn" onclick="window.Auth3D.pickRandomTheme()" title="Shuffle 3D Theme Atmosphere">
         🎲 Random Theme
       </button>
-      <a href="index.html" class="auth-back-link">
-        <span>← Home</span>
+      <a href="index.html" class="auth-pill-btn">
+        <span>← Atelier Home</span>
       </a>
     </div>
   </header>
 
   <!-- Main 3D Centered Stage -->
   <main class="auth-stage-container">
-    <div class="auth-card-perspective-box">
+    <div class="auth-card-3d-box">
       <div class="auth-glass-card">
+        
+        <!-- Specular Holographic Glare -->
+        <div class="auth-specular-glare"></div>
 
         <!-- Universal Hexagonal Star Emblem (Screens 1, 3, 5) -->
         <div class="auth-card-header">
@@ -50,6 +56,7 @@
               <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
             </svg>
           </div>
+          <div class="auth-brand-caption">Celebration Studio • Create. Celebrate. Share.</div>
           <h1 class="auth-title-primary" id="authCardTitle">Welcome Back</h1>
           <p class="auth-subtitle" id="authCardSubtitle">Sign in to continue</p>
         </div>
@@ -103,17 +110,17 @@
           <div class="auth-divider">or continue with</div>
 
           <div class="auth-social-row">
-            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Google')" title="Continue with Google">
+            <button type="button" class="auth-social-btn" onclick="window.Auth3D.showView('google')" title="Sign in with Google">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"></path>
               </svg>
             </button>
-            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Facebook')" title="Continue with Facebook">
+            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Facebook')" title="Sign in with Facebook">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
               </svg>
             </button>
-            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Apple')" title="Continue with Apple">
+            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Apple')" title="Sign in with Apple">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.85-.92.04-2.02.62-2.66 1.37-.56.65-1.06 1.71-.93 2.73 1.03.08 2.06-.5 2.67-1.25z"></path>
               </svg>
@@ -176,9 +183,8 @@
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <input type="password" id="regConfirmPassword" required class="auth-input-field" placeholder="Confirm Password" value="dream2026" oninput="checkPasswordMatch()">
+                <input type="password" id="regConfirmPassword" required class="auth-input-field" placeholder="Confirm Password" value="dream2026">
               </div>
-              <div class="auth-pw-match-text" id="pwMatchMsg">Passwords do not match</div>
             </div>
 
             <button type="submit" class="auth-primary-btn" style="margin-top: 10px;">
@@ -189,7 +195,7 @@
           <div class="auth-divider">or continue with</div>
 
           <div class="auth-social-row">
-            <button type="button" class="auth-social-btn" onclick="handleSocialAuth('Google')" title="Register with Google">
+            <button type="button" class="auth-social-btn" onclick="window.Auth3D.showView('google')" title="Register with Google">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"></path>
               </svg>
@@ -223,7 +229,7 @@
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                   <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
-                <input type="email" id="forgotEmail" required class="auth-input-field" placeholder="Enter your account email">
+                <input type="email" id="forgotEmail" required class="auth-input-field" placeholder="Enter your email" value="elena@example.com">
               </div>
             </div>
 
@@ -242,13 +248,13 @@
         <!-- ============================================================= -->
         <div class="auth-view" id="view-verify">
           <div style="text-align: center; padding: 10px 0 20px;">
-            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(56, 225, 255, 0.15); border: 1px solid var(--auth-accent-primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--auth-accent-primary)" stroke-width="2">
+            <div style="width: 66px; height: 66px; border-radius: 50%; background: rgba(168, 85, 247, 0.2); border: 2px solid var(--auth-accent-p); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 0 30px var(--auth-accent-glow);">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                 <polyline points="22,6 12,13 2,6"></polyline>
               </svg>
             </div>
-            <p style="font-size: 0.88rem; color: var(--auth-muted-color); line-height: 1.5; margin-bottom: 20px;">
+            <p style="font-size: 0.88rem; color: var(--auth-muted-c); line-height: 1.5; margin-bottom: 20px;">
               We've dispatched a secure verification link to <strong id="verifyEmailDisplay" style="color: #fff;">you@example.com</strong>.
             </p>
             <button type="button" class="auth-primary-btn" onclick="alert('Verification link resent!')">
@@ -261,7 +267,63 @@
         </div>
 
         <!-- ============================================================= -->
-        <!-- VIEW 5: SUCCESS WITH CONFETTI (Screens 9, 20)                 -->
+        <!-- VIEW 5: GOOGLE ONE-TAP LOGIN (Screen 10)                      -->
+        <!-- ============================================================= -->
+        <div class="auth-view" id="view-google">
+          <div style="text-align: center; padding: 12px 0 20px;">
+            <p style="font-size: 0.9rem; color: var(--auth-muted-c); margin-bottom: 24px;">
+              Sign in with your verified Google Atelier account in one click.
+            </p>
+            <button type="button" class="auth-google-pill-btn" onclick="handleSocialAuth('Google')">
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.33 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.17 0 9.99 0 12s.46 3.83 1.26 5.42l4.02-3.15z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+            <div class="auth-switch-prompt" style="margin-top: 24px;">
+              <span class="action" onclick="window.Auth3D.showView('login')">Sign in with Email instead</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- VIEW 6: LOADING SCREEN (Screens 2, 22)                         -->
+        <!-- ============================================================= -->
+        <div class="auth-view" id="view-loading">
+          <div style="text-align: center; padding: 20px 0;">
+            <div class="auth-progress-wrap">
+              <div class="auth-progress-bar" id="authLoadingProgressBar"></div>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--auth-muted-c);">Loading your magical journey...</p>
+          </div>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- VIEW 7: ERROR STATE (Screen 21)                               -->
+        <!-- ============================================================= -->
+        <div class="auth-view" id="view-error">
+          <div style="text-align: center; padding: 10px 0 20px;">
+            <div class="auth-error-shield">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--auth-muted-c); line-height: 1.5; margin-bottom: 24px;">
+              We couldn't authenticate with those credentials. Please check and try again.
+            </p>
+            <button type="button" class="auth-primary-btn" onclick="window.Auth3D.showView('login')">
+              <span>Try Again</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- VIEW 8: SUCCESS WITH CONFETTI (Screens 9, 20)                 -->
         <!-- ============================================================= -->
         <div class="auth-view" id="view-success">
           <div class="auth-success-box">
@@ -270,7 +332,7 @@
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
-            <p style="font-size: 0.9rem; color: var(--auth-muted-color); margin-bottom: 24px;">
+            <p style="font-size: 0.92rem; color: var(--auth-muted-c); margin-bottom: 26px;">
               Welcome to Celebration Studio! Your 3D atelier profile is active and ready.
             </p>
             <button type="button" class="auth-primary-btn" onclick="navigateToDashboard()">
@@ -282,6 +344,20 @@
       </div>
     </div>
   </main>
+
+  <!-- Bottom 24-Screen Interactive Theme Dock -->
+  <footer class="auth-bottom-dock">
+    <div class="auth-dock-inner">
+      <span class="auth-dock-title">3D Atmosphere:</span>
+      <span class="auth-theme-chip active" data-theme="cosmic_portal" onclick="window.Auth3D.applyTheme('cosmic_portal')">🌌 Cosmic Portal</span>
+      <span class="auth-theme-chip" data-theme="floating_lotus" onclick="window.Auth3D.applyTheme('floating_lotus')">🪷 Floating Lotus</span>
+      <span class="auth-theme-chip" data-theme="constellation" onclick="window.Auth3D.applyTheme('constellation')">✨ Constellation</span>
+      <span class="auth-theme-chip" data-theme="crystal_cavern" onclick="window.Auth3D.applyTheme('crystal_cavern')">💎 3D Crystal</span>
+      <span class="auth-theme-chip" data-theme="golden_lotus" onclick="window.Auth3D.applyTheme('golden_lotus')">👑 Golden Lotus</span>
+      <span class="auth-theme-chip" data-theme="ethereal_dawn" onclick="window.Auth3D.applyTheme('ethereal_dawn')">☁️ Ethereal Dawn</span>
+      <span class="auth-theme-chip" data-theme="midnight_cinema" onclick="window.Auth3D.applyTheme('midnight_cinema')">🏛️ Midnight Cinema</span>
+    </div>
+  </footer>
 
   <!-- Vendor Libraries & Scripts -->
   <script src="static/vendor/three.min.js"></script>
@@ -314,17 +390,6 @@
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
         `;
-      }
-    }
-
-    function checkPasswordMatch() {
-      const pw = document.getElementById('regPassword').value;
-      const cpw = document.getElementById('regConfirmPassword').value;
-      const msg = document.getElementById('pwMatchMsg');
-      if (cpw.length > 0 && pw !== cpw) {
-        msg.classList.add('mismatch');
-      } else {
-        msg.classList.remove('mismatch');
       }
     }
 
