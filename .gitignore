@@ -25,6 +25,9 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Vercel deployment cache
+.vercel/
+
 # User media uploads generated in development
 media/
 
