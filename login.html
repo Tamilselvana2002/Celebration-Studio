@@ -61,10 +61,22 @@
           <p class="auth-subtitle" id="authCardSubtitle">Sign in to continue</p>
         </div>
 
+        <!-- Dynamic Auth Alert Banner (Errors / Info) -->
+        <div class="auth-alert-banner" id="authAlertBanner" style="display: none;">
+          <span class="auth-alert-icon" id="authAlertIcon">⚠️</span>
+          <span class="auth-alert-text" id="authAlertText">Authentication message</span>
+        </div>
+
         <!-- ============================================================= -->
         <!-- VIEW 1: SIGN IN (Screen 3)                                    -->
         <!-- ============================================================= -->
         <div class="auth-view active" id="view-login">
+          <!-- Quick Demo Pill -->
+          <div class="auth-demo-pill" onclick="quickFillDemo('creator', 'creator2026')" title="Click to autofill pre-configured demo account">
+            <span>💡 Demo: <strong>creator</strong> / <strong>creator2026</strong></span>
+            <span class="auth-demo-action">Quick Fill</span>
+          </div>
+
           <form onsubmit="handleLoginSubmit(event)">
             <div class="auth-input-group">
               <label class="auth-input-label">Email or Username</label>
@@ -73,7 +85,7 @@
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <input type="text" id="loginUsername" required class="auth-input-field" placeholder="Email or Username" value="Atelier Creator">
+                <input type="text" id="loginUsername" required class="auth-input-field" placeholder="Email or Username" value="creator">
               </div>
             </div>
 
@@ -369,6 +381,33 @@
   <script src="static/js/auth_3d_portal.js"></script>
 
   <script>
+    function showAuthAlert(msg, isSuccess = false) {
+      const banner = document.getElementById('authAlertBanner');
+      const text = document.getElementById('authAlertText');
+      const icon = document.getElementById('authAlertIcon');
+      if (!banner || !text) return;
+      text.textContent = msg;
+      if (isSuccess) {
+        banner.className = 'auth-alert-banner success';
+        icon.textContent = '✅';
+      } else {
+        banner.className = 'auth-alert-banner';
+        icon.textContent = '⚠️';
+      }
+      banner.style.display = 'flex';
+    }
+
+    function hideAuthAlert() {
+      const banner = document.getElementById('authAlertBanner');
+      if (banner) banner.style.display = 'none';
+    }
+
+    function quickFillDemo(username, password) {
+      document.getElementById('loginUsername').value = username;
+      document.getElementById('loginPassword').value = password;
+      hideAuthAlert();
+    }
+
     function togglePasswordVisibility(inputId, btn) {
       const input = document.getElementById(inputId);
       if (!input) return;
@@ -393,38 +432,102 @@
       }
     }
 
-    function handleLoginSubmit(e) {
+    async function handleLoginSubmit(e) {
       e.preventDefault();
-      const username = document.getElementById('loginUsername').value.trim() || 'Atelier Creator';
-      window.CelebrationDB.login(username);
-      window.Auth3D.showView('success');
+      hideAuthAlert();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Verifying credentials...</span>';
+
+      const identifier = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const result = await window.CelebrationDB.login(identifier, password);
+        if (!result.success) {
+          showAuthAlert(result.error);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+          return;
+        }
+
+        // Show Success 3D Portal View
+        window.Auth3D.showView('success');
+        setTimeout(() => {
+          navigateToDashboard();
+        }, 1300);
+      } catch (err) {
+        showAuthAlert('Unable to sign in. Please verify your connection.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
     }
 
-    function handleRegisterSubmit(e) {
+    async function handleRegisterSubmit(e) {
       e.preventDefault();
-      const fullName = document.getElementById('regFullName').value.trim() || 'Atelier Creator';
-      const email = document.getElementById('regEmailAddr').value.trim() || 'creator@celebrationstudio.com';
-      const pw = document.getElementById('regPassword').value;
-      const cpw = document.getElementById('regConfirmPassword').value;
+      hideAuthAlert();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Creating Account...</span>';
 
-      if (pw !== cpw) {
-        alert('Passwords do not match. Please verify.');
+      const fullName = document.getElementById('regFullName').value.trim();
+      const email = document.getElementById('regEmailAddr').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+      if (password !== confirmPassword) {
+        showAuthAlert('Passwords do not match. Please verify.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
         return;
       }
 
-      window.CelebrationDB.setUser({
-        username: fullName,
-        email: email,
-        is_authenticated: true,
-        is_superuser: true
-      });
+      if (password.length < 6) {
+        showAuthAlert('Password must be at least 6 characters long.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+        return;
+      }
 
-      window.Auth3D.showView('success');
+      const username = email.split('@')[0].replace(/[^a-zA-Z0-9_\-]/g, '_') || 'creator_' + Date.now().toString().slice(-4);
+
+      try {
+        const result = await window.CelebrationDB.register({
+          username: username,
+          fullName: fullName,
+          email: email,
+          password: password
+        });
+
+        if (!result.success) {
+          showAuthAlert(result.error);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+          return;
+        }
+
+        window.Auth3D.showView('success');
+        setTimeout(() => {
+          navigateToDashboard();
+        }, 1300);
+      } catch (err) {
+        showAuthAlert('Registration failed. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
     }
 
-    function handleSocialAuth(provider) {
-      window.CelebrationDB.login(`${provider} Creator`);
-      window.Auth3D.showView('success');
+    async function handleSocialAuth(provider) {
+      hideAuthAlert();
+      const result = await window.CelebrationDB.socialAuth(provider);
+      if (result.success) {
+        window.Auth3D.showView('success');
+        setTimeout(() => {
+          navigateToDashboard();
+        }, 1300);
+      }
     }
 
     function handleForgotSubmit(e) {
@@ -439,6 +542,14 @@
       const next = params.get('next') || 'dashboard.html';
       window.location.href = next;
     }
+
+    // Check if user is already authenticated
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = window.CelebrationDB.getUser();
+      if (user && user.is_authenticated) {
+        showAuthAlert(`Signed in as ${user.fullName || user.username}. Click "Sign In" or visit your dashboard.`, true);
+      }
+    });
   </script>
 </body>
 </html>

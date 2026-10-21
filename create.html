@@ -62,6 +62,9 @@
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
           <span style="font-weight: 600; color: #fdf2f8;" id="headerUserDisplay">Atelier Creator</span>
         </a>
+        <button type="button" onclick="if(confirm('Sign out?')) window.CelebrationDB.logout()" class="btn btn-ghost btn-sm" style="color: #fca5a5; border-color: rgba(239, 68, 68, 0.35); padding: 5px 12px;" title="Sign Out">
+          <span>🚪 Sign Out</span>
+        </button>
       </div>
     </div>
   </header>
@@ -170,10 +173,20 @@
   <script src="static/js/modern_3d_ui.js"></script>
 
   <script>
+    // Strict Route Guard: Ensure user is logged in
+    if (!window.CelebrationDB.requireAuth()) {
+      throw new Error('Authentication required');
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const requestedTemplate = urlParams.get('template') || 'golden_cinema';
 
     document.addEventListener('DOMContentLoaded', () => {
+      const activeUser = window.CelebrationDB.getUser();
+      if (activeUser && document.getElementById('headerUserDisplay')) {
+        document.getElementById('headerUserDisplay').textContent = activeUser.fullName || activeUser.username || 'Creator';
+      }
+
       const template = (window.MASTER_TEMPLATES || {})[requestedTemplate];
       if (template) {
         const banner = document.getElementById('blueprintBanner');

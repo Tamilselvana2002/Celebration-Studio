@@ -159,6 +159,11 @@
   <script src="static/js/modern_3d_ui.js"></script>
 
   <script>
+    // Strict Route Guard: Ensure user is authenticated
+    if (!window.CelebrationDB.requireAuth()) {
+      throw new Error('Authentication required');
+    }
+
     const DEFAULT_RECIPIENTS = [
       { id: 'recip-1', name: 'Aria Montgomery', relationship: 'sister', note: 'Upcoming Milestone Birthday • Loves Golden Cinema' },
       { id: 'recip-2', name: 'Lucas Vance', relationship: 'partner', note: 'Anniversary Celebration • Passionate about Astronomy' },

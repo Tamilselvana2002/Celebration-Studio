@@ -160,6 +160,9 @@
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399;"></span>
           <span style="font-weight: 600; color: #fdf2f8;" id="headerUserDisplay">Atelier Creator</span>
         </a>
+        <button type="button" onclick="handleSignOut()" class="btn btn-ghost btn-sm" style="color: #fca5a5; border-color: rgba(239, 68, 68, 0.35); padding: 5px 12px; display: inline-flex; align-items: center; gap: 4px;" title="Sign Out of Atelier">
+          <span>🚪 Sign Out</span>
+        </button>
         <a href="create.html" class="btn btn-primary btn-sm">
           <span>+ Create Celebration</span>
         </a>
@@ -319,6 +322,17 @@
 
   <!-- Dashboard Controller -->
   <script>
+    // Strict Route Guard: Ensure user is logged in
+    if (!window.CelebrationDB.requireAuth()) {
+      throw new Error('Authentication required');
+    }
+
+    function handleSignOut() {
+      if (confirm('Are you sure you want to sign out of Celebration Studio?')) {
+        window.CelebrationDB.logout();
+      }
+    }
+
     let activeFilter = 'all';
 
     function setFilter(filter, el) {
@@ -445,6 +459,10 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      const activeUser = window.CelebrationDB.getUser();
+      if (activeUser && document.getElementById('headerUserDisplay')) {
+        document.getElementById('headerUserDisplay').textContent = activeUser.fullName || activeUser.username || 'Creator';
+      }
       renderCelebrations();
     });
   </script>

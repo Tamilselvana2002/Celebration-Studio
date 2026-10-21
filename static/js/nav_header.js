@@ -18,13 +18,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 2. Synchronize logged in user and authentication state
   if (window.CelebrationDB) {
+    const isAuth = window.CelebrationDB.isAuthenticated();
     const user = window.CelebrationDB.getUser();
     const protectedPages = ['dashboard.html', 'create.html', 'editor.html', 'profile.html', 'media-vault.html', 'recipients.html'];
     const isProtected = protectedPages.includes(currentPath);
 
-    if (user && user.is_authenticated === false) {
+    if (!isAuth) {
       if (isProtected) {
-        window.location.href = 'login.html?next=' + encodeURIComponent(currentPath + window.location.search);
+        window.location.replace('login.html?next=' + encodeURIComponent(currentPath + window.location.search + window.location.hash));
         return;
       }
       // On public pages, show Sign In / Register buttons in header
@@ -48,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
       // Authenticated: display user name
       document.querySelectorAll('#headerUserDisplay, .user-name-display').forEach(el => {
-        el.textContent = user.username || 'Atelier Creator';
+        el.textContent = user.fullName || user.username || 'Atelier Creator';
       });
 
       // Add one-click quick Sign Out button next to profile badge if not already present

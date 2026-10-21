@@ -717,6 +717,11 @@
       }
     }
 
+    // Strict Route Guard: Ensure user is authenticated
+    if (!window.CelebrationDB.requireAuth()) {
+      throw new Error('Authentication required');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       let celebrationId = urlParams.get('id');

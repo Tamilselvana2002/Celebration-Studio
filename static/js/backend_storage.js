@@ -6,11 +6,57 @@
  */
 
 (function () {
+  const KEY_ACCOUNTS = 'celebration_studio_accounts';
   const KEY_CELEBRATIONS = 'celebration_studio_celebrations';
   const KEY_RECIPIENTS = 'celebration_studio_recipients';
   const KEY_USER = 'celebration_studio_user';
   const KEY_SETTINGS = 'celebration_studio_settings';
   const KEY_MEDIA = 'celebration_studio_media';
+
+  const AUTH_SALT = 'celebration_salt_2026';
+
+  // Secure SHA-256 Hashing using Web Crypto API with high-performance JS fallback
+  async function computeSha256(str) {
+    if (window.crypto && window.crypto.subtle && window.TextEncoder) {
+      try {
+        const msgUint8 = new TextEncoder().encode(str);
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      } catch (e) {
+        console.warn('SubtleCrypto error, falling back:', e);
+      }
+    }
+    // High quality fallback
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+  }
+
+  async function hashPassword(plainText) {
+    return computeSha256(`${plainText}:${AUTH_SALT}`);
+  }
+
+  function getInitialAccounts() {
+    return [
+      {
+        id: 'user_atelier_creator',
+        username: 'creator',
+        fullName: 'Atelier Creator',
+        email: 'creator@celebrationstudio.com',
+        // Pre-computed SHA-256 hash of 'creator2026:celebration_salt_2026'
+        passwordHash: 'c76e480393e7e656798af326e3383cd1614144207cd7e44a1bc18ba80d579991',
+        avatar: '👑',
+        created_at: '2026-01-01T00:00:00.000Z'
+      }
+    ];
+  }
 
   function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -246,15 +292,18 @@
     },
 
     init() {
+      if (!localStorage.getItem(KEY_ACCOUNTS)) {
+        this._save(KEY_ACCOUNTS, getInitialAccounts());
+      }
       if (!localStorage.getItem(KEY_CELEBRATIONS)) {
         this._save(KEY_CELEBRATIONS, getInitialCelebrations());
       }
       if (!localStorage.getItem(KEY_USER)) {
         this._save(KEY_USER, {
-          username: 'Atelier Creator',
-          email: 'creator@celebrationstudio.com',
-          is_authenticated: true,
-          is_superuser: true
+          is_authenticated: false,
+          username: null,
+          fullName: null,
+          email: null
         });
       }
       if (!localStorage.getItem(KEY_SETTINGS)) {
@@ -266,12 +315,19 @@
       }
     },
 
+    // Accounts Store (Indexed/List of Registered Users)
+    getAccounts() {
+      this.init();
+      return this._load(KEY_ACCOUNTS, getInitialAccounts());
+    },
+
     getUser() {
+      this.init();
       return this._load(KEY_USER, {
-        username: 'Atelier Creator',
-        email: 'creator@celebrationstudio.com',
-        is_authenticated: true,
-        is_superuser: true
+        is_authenticated: false,
+        username: null,
+        fullName: null,
+        email: null
       });
     },
 
@@ -279,21 +335,176 @@
       this._save(KEY_USER, user);
     },
 
-    login(username, email = '') {
-      const user = {
-        username: username || 'Atelier Creator',
-        email: email || 'creator@celebrationstudio.com',
-        is_authenticated: true,
-        is_superuser: true
+    isAuthenticated() {
+      const u = this.getUser();
+      return Boolean(u && u.is_authenticated);
+    },
+
+    /**
+     * Route Protection Guard
+     * Call at the top of any protected page (dashboard, create, editor, profile, etc.)
+     * Returns true if authenticated; otherwise redirects to login with return target.
+     */
+    requireAuth() {
+      if (!this.isAuthenticated()) {
+        const file = window.location.pathname.split('/').filter(Boolean).pop() || 'dashboard.html';
+        const search = window.location.search || '';
+        const hash = window.location.hash || '';
+        const nextUrl = encodeURIComponent(file + search + hash);
+        window.location.replace(`login.html?next=${nextUrl}`);
+        return false;
+      }
+      return true;
+    },
+
+    async register({ username, email, password, fullName }) {
+      this.init();
+      const accounts = this.getAccounts();
+
+      const uName = (username || '').trim();
+      const eMail = (email || '').trim().toLowerCase();
+      const fName = (fullName || uName || 'Atelier Creator').trim();
+      const pwd = String(password || '');
+
+      // Validations
+      if (!uName || uName.length < 3) {
+        return { success: false, error: 'Username must be at least 3 characters long.' };
+      }
+      if (!/^[a-zA-Z0-9_\- ]+$/.test(uName)) {
+        return { success: false, error: 'Username can only contain letters, numbers, spaces, hyphens, and underscores.' };
+      }
+      if (!eMail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(eMail)) {
+        return { success: false, error: 'Please provide a valid email address.' };
+      }
+      if (!pwd || pwd.length < 6) {
+        return { success: false, error: 'Password must be at least 6 characters long.' };
+      }
+
+      // Check duplicates
+      const existingUser = accounts.find(a => 
+        (a.username && a.username.toLowerCase() === uName.toLowerCase()) || 
+        (a.email && a.email.toLowerCase() === eMail)
+      );
+      if (existingUser) {
+        if (existingUser.username && existingUser.username.toLowerCase() === uName.toLowerCase()) {
+          return { success: false, error: `The username "${uName}" is already registered. Please choose another.` };
+        } else {
+          return { success: false, error: `An account with email "${eMail}" already exists. Please sign in instead.` };
+        }
+      }
+
+      const hash = await hashPassword(pwd);
+      const newAccount = {
+        id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+        username: uName,
+        fullName: fName,
+        email: eMail,
+        passwordHash: hash,
+        avatar: '✨',
+        created_at: new Date().toISOString()
       };
-      this.setUser(user);
-      return user;
+
+      accounts.push(newAccount);
+      this._save(KEY_ACCOUNTS, accounts);
+
+      // Establish Active User Session
+      const sessionUser = {
+        id: newAccount.id,
+        username: newAccount.username,
+        fullName: newAccount.fullName,
+        email: newAccount.email,
+        avatar: newAccount.avatar,
+        is_authenticated: true,
+        login_time: new Date().toISOString()
+      };
+      this.setUser(sessionUser);
+
+      return { success: true, user: sessionUser };
+    },
+
+    async login(identifier, password) {
+      this.init();
+      const idStr = (identifier || '').trim();
+      const pwd = String(password || '');
+
+      if (!idStr) {
+        return { success: false, error: 'Please enter your username or email address.' };
+      }
+      if (!pwd) {
+        return { success: false, error: 'Please enter your password.' };
+      }
+
+      const accounts = this.getAccounts();
+      const idLower = idStr.toLowerCase();
+      const account = accounts.find(a => 
+        (a.username && a.username.toLowerCase() === idLower) ||
+        (a.email && a.email.toLowerCase() === idLower)
+      );
+
+      if (!account) {
+        return { success: false, error: `No account found for "${idStr}". Please verify your credentials or register.` };
+      }
+
+      const hash = await hashPassword(pwd);
+      if (account.passwordHash !== hash) {
+        return { success: false, error: 'Incorrect password. Please verify and try again.' };
+      }
+
+      // Success: Establish Active Session
+      const sessionUser = {
+        id: account.id,
+        username: account.username,
+        fullName: account.fullName || account.username,
+        email: account.email,
+        avatar: account.avatar || '👑',
+        is_authenticated: true,
+        login_time: new Date().toISOString()
+      };
+      this.setUser(sessionUser);
+
+      return { success: true, user: sessionUser };
+    },
+
+    async socialAuth(provider = 'Google') {
+      this.init();
+      const username = `${provider} Creator`;
+      const email = `${provider.toLowerCase()}.creator@celebrationstudio.com`;
+      const accounts = this.getAccounts();
+      let account = accounts.find(a => a.email === email);
+      if (!account) {
+        account = {
+          id: 'user_social_' + provider.toLowerCase() + '_' + Date.now(),
+          username: username,
+          fullName: username,
+          email: email,
+          passwordHash: 'social_verified_session',
+          avatar: provider === 'Google' ? '🌐' : provider === 'Apple' ? '🍎' : '👤',
+          created_at: new Date().toISOString()
+        };
+        accounts.push(account);
+        this._save(KEY_ACCOUNTS, accounts);
+      }
+
+      const sessionUser = {
+        id: account.id,
+        username: account.username,
+        fullName: account.fullName,
+        email: account.email,
+        avatar: account.avatar,
+        is_authenticated: true,
+        login_time: new Date().toISOString()
+      };
+      this.setUser(sessionUser);
+      return { success: true, user: sessionUser };
     },
 
     logout() {
-      const user = this.getUser();
-      user.is_authenticated = false;
-      this.setUser(user);
+      this.setUser({
+        is_authenticated: false,
+        username: null,
+        fullName: null,
+        email: null
+      });
       window.location.href = 'login.html';
     },
 
@@ -313,7 +524,13 @@
 
     getCelebrations() {
       this.init();
-      return this._load(KEY_CELEBRATIONS, []);
+      const all = this._load(KEY_CELEBRATIONS, []);
+      const user = this.getUser();
+      // If user is authenticated, isolate celebrations or show user-accessible ones
+      if (user && user.is_authenticated) {
+        return all.filter(c => !c.creator_id || c.creator_id === user.id || c.creator_id === user.username);
+      }
+      return all;
     },
 
     getCelebration(id) {
@@ -322,19 +539,23 @@
     },
 
     saveCelebration(celebration) {
-      const list = this.getCelebrations();
-      const idx = list.findIndex(c => String(c.id) === String(celebration.id));
-      if (idx !== -1) {
-        list[idx] = celebration;
-      } else {
-        list.unshift(celebration);
+      const all = this._load(KEY_CELEBRATIONS, []);
+      const user = this.getUser();
+      if (user && user.is_authenticated && !celebration.creator_id) {
+        celebration.creator_id = user.id;
       }
-      this._save(KEY_CELEBRATIONS, list);
+      const idx = all.findIndex(c => String(c.id) === String(celebration.id));
+      if (idx !== -1) {
+        all[idx] = celebration;
+      } else {
+        all.unshift(celebration);
+      }
+      this._save(KEY_CELEBRATIONS, all);
       return celebration;
     },
 
     deleteCelebration(id) {
-      let list = this.getCelebrations();
+      let list = this._load(KEY_CELEBRATIONS, []);
       list = list.filter(c => String(c.id) !== String(id));
       this._save(KEY_CELEBRATIONS, list);
     },
