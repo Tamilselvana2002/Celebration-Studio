@@ -15,6 +15,13 @@
   <!-- Dynamic Mount for Stage Viewport -->
   <div id="stageMount"></div>
 
+  <!-- Fullscreen Floating Gift Card & QR Trigger (Only outside iframe) -->
+  <div id="previewTopBar" style="display: none; position: fixed; top: 16px; right: 16px; z-index: 99999;">
+    <button type="button" onclick="CelebrationShare.openShareModal(window.__currentCelebration)" style="background: rgba(14,20,42,0.85); border: 1px solid rgba(251,191,36,0.5); color: #fbbf24; border-radius: 999px; padding: 7px 16px; font-size: 0.8rem; font-weight: 700; cursor: pointer; backdrop-filter: blur(16px); box-shadow: 0 4px 20px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 6px;">
+      <span>🎁 Gift Card &amp; QR</span>
+    </button>
+  </div>
+
   <!-- Vendor Animation Libraries -->
   <script src="static/vendor/gsap.min.js"></script>
   <script src="static/vendor/three.min.js"></script>
@@ -26,11 +33,22 @@
   <script src="static/js/backend_storage.js"></script>
   <script src="static/js/modern_3d_ui.js"></script>
 
+  <!-- Sharing & QR Code Engine -->
+  <script src="static/js/qr_generator.js"></script>
+  <script src="static/js/celebration_share.js"></script>
+
   <!-- Stage Renderer (Builds DOM before Orchestrator initializes) -->
   <script src="static/js/preview_stage_renderer.js"></script>
 
   <!-- Audio Controller & Master Scene Orchestrator -->
   <script src="static/js/audio_controller.js"></script>
   <script type="module" src="static/js/orchestrator.js"></script>
+
+  <script>
+    if (window.self === window.top) {
+      const topBar = document.getElementById('previewTopBar');
+      if (topBar) topBar.style.display = 'block';
+    }
+  </script>
 </body>
 </html>

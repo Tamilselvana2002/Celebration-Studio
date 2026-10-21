@@ -314,6 +314,8 @@
   <script src="static/js/backend_storage.js"></script>
   <script src="static/js/nav_header.js"></script>
   <script src="static/js/modern_3d_ui.js"></script>
+  <script src="static/js/qr_generator.js"></script>
+  <script src="static/js/celebration_share.js"></script>
 
   <!-- Dashboard Controller -->
   <script>
@@ -409,10 +411,13 @@
               <!-- Action Buttons Dock -->
               <div style="display: flex; gap: 8px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 14px; align-items: center;">
                 <a href="editor.html?id=${c.id}" class="btn btn-secondary btn-sm" style="flex: 1; text-align: center; border-radius: 999px;">
-                  <span>✏️ Edit Studio</span>
+                  <span>✏️ Edit</span>
                 </a>
-                <a href="preview.html?id=${c.id}" target="_blank" class="btn btn-primary btn-sm" style="flex: 1; text-align: center; border-radius: 999px;">
-                  <span>Preview ↗</span>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="CelebrationShare.openShareModal('${c.id}')" title="Share & Keepsake QR" style="flex: 1; text-align: center; border-radius: 999px; border-color: rgba(251,191,36,0.4); color: #fbbf24;">
+                  <span>🎁 Gift Card</span>
+                </button>
+                <a href="preview.html?id=${c.id}" target="_blank" class="btn btn-primary btn-sm" style="padding: 5px 14px; text-align: center; border-radius: 999px;" title="Full Preview">
+                  <span>▶ Play</span>
                 </a>
                 <button type="button" class="btn btn-ghost btn-sm" title="Delete Celebration" onclick="deleteCelebrationConfirm('${c.id}')" style="color: #f43f5e; padding: 6px 10px; border-radius: 999px;">
                   🗑️

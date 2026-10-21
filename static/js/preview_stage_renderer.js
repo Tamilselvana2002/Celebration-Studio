@@ -10,7 +10,20 @@
   const templateId = urlParams.get('template');
 
   let celebration = null;
-  if (celebrationId && window.CelebrationDB) {
+
+  // 1. Check for shared celebration payload in URL (Instant Shareable Link)
+  if (window.CelebrationShare) {
+    const sharedData = window.CelebrationShare.getSharedCelebrationFromUrl();
+    if (sharedData) {
+      celebration = sharedData;
+      if (window.CelebrationDB) {
+        window.CelebrationDB.saveCelebration(celebration);
+      }
+    }
+  }
+
+  // 2. Load from local database by ID
+  if (!celebration && celebrationId && window.CelebrationDB) {
     celebration = window.CelebrationDB.getCelebration(celebrationId);
   }
 
@@ -59,6 +72,8 @@
     console.error('No celebration found for preview');
     return;
   }
+
+  window.__currentCelebration = celebration;
 
   // Set page title & document theme
   document.title = `${celebration.title} — Celebration Experience`;

@@ -664,13 +664,19 @@
 
     <div style="margin-bottom: var(--space-6);">
       <div class="form-group">
-        <label class="form-label">Unique Public URL</label>
+        <label class="form-label">Instant Recipient URL (Plays anywhere without login)</label>
         <div style="display: flex; gap: var(--space-2);">
-          <input type="text" readonly id="shareLinkInput" class="form-control" style="font-family: var(--font-mono); font-size: var(--text-xs);">
-          <button id="copyShareLinkBtn" type="button" class="btn btn-secondary btn-sm">
+          <input type="text" readonly id="shareLinkInput" class="form-control" style="font-family: var(--font-mono); font-size: var(--text-xs); color: #38e1ff;">
+          <button id="copyShareLinkBtn" type="button" class="btn btn-secondary btn-sm" onclick="handleCopyShareLink()">
             Copy Link
           </button>
         </div>
+      </div>
+      
+      <div style="margin-top: 16px; text-align: center;">
+        <button type="button" class="btn btn-secondary" style="width: 100%; border-color: rgba(251,191,36,0.4); color: #fbbf24; border-radius: 999px; justify-content: center;" onclick="document.getElementById('publishDialog').close(); CelebrationShare.openShareModal(workbench.dataset.celebrationId)">
+          <span>👑 Generate Printable QR Gift Voucher</span>
+        </button>
       </div>
     </div>
 
@@ -694,9 +700,23 @@
   <script src="static/js/backend_storage.js"></script>
   <script src="static/js/nav_header.js"></script>
   <script src="static/js/modern_3d_ui.js"></script>
+  <script src="static/js/qr_generator.js"></script>
+  <script src="static/js/celebration_share.js"></script>
   <script src="static/js/studio_editor.js"></script>
 
   <script>
+    function handleCopyShareLink() {
+      const input = document.getElementById('shareLinkInput');
+      if (input && input.value) {
+        navigator.clipboard.writeText(input.value).then(() => {
+          const btn = document.getElementById('copyShareLinkBtn');
+          const orig = btn.textContent;
+          btn.textContent = 'Copied! ✓';
+          setTimeout(() => { btn.textContent = orig; }, 2000);
+        });
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       let celebrationId = urlParams.get('id');
@@ -727,10 +747,10 @@
         pubBtn.className = 'btn btn-secondary btn-sm';
       }
 
-      const shareUrl = `${window.location.origin}${window.location.pathname.replace('editor.html', 'preview.html')}?id=${celebration.id}`;
+      const shareUrl = window.CelebrationShare ? window.CelebrationShare.generateShareUrl(celebration) : `${window.location.origin}${window.location.pathname.replace('editor.html', 'preview.html')}?id=${celebration.id}`;
       document.getElementById('shareLinkInput').value = shareUrl;
       document.getElementById('copyShareLinkBtn').dataset.url = shareUrl;
-      document.getElementById('btnFullscreenPreview').href = `preview.html?id=${celebration.id}`;
+      document.getElementById('btnFullscreenPreview').href = shareUrl;
 
       // Populate themes in Tab 4
       const themesContainer = document.getElementById('themesGrid');
