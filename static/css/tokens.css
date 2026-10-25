@@ -233,6 +233,21 @@
   --bg-surface-elevated: #242445;
 }
 
+/* 11. Aurelia Celestial (StitchMCP Haute Couture 3D Theme) */
+[data-theme="aurelia_celestial"] {
+  --theme-primary: #f5b041;
+  --theme-primary-hover: #ffd700;
+  --theme-primary-alpha: rgba(245, 176, 65, 0.22);
+  --theme-accent: #9d4edd;
+  --theme-glow: rgba(245, 176, 65, 0.45);
+  --bg-primary: #060814;
+  --bg-secondary: #0c102b;
+  --bg-surface: #10131f;
+  --bg-surface-elevated: #191b28;
+  --bg-surface-glass: rgba(12, 16, 43, 0.65);
+  --bg-surface-glass-border: rgba(245, 176, 65, 0.22);
+}
+
 /* ==========================================================================
    CLASSIC STUDIO PALETTES (Backwards Compatibility)
    ========================================================================== */

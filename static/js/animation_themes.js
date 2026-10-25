@@ -1,4 +1,20 @@
 window.ANIMATION_THEMES = {
+  "aurelia_celestial": {
+    "id": "aurelia_celestial",
+    "name": "Aurelia Celestial",
+    "category": "luxury",
+    "image": "01_cosmic_galaxy.jpg",
+    "static_url": "images/gallery/50_50_celestial_noir_theme.jpg",
+    "description": "Ultra-luxurious Haute Couture atelier: deep cosmic obsidian foundation, molten imperial gold, and ethereal violet starlight.",
+    "primary_color": "#f5b041",
+    "secondary_color": "#9d4edd",
+    "accent_color": "#ffd700",
+    "glow_color": "rgba(245, 176, 65, 0.45)",
+    "particle_type": "stardust",
+    "particle_speed": 0.7,
+    "atmosphere_type": "cosmic",
+    "card_overlay": "linear-gradient(135deg, rgba(12, 16, 43, 0.75) 0%, rgba(6, 8, 20, 0.9) 100%)"
+  },
   "cosmic_galaxy": {
     "id": "cosmic_galaxy",
     "name": "Cosmic Galaxy",
