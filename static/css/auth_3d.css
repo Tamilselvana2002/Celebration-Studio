@@ -711,3 +711,91 @@ body.auth-body {
     padding: 10px 14px 18px;
   }
 }
+
+
+/* Animated Mode Switcher Tabs (Sign In / Create Account) */
+.auth-mode-tabs {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 4px;
+  margin: 16px auto 18px;
+  max-width: 290px;
+  position: relative;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.auth-mode-tab {
+  flex: 1;
+  text-align: center;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--auth-muted-c);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  z-index: 2;
+}
+
+.auth-mode-tab:hover {
+  color: #ffffff;
+}
+
+.auth-mode-tab.active {
+  background: var(--auth-btn-grad);
+  color: #ffffff;
+  box-shadow: 0 4px 18px var(--auth-accent-glow);
+  font-weight: 700;
+}
+
+/* 4-Segment Live Password Strength Visualizer */
+.auth-strength-meter-wrap {
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+
+.auth-strength-bars {
+  display: flex;
+  gap: 6px;
+  height: 4px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.auth-strength-segment {
+  flex: 1;
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  opacity: 0.35;
+  transition: all 0.3s ease;
+}
+
+.auth-strength-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+}
+
+.auth-strength-hint {
+  color: var(--auth-muted-c);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.auth-strength-badge {
+  font-weight: 700;
+  font-family: monospace;
+  transition: color 0.3s ease;
+}

@@ -91,6 +91,19 @@
       lightFill: 0xec4899,
       lightAmb: 0xe2e8f0
     },
+    aurelia_celestial: {
+      name: '⚜️ Aurelia Celestial',
+      bgImg: 'static/images/gallery/50_50_celestial_noir_theme.jpg',
+      primary: '#f5b041',
+      secondary: '#9d4edd',
+      glow: 'rgba(245, 176, 65, 0.45)',
+      cardBg: 'rgba(12, 16, 43, 0.78)',
+      cardBorder: 'rgba(245, 176, 65, 0.42)',
+      btnGrad: 'linear-gradient(135deg, #f5b041 0%, #ffd700 50%, #9d4edd 100%)',
+      lightKey: 0xf5b041,
+      lightFill: 0x9d4edd,
+      lightAmb: 0x0c102b
+    },
     midnight_cinema: {
       name: '🏛️ Midnight Cinema',
       bgImg: 'static/images/auth/49_49_midnight_cinema_theme.jpg',
@@ -162,6 +175,7 @@
     buildConstellation3D();
     buildCrystal3D();
     buildGold3D();
+    buildAurelia3D();
 
     // D. Resize & Mouse
     window.addEventListener('resize', onWindowResize, false);
@@ -378,6 +392,83 @@
     themeMeshGroups.golden_lotus = { group: grp, goldPetals };
   }
 
+  // --- Theme 6: Aurelia Celestial Haute Couture 3D Elements ---
+  function buildAurelia3D() {
+    const grp = new THREE.Group();
+    grp.visible = false;
+    scene.add(grp);
+
+    // 1. Concentric Golden Orbital Rings with cinematic tilt
+    const ringMat = new THREE.MeshStandardMaterial({
+      color: 0xf5b041,
+      emissive: 0xd97706,
+      emissiveIntensity: 0.55,
+      roughness: 0.2,
+      metalness: 0.95
+    });
+
+    const ring1Geo = new THREE.TorusGeometry(8.5, 0.22, 24, 100);
+    const ring1 = new THREE.Mesh(ring1Geo, ringMat);
+    ring1.rotation.x = Math.PI * 0.35;
+    grp.add(ring1);
+
+    const ring2Geo = new THREE.TorusGeometry(6.8, 0.16, 20, 80);
+    const ring2 = new THREE.Mesh(ring2Geo, ringMat);
+    ring2.rotation.y = Math.PI * 0.4;
+    grp.add(ring2);
+
+    // 2. Central Faceted Crystal Starhedron Core & Rotating Wireframe Cage
+    const coreGeo = new THREE.IcosahedronGeometry(2.3, 0);
+    const coreMat = new THREE.MeshStandardMaterial({
+      color: 0xffd700,
+      emissive: 0x9d4edd,
+      emissiveIntensity: 0.65,
+      roughness: 0.15,
+      metalness: 0.85,
+      flatShading: true
+    });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    grp.add(core);
+
+    const wireGeo = new THREE.IcosahedronGeometry(2.65, 0);
+    const wireMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.4
+    });
+    const cage = new THREE.Mesh(wireGeo, wireMat);
+    grp.add(cage);
+
+    // 3. Stardust Vortex
+    const count = 800;
+    const pGeo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    const cGold = new THREE.Color(0xf5b041);
+    const cViolet = new THREE.Color(0x9d4edd);
+
+    for (let i = 0; i < count; i++) {
+      const r = 1.8 + Math.random() * 8.0;
+      const a = Math.random() * Math.PI * 2;
+      pos[i * 3] = Math.cos(a) * r;
+      pos[i * 3 + 1] = Math.sin(a) * r;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 5.5;
+
+      const c = Math.random() < 0.65 ? cGold : cViolet;
+      col[i * 3] = c.r;
+      col[i * 3 + 1] = c.g;
+      col[i * 3 + 2] = c.b;
+    }
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    pGeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const pMat = new THREE.PointsMaterial({ size: 0.14, vertexColors: true, transparent: true, opacity: 0.88, blending: THREE.AdditiveBlending });
+    const stardust = new THREE.Points(pGeo, pMat);
+    grp.add(stardust);
+
+    themeMeshGroups.aurelia_celestial = { group: grp, ring1, ring2, core, cage, stardust };
+  }
+
   // =========================================================================
   // 2. Interactive 3D Card Tilt with Specular Glare (Screens 4, 6)
   // =========================================================================
@@ -495,6 +586,52 @@
     }
   }
 
+  function evaluatePasswordStrength(password) {
+    if (!password) {
+      return { score: 0, label: 'Enter password', color: 'rgba(255,255,255,0.2)' };
+    }
+    let score = 0;
+    if (password.length >= 6) score++;
+    if (password.length >= 10) score++;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+    if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) score++;
+
+    const levels = [
+      { score: 1, label: 'Weak', color: '#ef4444' },
+      { score: 2, label: 'Fair', color: '#f59e0b' },
+      { score: 3, label: 'Strong', color: '#10b981' },
+      { score: 4, label: 'Celestial ⚜️', color: '#ffd700' }
+    ];
+
+    const res = levels[score - 1] || levels[0];
+    return { score, label: res.label, color: res.color };
+  }
+
+  function updateRegPasswordStrength() {
+    const input = document.getElementById('regPassword');
+    const pw = input ? input.value : '';
+    const { score, label, color } = evaluatePasswordStrength(pw);
+    const badge = document.getElementById('pwStrengthBadge');
+    if (badge) {
+      badge.textContent = label;
+      badge.style.color = color;
+    }
+    for (let i = 1; i <= 4; i++) {
+      const bar = document.getElementById('pwBar' + i);
+      if (bar) {
+        if (i <= score) {
+          bar.style.backgroundColor = color;
+          bar.style.boxShadow = '0 0 8px ' + color;
+          bar.style.opacity = '1';
+        } else {
+          bar.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
+          bar.style.boxShadow = 'none';
+          bar.style.opacity = '0.35';
+        }
+      }
+    }
+  }
+
   // =========================================================================
   // 4. All 24 View States & Transitions
   // =========================================================================
@@ -503,7 +640,20 @@
     const target = document.getElementById(`view-${viewId}`) || document.getElementById('view-login');
     if (target) {
       target.classList.add('active');
+      if (typeof gsap !== 'undefined') {
+        gsap.fromTo(target, { opacity: 0, y: 12, scale: 0.98 }, { opacity: 1, y: 0, scale: 1, duration: 0.32, ease: 'power2.out' });
+      }
     }
+
+    // Sync mode tab buttons
+    const tabLogin = document.getElementById('tabBtnLogin');
+    const tabRegister = document.getElementById('tabBtnRegister');
+    const tabsContainer = document.getElementById('authModeTabs');
+    if (tabsContainer) {
+      tabsContainer.style.display = (viewId === 'login' || viewId === 'register') ? 'flex' : 'none';
+    }
+    if (tabLogin) tabLogin.classList.toggle('active', viewId === 'login');
+    if (tabRegister) tabRegister.classList.toggle('active', viewId === 'register');
 
     // Dynamic Titles
     const titleEl = document.getElementById('authCardTitle');
@@ -638,6 +788,19 @@
         p.rotation.y += 0.005;
         p.position.y = p.userData.origY + Math.sin(time + p.userData.seed) * 0.35;
       });
+    } else if (currentThemeKey === 'aurelia_celestial' && themeMeshGroups.aurelia_celestial) {
+      const g = themeMeshGroups.aurelia_celestial;
+      if (g.ring1) g.ring1.rotation.z += 0.005;
+      if (g.ring2) g.ring2.rotation.x += 0.004;
+      if (g.core) {
+        g.core.rotation.y += 0.008;
+        g.core.rotation.x += 0.004;
+      }
+      if (g.cage) {
+        g.cage.rotation.y -= 0.006;
+        g.cage.rotation.z += 0.003;
+      }
+      if (g.stardust) g.stardust.rotation.z += 0.002;
     }
 
     renderer.render(scene, camera);
@@ -649,6 +812,8 @@
     pickRandomTheme,
     showView,
     triggerConfetti,
+    evaluatePasswordStrength,
+    updateRegPasswordStrength,
     getTheme: () => currentThemeKey
   };
 

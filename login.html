@@ -60,6 +60,12 @@
           <h1 class="auth-title-primary" id="authCardTitle">Welcome Back</h1>
           <p class="auth-subtitle" id="authCardSubtitle">Sign in to continue</p>
         </div>
+        <!-- Mode Switcher Tabs (Sign In / Create Account) -->
+        <div class="auth-mode-tabs" id="authModeTabs">
+          <button type="button" class="auth-mode-tab active" id="tabBtnLogin" onclick="window.Auth3D.showView('login')">Sign In</button>
+          <button type="button" class="auth-mode-tab " id="tabBtnRegister" onclick="window.Auth3D.showView('register')">Create Account</button>
+        </div>
+
 
         <!-- Dynamic Auth Alert Banner (Errors / Info) -->
         <div class="auth-alert-banner" id="authAlertBanner" style="display: none;">
@@ -178,13 +184,25 @@
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <input type="password" id="regPassword" required class="auth-input-field" placeholder="Password" value="dream2026">
+                <input type="password" id="regPassword" required oninput="window.Auth3D.updateRegPasswordStrength()" class="auth-input-field" placeholder="Password" value="dream2026">
                 <button type="button" class="auth-pw-toggle" onclick="togglePasswordVisibility('regPassword', this)">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                     <circle cx="12" cy="12" r="3"></circle>
                   </svg>
                 </button>
+              </div>
+            </div>
+            <div class="auth-strength-meter-wrap" id="regPasswordStrengthWrap">
+              <div class="auth-strength-bars">
+                <span class="auth-strength-segment" id="pwBar1"></span>
+                <span class="auth-strength-segment" id="pwBar2"></span>
+                <span class="auth-strength-segment" id="pwBar3"></span>
+                <span class="auth-strength-segment" id="pwBar4"></span>
+              </div>
+              <div class="auth-strength-meta">
+                <span class="auth-strength-hint">Entropy Security:</span>
+                <span class="auth-strength-badge" id="pwStrengthBadge">Celestial ⚜️</span>
               </div>
             </div>
 
@@ -367,7 +385,8 @@
       <span class="auth-theme-chip" data-theme="crystal_cavern" onclick="window.Auth3D.applyTheme('crystal_cavern')">💎 3D Crystal</span>
       <span class="auth-theme-chip" data-theme="golden_lotus" onclick="window.Auth3D.applyTheme('golden_lotus')">👑 Golden Lotus</span>
       <span class="auth-theme-chip" data-theme="ethereal_dawn" onclick="window.Auth3D.applyTheme('ethereal_dawn')">☁️ Ethereal Dawn</span>
-      <span class="auth-theme-chip" data-theme="midnight_cinema" onclick="window.Auth3D.applyTheme('midnight_cinema')">🏛️ Midnight Cinema</span>
+      <span class="auth-theme-chip" data-theme="aurelia_celestial" onclick="window.Auth3D.applyTheme('aurelia_celestial')">⚜️ Aurelia Celestial</span>
+    <span class="auth-theme-chip" data-theme="midnight_cinema" onclick="window.Auth3D.applyTheme('midnight_cinema')">🏛️ Midnight Cinema</span>
     </div>
   </footer>
 
