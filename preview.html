@@ -15,12 +15,60 @@
   <!-- Dynamic Mount for Stage Viewport -->
   <div id="stageMount"></div>
 
-  <!-- Fullscreen Floating Gift Card & QR Trigger (Only outside iframe) -->
-  <div id="previewTopBar" style="display: none; position: fixed; top: 16px; right: 16px; z-index: 99999;">
-    <button type="button" onclick="CelebrationShare.openShareModal(window.__currentCelebration)" style="background: rgba(14,20,42,0.85); border: 1px solid rgba(251,191,36,0.5); color: #fbbf24; border-radius: 999px; padding: 7px 16px; font-size: 0.8rem; font-weight: 700; cursor: pointer; backdrop-filter: blur(16px); box-shadow: 0 4px 20px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 6px;">
-      <span>🎁 Gift Card &amp; QR</span>
-    </button>
+  <!-- Fullscreen Floating Controls Bar (Only outside iframe) -->
+  <div id="previewTopBar" style="display: none; position: fixed; top: 16px; left: 16px; right: 16px; z-index: 99999; pointer-events: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div style="pointer-events: auto; display: flex; gap: 8px;">
+        <a href="dashboard.html" style="background: rgba(14,20,42,0.85); border: 1px solid rgba(255,255,255,0.2); color: #fdf2f8; border-radius: 999px; padding: 7px 16px; font-size: 0.8rem; font-weight: 600; text-decoration: none; backdrop-filter: blur(16px); box-shadow: 0 4px 20px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 6px;">
+          <span>← Studio Dashboard</span>
+        </a>
+      </div>
+
+      <div style="pointer-events: auto; display: flex; gap: 8px;">
+        <button type="button" onclick="shufflePreviewTheme()" style="background: rgba(14,20,42,0.85); border: 1px solid rgba(56,225,255,0.4); color: #38e1ff; border-radius: 999px; padding: 7px 16px; font-size: 0.8rem; font-weight: 700; cursor: pointer; backdrop-filter: blur(16px); box-shadow: 0 4px 20px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 6px;">
+          <span>🎲 Shuffle Atmosphere</span>
+        </button>
+        <button type="button" onclick="CelebrationShare.openShareModal(window.__currentCelebration)" style="background: rgba(14,20,42,0.85); border: 1px solid rgba(251,191,36,0.5); color: #fbbf24; border-radius: 999px; padding: 7px 16px; font-size: 0.8rem; font-weight: 700; cursor: pointer; backdrop-filter: blur(16px); box-shadow: 0 4px 20px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 6px;">
+          <span>🎁 Gift Card &amp; QR</span>
+        </button>
+      </div>
+    </div>
   </div>
+
+  <!-- Bottom Floating 3D Atmosphere Dock -->
+  <div id="previewThemeDock" style="display: none; position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 99999; background: rgba(14,20,42,0.85); border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 6px 14px; backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.7); display: flex; align-items: center; gap: 6px; overflow-x: auto; max-width: 94vw;">
+    <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-right: 4px; white-space: nowrap;">3D Atmosphere:</span>
+    <button type="button" class="preview-theme-pill active" onclick="applyPreviewTheme('cosmic_portal', this)">🌌 Cosmic</button>
+    <button type="button" class="preview-theme-pill" onclick="applyPreviewTheme('sculptural_gold', this)">👑 Gold</button>
+    <button type="button" class="preview-theme-pill" onclick="applyPreviewTheme('dreamglass', this)">💎 Dreamglass</button>
+    <button type="button" class="preview-theme-pill" onclick="applyPreviewTheme('romantic_aurora', this)">🪷 Aurora</button>
+    <button type="button" class="preview-theme-pill" onclick="applyPreviewTheme('cosmic_nebula', this)">✨ Nebula</button>
+    <button type="button" class="preview-theme-pill" onclick="applyPreviewTheme('ivory_memory', this)">☁️ Atelier</button>
+    <button type="button" class="preview-theme-pill" onclick="applyPreviewTheme('crystal_garden', this)">🌿 Crystal</button>
+    <button type="button" class="preview-theme-pill" onclick="applyPreviewTheme('midnight_cinema', this)">🏛️ Cinema</button>
+  </div>
+
+  <style>
+    .preview-theme-pill {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .preview-theme-pill:hover,
+    .preview-theme-pill.active {
+      background: rgba(56, 225, 255, 0.2);
+      border-color: rgba(56, 225, 255, 0.6);
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(56, 225, 255, 0.3);
+    }
+  </style>
 
   <!-- Vendor Animation Libraries -->
   <script src="static/vendor/gsap.min.js"></script>
@@ -45,9 +93,49 @@
   <script type="module" src="static/js/orchestrator.js"></script>
 
   <script>
+    const PREVIEW_THEMES = [
+      'cosmic_portal',
+      'sculptural_gold',
+      'dreamglass',
+      'romantic_aurora',
+      'cosmic_nebula',
+      'ivory_memory',
+      'crystal_garden',
+      'midnight_cinema'
+    ];
+
+    function applyPreviewTheme(themeId, btn) {
+      document.documentElement.setAttribute('data-theme', themeId);
+      const viewport = document.querySelector('.celebration-viewport');
+      if (viewport) viewport.setAttribute('data-theme', themeId);
+
+      document.querySelectorAll('.preview-theme-pill').forEach(b => {
+        b.classList.remove('active');
+      });
+      if (btn) btn.classList.add('active');
+
+      // Update background theme engine if present
+      if (window.CelebrationAnimationEngine && window.MASTER_THEMES) {
+        const themeConfig = window.MASTER_THEMES[themeId];
+        if (themeConfig) {
+          window.CelebrationAnimationEngine.applyThemeCSSVariables(themeConfig);
+        }
+      }
+    }
+
+    function shufflePreviewTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const filtered = PREVIEW_THEMES.filter(t => t !== current);
+      const random = filtered[Math.floor(Math.random() * filtered.length)];
+      const targetBtn = Array.from(document.querySelectorAll('.preview-theme-pill')).find(b => b.textContent.toLowerCase().includes(random.split('_')[0]));
+      applyPreviewTheme(random, targetBtn);
+    }
+
     if (window.self === window.top) {
       const topBar = document.getElementById('previewTopBar');
       if (topBar) topBar.style.display = 'block';
+      const themeDock = document.getElementById('previewThemeDock');
+      if (themeDock) themeDock.style.display = 'flex';
     }
   </script>
 </body>

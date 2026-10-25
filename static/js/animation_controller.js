@@ -374,19 +374,47 @@ export class AnimationController {
 
     switch (effect) {
       case 'screen.light_sweep':
+      case 'light_sweep':
         this.transitionLightSweep(oldScene, newScene, onComplete);
+        break;
+      case 'screen.portal_passage':
+      case 'screen.portal_open':
+      case 'portal_passage':
+        this.transitionPortalOpen(oldScene, newScene, onComplete);
+        break;
+      case 'screen.sculptural_unfold':
+      case 'sculptural_unfold':
+        this.transitionSculpturalUnfold(oldScene, newScene, onComplete);
+        break;
+      case 'screen.particle_dissolve':
+      case 'particle_dissolve':
+        this.transitionParticleDissolve(oldScene, newScene, onComplete);
+        break;
+      case 'screen.camera_dolly':
+      case 'camera_dolly':
+        this.transitionCameraDolly(oldScene, newScene, onComplete);
+        break;
+      case 'screen.page_turn':
+      case 'page_turn':
+        this.transitionPageTurn(oldScene, newScene, onComplete);
+        break;
+      case 'screen.constellation_assemble':
+      case 'constellation_assemble':
+        this.transitionConstellationAssemble(oldScene, newScene, onComplete);
+        break;
+      case 'screen.petal_curtain':
+      case 'petal_curtain':
+        this.transitionPetalCurtain(oldScene, newScene, onComplete);
+        break;
+      case 'screen.crystal_bloom':
+      case 'crystal_bloom':
+        this.transitionCrystalBloom(oldScene, newScene, onComplete);
         break;
       case 'screen.liquid_silk':
         this.transitionLiquidSilk(oldScene, newScene, onComplete);
         break;
       case 'screen.universe_warp':
         this.transitionUniverseWarp(oldScene, newScene, onComplete);
-        break;
-      case 'screen.petal_curtain':
-        this.transitionPetalCurtain(oldScene, newScene, onComplete);
-        break;
-      case 'screen.portal_open':
-        this.transitionPortalOpen(oldScene, newScene, onComplete);
         break;
       case 'screen.memory_film':
         this.transitionMemoryFilm(oldScene, newScene, onComplete);
@@ -586,6 +614,200 @@ export class AnimationController {
       }
     });
     tl.to(shutter, { opacity: 0, duration: 0.45, ease: 'power2.out' });
+  }
+
+  // 7. Sculptural Unfold (Screen 27: Geometric 3D Facets Unfolding)
+  transitionSculpturalUnfold(oldScene, newScene, onComplete) {
+    const overlay = document.createElement('div');
+    overlay.className = 'fx-sculptural-unfold-wrap';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;pointer-events:none;perspective:1000px;display:flex;align-items:center;justify-content:center;';
+    
+    for (let i = 0; i < 6; i++) {
+      const facet = document.createElement('div');
+      facet.className = 'fx-sculptural-facet';
+      facet.style.cssText = `position:absolute;width:60vw;height:60vh;background:linear-gradient(135deg,rgba(212,175,55,0.4),rgba(14,20,42,0.8));border:1px solid rgba(251,191,36,0.6);backdrop-filter:blur(12px);transform-style:preserve-3d;transform:rotateX(${i*30}deg) rotateY(${i*45}deg);`;
+      overlay.appendChild(facet);
+    }
+    this.viewport.appendChild(overlay);
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        overlay.remove();
+        if (onComplete) onComplete();
+      }
+    });
+
+    tl.fromTo(overlay.children, 
+      { scale: 0, opacity: 0, rotateZ: 0 },
+      { scale: 1.8, opacity: 1, rotateZ: 45, stagger: 0.05, duration: 0.8, ease: 'power2.inOut' }
+    );
+
+    tl.add(() => {
+      if (oldScene) oldScene.classList.remove('scene-active');
+      if (newScene) {
+        newScene.classList.add('scene-active');
+        this.animateSceneEntrance(newScene);
+      }
+    }, 0.4);
+
+    tl.to(overlay.children, { scale: 3.5, opacity: 0, duration: 0.5, ease: 'power2.out' }, '-=0.2');
+  }
+
+  // 8. Particle Dissolve (Screen 28: Golden Dust Disintegration & Reassembly)
+  transitionParticleDissolve(oldScene, newScene, onComplete) {
+    if (window.confetti) {
+      window.confetti({
+        particleCount: 80,
+        spread: 100,
+        origin: { y: 0.5 },
+        colors: ['#fbbf24', '#f59e0b', '#38e1ff', '#ffffff']
+      });
+    }
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        if (onComplete) onComplete();
+      }
+    });
+
+    tl.to(oldScene, { opacity: 0, scale: 0.95, filter: 'blur(10px)', duration: 0.45, ease: 'power2.in' });
+    tl.add(() => {
+      if (oldScene) {
+        oldScene.classList.remove('scene-active');
+        gsap.set(oldScene, { scale: 1, filter: 'none' });
+      }
+      if (newScene) {
+        newScene.classList.add('scene-active');
+        this.animateSceneEntrance(newScene);
+      }
+    });
+    tl.fromTo(newScene, 
+      { opacity: 0, scale: 1.05, filter: 'blur(10px)' },
+      { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.65, ease: 'power2.out' }
+    );
+  }
+
+  // 9. Camera Dolly (Screen 29: Z-Axis Camera Plunge into Scene)
+  transitionCameraDolly(oldScene, newScene, onComplete) {
+    const tl = gsap.timeline({
+      onComplete: () => {
+        if (onComplete) onComplete();
+      }
+    });
+
+    tl.to(oldScene, { scale: 2.2, opacity: 0, duration: 0.6, ease: 'power3.in' });
+    tl.add(() => {
+      if (oldScene) {
+        oldScene.classList.remove('scene-active');
+        gsap.set(oldScene, { scale: 1 });
+      }
+      if (newScene) {
+        newScene.classList.add('scene-active');
+        this.animateSceneEntrance(newScene);
+      }
+    });
+    tl.fromTo(newScene, 
+      { scale: 0.4, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.75, ease: 'power3.out' }
+    );
+  }
+
+  // 10. Page Turn (Screen 30: 3D Curved Parchment Flip)
+  transitionPageTurn(oldScene, newScene, onComplete) {
+    const tl = gsap.timeline({
+      onComplete: () => {
+        if (onComplete) onComplete();
+      }
+    });
+
+    tl.to(oldScene, { 
+      rotateY: -90, 
+      transformOrigin: 'left center', 
+      opacity: 0.3, 
+      duration: 0.55, 
+      ease: 'power2.in' 
+    });
+
+    tl.add(() => {
+      if (oldScene) {
+        oldScene.classList.remove('scene-active');
+        gsap.set(oldScene, { rotateY: 0, opacity: 1 });
+      }
+      if (newScene) {
+        newScene.classList.add('scene-active');
+        this.animateSceneEntrance(newScene);
+      }
+    });
+
+    tl.fromTo(newScene, 
+      { rotateY: 90, transformOrigin: 'right center', opacity: 0.3 },
+      { rotateY: 0, opacity: 1, duration: 0.6, ease: 'power2.out' }
+    );
+  }
+
+  // 11. Constellation Assemble (Screen 31: Starlight Lines Connecting)
+  transitionConstellationAssemble(oldScene, newScene, onComplete) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;pointer-events:none;background:rgba(3,7,18,0.7);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `
+      <svg width="300" height="300" viewBox="0 0 100 100">
+        <polygon points="50,15 85,40 70,85 30,85 15,40" fill="none" stroke="#38e1ff" stroke-width="1.5" stroke-dasharray="200" stroke-dashoffset="200" id="constelPoly"></polygon>
+        <circle cx="50" cy="15" r="3" fill="#ffffff"></circle>
+        <circle cx="85" cy="40" r="3" fill="#ffffff"></circle>
+        <circle cx="70" cy="85" r="3" fill="#ffffff"></circle>
+        <circle cx="30" cy="85" r="3" fill="#ffffff"></circle>
+        <circle cx="15" cy="40" r="3" fill="#ffffff"></circle>
+      </svg>
+    `;
+    this.viewport.appendChild(overlay);
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        overlay.remove();
+        if (onComplete) onComplete();
+      }
+    });
+
+    const poly = overlay.querySelector('#constelPoly');
+    tl.to(oldScene, { opacity: 0, duration: 0.35 });
+    tl.to(poly, { strokeDashoffset: 0, duration: 0.6, ease: 'power2.inOut' });
+
+    tl.add(() => {
+      if (oldScene) oldScene.classList.remove('scene-active');
+      if (newScene) {
+        newScene.classList.add('scene-active');
+        this.animateSceneEntrance(newScene);
+      }
+    });
+
+    tl.to(overlay, { opacity: 0, duration: 0.4, ease: 'power2.out' });
+  }
+
+  // 12. Crystal Bloom (Screen 33: Refractive Prismatic Shards)
+  transitionCrystalBloom(oldScene, newScene, onComplete) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;pointer-events:none;background:radial-gradient(circle,rgba(56,225,255,0.4) 0%,rgba(168,85,247,0.3) 50%,transparent 80%);backdrop-filter:blur(16px);';
+    this.viewport.appendChild(overlay);
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        overlay.remove();
+        if (onComplete) onComplete();
+      }
+    });
+
+    tl.fromTo(overlay, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1.2, duration: 0.5, ease: 'power2.inOut' });
+    tl.to(oldScene, { opacity: 0, duration: 0.3 }, '-=0.2');
+
+    tl.add(() => {
+      if (oldScene) oldScene.classList.remove('scene-active');
+      if (newScene) {
+        newScene.classList.add('scene-active');
+        this.animateSceneEntrance(newScene);
+      }
+    });
+
+    tl.to(overlay, { opacity: 0, scale: 2.0, duration: 0.5, ease: 'power2.out' });
   }
 
   // -------------------------------------------------------------

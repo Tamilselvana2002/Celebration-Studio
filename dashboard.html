@@ -378,22 +378,32 @@
       grid.style.display = 'grid';
       emptyState.style.display = 'none';
 
-      // Default image mapping
+      // High-resolution thematic artwork mapping
       const themeThumbs = {
-        sculptural_gold: 'static/images/animation-themes/03_golden_bokeh.jpg',
+        sculptural_gold: 'static/images/gallery/02_02_sculptural_gold_theme.jpg',
+        celestial_noir: 'static/images/gallery/01_01_celestial_noir_theme.jpg',
+        dreamglass: 'static/images/gallery/03_03_dreamglass_theme.jpg',
+        romantic_aurora: 'static/images/gallery/04_04_romantic_aurora_theme.jpg',
+        cosmic_nebula: 'static/images/gallery/05_05_cosmic_nebula_theme.jpg',
         cosmic_galaxy: 'static/images/animation-themes/01_cosmic_galaxy.jpg',
+        ivory_atelier: 'static/images/gallery/06_06_ivory_memory_atelier_theme.jpg',
+        ivory_memory: 'static/images/gallery/06_06_ivory_memory_atelier_theme.jpg',
+        crystal_garden: 'static/images/gallery/07_07_crystal_garden_theme.jpg',
+        midnight_cinema: 'static/images/gallery/08_08_midnight_cinema_theme.jpg',
         emerald_aurora: 'static/images/animation-themes/02_emerald_aurora.jpg',
-        romantic_rose: 'static/images/animation-themes/09_velvet_roses.jpg'
+        romantic_rose: 'static/images/animation-themes/09_velvet_roses.jpg',
+        golden_cinema: 'static/images/gallery/09_09_template_gallery_cinematic.jpg'
       };
 
       grid.innerHTML = filtered.map(c => {
-        const thumb = themeThumbs[c.theme_id] || 'static/images/animation-themes/01_cosmic_galaxy.jpg';
+        const thumb = themeThumbs[c.theme_id] || themeThumbs[c.template_id] || 'static/images/gallery/09_09_template_gallery_cinematic.jpg';
         const isLive = c.status === 'published';
         const sceneCount = (c.scenes || []).length;
         const views = c.view_count || 0;
 
         return `
           <article class="studio-project-card" data-celebration-id="${c.id}">
+            <div class="specular-glare-overlay"></div>
             <!-- Artwork Banner -->
             <div class="card-artwork-banner">
               <img src="${thumb}" alt="${c.title}" class="card-artwork-img" loading="lazy">

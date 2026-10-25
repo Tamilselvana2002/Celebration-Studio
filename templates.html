@@ -81,6 +81,98 @@
       border-color: rgba(56, 225, 255, 0.6);
       box-shadow: 0 18px 40px rgba(0,0,0,0.7), 0 0 25px rgba(56, 225, 255, 0.2);
     }
+
+    /* Enhanced 3D Artwork Thumbnail */
+    .template-thumb-wrap {
+      height: 190px;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .template-card-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .template-card-item:hover .template-card-thumb {
+      transform: scale(1.08);
+    }
+
+    .template-thumb-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(14, 20, 34, 0.2) 0%, rgba(14, 20, 34, 0.85) 100%);
+      display: flex;
+      align-items: flex-end;
+      padding: 14px 16px;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    /* Template Detail Modal */
+    .template-detail-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .template-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .template-modal-dialog {
+      position: relative;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(56, 225, 255, 0.3);
+      border-radius: 24px;
+      max-width: 860px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 225, 255, 0.2);
+      animation: modalPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalPopIn {
+      from { opacity: 0; transform: scale(0.92) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .template-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s ease;
+    }
+
+    .template-modal-close:hover {
+      background: rgba(239, 68, 68, 0.8);
+      transform: rotate(90deg);
+    }
   </style>
 </head>
 <body data-intensity="high">
@@ -196,6 +288,15 @@
     </div>
   </main>
 
+  <!-- Interactive 3D Template Detail Modal (Screen 24) -->
+  <div id="templateDetailModal" class="template-detail-modal" style="display: none;">
+    <div class="template-modal-backdrop" onclick="closeTemplateModal()"></div>
+    <div class="template-modal-dialog">
+      <button type="button" class="template-modal-close" onclick="closeTemplateModal()" aria-label="Close Modal">✕</button>
+      <div class="template-modal-body" id="templateModalContent"></div>
+    </div>
+  </div>
+
   <!-- Vendor Scripts -->
   <script src="static/vendor/gsap.min.js"></script>
 
@@ -208,6 +309,33 @@
 
   <!-- Template Gallery Controller -->
   <script>
+    const TEMPLATE_ARTWORK = {
+      golden_cinema: 'static/images/gallery/09_09_template_gallery_cinematic.jpg',
+      infinite_corridor: 'static/images/gallery/20_20_memory_corridor.jpg',
+      grand_reveal: 'static/images/gallery/10_10_template_gallery_luxury.jpg',
+      storybook_motion: 'static/images/gallery/14_14_template_gallery_memory.jpg',
+      time_capsule: 'static/images/gallery/18_18_memory_timeline.jpg',
+      living_portrait: 'static/images/gallery/24_24_cinematic_theatre_scene.jpg',
+      aurora_two_hearts: 'static/images/gallery/12_12_template_gallery_romantic.jpg',
+      floating_rose_garden: 'static/images/gallery/15_15_template_gallery_floral.jpg',
+      moonlit_love_letter: 'static/images/gallery/28_letter_reveal.jpg',
+      glass_heart_universe: 'static/images/gallery/11_11_template_gallery_fantasy.jpg',
+      eternal_orbit: 'static/images/gallery/25_25_constellation_interaction.jpg',
+      rose_petal_symphony: 'static/images/gallery/32_32_transition_petal_curtain.jpg',
+      polaroid_atelier: 'static/images/gallery/26_floating_photo_gallery.jpg',
+      childhood_constellation: 'static/images/gallery/27_interactive_star_map.jpg',
+      family_universe: 'static/images/gallery/19_19_memory_photo_wall.jpg',
+      golden_album: 'static/images/gallery/22_22_polaroid_memory_scene.jpg',
+      chapter_book: 'static/images/gallery/30_30_transition_page_turn.jpg',
+      thousand_moments: 'static/images/gallery/17_17_memory_lane_gallery.jpg',
+      sculptural_gift: 'static/images/gallery/21_21_secret_gift_closed.jpg',
+      crystal_flower: 'static/images/gallery/28_28_gift_flower_animation.jpg',
+      origami_universe: 'static/images/gallery/27_27_transition_sculptural_unfold.jpg',
+      secret_letter_chamber: 'static/images/gallery/23_23_revealed_letter.jpg',
+      interactive_starmap: 'static/images/gallery/13_13_template_gallery_cosmic.jpg',
+      living_constellation: 'static/images/gallery/21_21_cosmic_universe_scene.jpg'
+    };
+
     let currentCategory = 'all';
 
     function setCategory(catId) {
@@ -249,47 +377,46 @@
         return matchesCategory && matchesQuery;
       });
 
-      grid.innerHTML = items.map(t => `
+      grid.innerHTML = items.map(t => {
+        const artImg = TEMPLATE_ARTWORK[t.id] || 'static/images/animation-themes/01_cosmic_galaxy.jpg';
+        return `
         <div class="template-card-item" data-template-id="${t.id}" data-category="${t.category}">
-          <!-- Visual Thumbnail Header -->
-          <div style="
-            height: 165px;
-            background: ${t.preview_gradient || 'linear-gradient(135deg, #1e1302 0%, #d97706 100%)'};
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          ">
-            <span style="font-size: 3.5rem; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.6));">
-              ${t.icon || '✨'}
-            </span>
-            <span style="
-              position: absolute;
-              top: 10px;
-              right: 12px;
-              font-size: 0.72rem;
-              font-weight: 700;
-              letter-spacing: 0.05em;
-              text-transform: uppercase;
-              background: rgba(0, 0, 0, 0.5);
-              backdrop-filter: blur(8px);
-              padding: 4px 10px;
-              border-radius: 999px;
-              border: 1px solid rgba(255, 255, 255, 0.15);
-              color: #f1f5f9;
-            ">
-              ${(t.category || 'Luxury').toUpperCase()}
-            </span>
+          <div class="specular-glare-overlay"></div>
+
+          <!-- Thematic 3D Artwork Thumbnail -->
+          <div class="template-thumb-wrap">
+            <img src="${artImg}" alt="${t.name}" class="template-card-thumb" loading="lazy">
+            <div class="template-thumb-overlay">
+              <span style="font-size: 1.8rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));">
+                ${t.icon || '✨'}
+              </span>
+              <span style="
+                font-size: 0.72rem;
+                font-weight: 700;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                background: rgba(3, 7, 18, 0.75);
+                backdrop-filter: blur(8px);
+                padding: 4px 10px;
+                border-radius: 999px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: #38e1ff;
+              ">
+                ${(t.category || 'Luxury').toUpperCase()}
+              </span>
+            </div>
           </div>
 
           <!-- Body Description -->
           <div style="padding: var(--space-5); display: flex; flex-direction: column; flex: 1;">
-            <h3 style="font-size: 1.25rem; font-weight: 700; color: #ffffff; margin-bottom: 6px; font-family: var(--font-display);">
-              ${t.name}
-            </h3>
-            <p style="font-size: 0.82rem; color: #38e1ff; font-weight: 600; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+              <h3 style="font-size: 1.22rem; font-weight: 700; color: #ffffff; font-family: var(--font-display);">
+                ${t.name}
+              </h3>
+              ${t.badge ? `<span style="font-size: 0.68rem; color: #fbbf24; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3);">${t.badge}</span>` : ''}
+            </div>
+            
+            <p style="font-size: 0.82rem; color: #38e1ff; font-weight: 600; margin-bottom: 8px;">
               ${t.tagline}
             </p>
             <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: var(--space-4); flex: 1;">
@@ -298,16 +425,17 @@
 
             <!-- Actions -->
             <div style="display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: var(--space-4);">
-              <a href="create.html?template=${t.id}" class="btn btn-primary btn-sm" style="flex: 1; text-align: center; border-radius: 999px;">
-                ⚡ Use Template
-              </a>
-              <a href="preview.html?template=${t.id}" target="_blank" class="btn btn-secondary btn-sm" style="flex: 1; text-align: center; border-radius: 999px;">
-                Preview ↗
+              <button type="button" class="btn btn-secondary btn-sm" onclick="openTemplateModal('${t.id}')" style="flex: 1; text-align: center; border-radius: 999px;" title="View 3D blueprint & scenes">
+                <span>🔍 Inspect 3D</span>
+              </button>
+              <a href="create.html?template=${t.id}" class="btn btn-primary btn-sm" style="flex: 1.2; text-align: center; border-radius: 999px;">
+                <span>⚡ Use Blueprint</span>
               </a>
             </div>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
 
       if (typeof gsap !== 'undefined') {
         gsap.fromTo('.template-card-item', 
@@ -316,6 +444,105 @@
         );
       }
     }
+
+    function openTemplateModal(templateId) {
+      const template = (window.MASTER_TEMPLATES || {})[templateId];
+      if (!template) return;
+      const modal = document.getElementById('templateDetailModal');
+      const content = document.getElementById('templateModalContent');
+      if (!modal || !content) return;
+
+      const artImg = TEMPLATE_ARTWORK[template.id] || 'static/images/animation-themes/01_cosmic_galaxy.jpg';
+      const scenes = template.scenes_blueprint || [];
+
+      content.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; padding: 28px;">
+          <!-- Left Column: Artwork & Specs -->
+          <div>
+            <div style="border-radius: 16px; overflow: hidden; position: relative; height: 260px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
+              <img src="${artImg}" alt="${template.name}" style="width: 100%; height: 100%; object-fit: cover;">
+              <div style="position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(3,7,18,0.9) 100%); display: flex; align-items: flex-end; padding: 16px;">
+                <span style="font-size: 2.2rem;">${template.icon || '✨'}</span>
+              </div>
+            </div>
+
+            <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+                <span style="color: var(--text-muted);">Atmosphere Theme</span>
+                <span style="color: #38e1ff; font-weight: 600;">${template.theme_id || 'midnight_gold'}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+                <span style="color: var(--text-muted);">Animation Preset</span>
+                <span style="color: #c084fc; font-weight: 600;">${template.animation_preset || 'cinematic_luxury'}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+                <span style="color: var(--text-muted);">Default Gift Style</span>
+                <span style="color: #fbbf24; font-weight: 600;">${template.default_gift_style || 'champagne_gold'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Details & Scenes Blueprint -->
+          <div style="display: flex; flex-direction: column;">
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #38e1ff; font-weight: 700; margin-bottom: 4px;">
+                ${(template.category || 'Luxury').toUpperCase()} BLUEPRINT
+              </div>
+              <h2 style="font-size: 1.7rem; color: #fff; font-family: var(--font-display); margin-bottom: 6px;">
+                ${template.name}
+              </h2>
+              <p style="font-size: 0.9rem; color: #fbbf24; font-weight: 600; margin-bottom: 8px;">
+                ${template.tagline}
+              </p>
+              <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+                ${template.description}
+              </p>
+            </div>
+
+            <!-- 5-Scene Journey Breakdown -->
+            <div style="margin-bottom: 20px; flex: 1;">
+              <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 10px; font-weight: 700;">
+                🎞️ 5-Scene Interactive Story Journey
+              </h4>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                ${scenes.map((s, i) => `
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;">
+                    <span style="display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; background: rgba(56,225,255,0.15); color: #38e1ff; font-size: 0.75rem; font-weight: 700;">
+                      ${i + 1}
+                    </span>
+                    <div style="flex: 1;">
+                      <div style="font-size: 0.82rem; font-weight: 600; color: #f1f5f9;">${s.title}</div>
+                      <div style="font-size: 0.72rem; color: var(--text-muted);">${s.scene_type}</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Actions Bar -->
+            <div style="display: flex; gap: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 18px;">
+              <a href="preview.html?template=${template.id}" target="_blank" class="btn btn-secondary" style="flex: 1; text-align: center; border-radius: 999px;">
+                <span>▶ Live 3D Preview ↗</span>
+              </a>
+              <a href="create.html?template=${template.id}" class="btn btn-primary" style="flex: 1.4; text-align: center; border-radius: 999px;">
+                <span>⚡ Use This Blueprint →</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    }
+
+    function closeTemplateModal() {
+      const modal = document.getElementById('templateDetailModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeTemplateModal();
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
       renderCategoryPills();
